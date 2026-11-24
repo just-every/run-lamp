@@ -149,6 +149,10 @@ export async function audiencePagesBrowserFlow({ page, browser, appUrl, pageUrl,
       const protectedLink = confirmation.getByRole('link', { name: `View ${staff.pageName}` });
       await protectedLink.waitFor();
       assert.equal(await confirmation.getByRole('link', { name: 'View public page' }).count(), staffOnly ? 0 : 1);
+      await confirmation.getByRole('status').locator('strong').waitFor();
+      const landing = await assignedPage.goto(staffUrl);
+      assert.equal(landing.status(), 200);
+      assert.ok((await landing.text()).includes(title), 'the first Staff landing after confirmation contains the incident');
     }
 
     await openPublishedPage(assignedPage, staffUrl, staffTitle);

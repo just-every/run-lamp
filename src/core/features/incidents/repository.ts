@@ -92,6 +92,7 @@ export interface IncidentRepository {
   privateClaimStateAt(incidentId: string, componentId: string, publishedAt: string): Promise<ComponentState | null>;
   loadRecoverySnapshot(incidentId: string): Promise<RecoverySnapshot | null>;
   listComponents(incidentId: string): Promise<StoredIncidentComponent[]>;
+  committedUpdate(incidentId: string, updateId: string): Promise<StoredIncidentUpdate | null>;
   listUpdates(incidentId: string): Promise<StoredIncidentUpdate[]>;
   findPublishingDraft(incidentId: string): Promise<PublishingDraft | null>;
   claimEventCounts(componentIds: string[]): Promise<Record<string, number>>;
@@ -106,7 +107,7 @@ export interface IncidentRepository {
   reviewDraft(incidentId: string, reviewerOperatorId: string, reviewedAt: string, expectedVersion: string): Promise<boolean>;
   setDraftCorrection(incidentId: string, correctsUpdateId: string, updatedAt: string, expectedVersion: string): Promise<boolean>;
   listDueScheduledDrafts(now: string): Promise<PublishingDraft[]>;
-  publishDraft(input: IncidentPublishRecord, recipientStatements: D1PreparedStatement[]): Promise<void>;
+  publishDraft(input: IncidentPublishRecord, recipientStatements: D1PreparedStatement[], observeGeneration: boolean): Promise<number | null>;
   softDelete(incidentId: string, reason: string, operatorId: string, deletedAt: string, auditId: string, claimEvents: ComponentClaimEventInput[]): Promise<boolean>;
   listTemplates(): Promise<Array<IncidentTemplateRecord & { components: IncidentTemplateComponentRecord[] }>>;
   saveTemplate(input: IncidentTemplateRecord, components: IncidentTemplateComponentRecord[]): Promise<void>;
@@ -172,6 +173,9 @@ export function createIncidentRepository(binding: D1Database): IncidentRepositor
     },
     async listComponents(incidentId) {
       return database.select().from(incidentComponents).where(eq(incidentComponents.incidentId, incidentId)).all();
+    },
+    async committedUpdate(incidentId, updateId) {
+      return await database.select().from(incidentUpdates).where(and(eq(incidentUpdates.id, updateId), eq(incidentUpdates.incidentId, incidentId))).get() ?? null;
     },
     async listUpdates(incidentId) {
       const updates = await database.select().from(incidentUpdates).where(eq(incidentUpdates.incidentId, incidentId)).orderBy(desc(incidentUpdates.publishedAt)).all();
@@ -248,8 +252,8 @@ export function createIncidentRepository(binding: D1Database): IncidentRepositor
         return draft ? [draft] : [];
       });
     },
-    async publishDraft(input, recipientStatements) {
-      try { await publishIncidentDraft(binding, input, recipientStatements); }
+    async publishDraft(input, recipientStatements, observeGeneration) {
+      try { return await publishIncidentDraft(binding, input, recipientStatements, observeGeneration); }
       catch (cause) {
         if (cause instanceof Error && (cause.message.includes("malformed JSON") || /NOT NULL constraint failed: incident_updates.id/.test(cause.message))) throw new DraftConflictError("The draft or affected components changed. Reload and review before publishing.");
         throw cause;

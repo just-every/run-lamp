@@ -11,6 +11,7 @@ import { createPublicSnapshotService, runningReleaseIdentity } from "./service";
 function withinPage(blobs: BlobStore, path: string): BlobStore {
   const prefix = statusPageStoragePrefix(path);
   return {
+    has: key => blobs.has(prefix + key),
     getText: key => blobs.getText(prefix + key),
     putText: (key, text, contentType) => blobs.putText(prefix + key, text, contentType),
     putTextConditionally: (key, text, contentType, condition) => blobs.putTextConditionally(prefix + key, text, contentType, condition),

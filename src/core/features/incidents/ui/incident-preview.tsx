@@ -1,6 +1,7 @@
-import { useEffect, useId, useMemo, useRef, useState, type Ref } from "react";
+import { useEffect, useId, useRef, useState, type Ref } from "react";
 
 import { renderIncidentUpdate, type RenderedIncidentUpdate } from "../renderer";
+import type { IncidentPublication } from "../publication-status";
 import type { IncidentView } from "../service";
 import { FormError, LoadingState } from "../../../app/client/ui/states";
 import { usePageTimezone } from "../../../app/client/ui/timezone";
@@ -36,58 +37,61 @@ export function IncidentPreview({ preview, error, headingRef, hidden, publicPage
   </aside>;
 }
 
-/** The publication is saved before the public snapshot advances. Confirm the actual customer page before calling it live. */
-export function PublishedIncidentPreview({ incident, publishedUpdateId, publicOrigin, pages }: { incident: IncidentView; publishedUpdateId: string; publicOrigin: string; pages?: readonly StatusPage[] }) {
+/** The draft commit and the reader-visible generation are separate steps. */
+export function PublishedIncidentPreview({ incident, publication, publicOrigin, pages }: { incident: IncidentView; publication: IncidentPublication; publicOrigin: string; pages?: readonly StatusPage[] }) {
   const headingId = useId();
   const confirmation = useRef<HTMLParagraphElement>(null);
-  const latest = incident.updates[0];
-  const links = useMemo(() => (incident.pagePaths ?? [PUBLIC_PAGE_PATH]).map(path => {
-    const record = `incidents/${encodeURIComponent(incident.reference)}`;
-    if (path === PUBLIC_PAGE_PATH) return { href: new URL(record, publicOrigin + "/").href, label: "View public page", publicPage: true };
-    const page = pages?.find(page => page.path === path);
-    return { href: page ? new URL(record, page.url).href : `/status-pages/${encodeURIComponent(path)}/${record}`, label: `View ${page?.pageName ?? path}`, publicPage: false };
-  }), [incident.pagePaths, incident.reference, pages, publicOrigin]);
-  const [confirmedUpdateId, setConfirmedUpdateId] = useState<string>();
-  const confirmed = confirmedUpdateId === latest.id;
-  const includesPublic = links.some(link => link.publicPage);
+  const { receipt } = publication;
+  const { reference } = incident;
+  const update = incident.updates.find(update => update.id === receipt.updateId)!;
+  const record = `incidents/${encodeURIComponent(reference)}`;
+  const [confirmed, setConfirmed] = useState(false);
+  const includesPublic = receipt.pages.some(page => page.path === PUBLIC_PAGE_PATH);
   useEffect(() => { confirmation.current?.focus(); }, []);
   useEffect(() => {
     const controller = new AbortController();
     let retry: ReturnType<typeof setTimeout> | undefined;
-    const delays = [250, 500, 1000, 2000, 4000];
+    const delays = [250, 500, 1_000, 2_000, 4_000];
     const check = async (index: number) => {
-      try {
-        const visible = await Promise.all(links.map(async link => {
-          const response = await fetch(link.href, { credentials: link.publicPage ? "omit" : "same-origin", cache: "no-store", referrerPolicy: "no-referrer", signal: AbortSignal.any([controller.signal, AbortSignal.timeout(4000)]) });
-          if (!response.ok) return false;
-          const page = document.createElement("template");
-          page.innerHTML = await response.text();
-          const first = page.content.querySelector("article.update[data-update-id]");
-          return first?.getAttribute("data-update-id") === latest.id && Boolean(page.content.querySelector(`article.update[data-update-id="${publishedUpdateId}"]`));
-        }));
-        if (visible.length && visible.every(Boolean)) {
-          if (!controller.signal.aborted) setConfirmedUpdateId(latest.id);
-          return;
-        }
-      } catch { /* The incident was saved. Keep its publication confirmation if the page cannot be read. */ }
-      if (!controller.signal.aborted && index < delays.length) retry = setTimeout(() => void check(index + 1), delays[index]);
+      const visible = await Promise.all(receipt.pages.map(async ({ path, afterGeneration, proof }) => {
+        const base = path === PUBLIC_PAGE_PATH ? new URL("/", publicOrigin) : new URL(`/status-pages/${encodeURIComponent(path)}/`, location.origin);
+        const url = new URL(`${record}/publication`, base);
+        url.search = new URLSearchParams({ update: receipt.updateId, after: String(afterGeneration ?? "unknown"), expires: String(receipt.expiresAt), proof, wait: "1" }).toString();
+        try {
+          const response = await fetch(url, {
+            credentials: path === PUBLIC_PAGE_PATH ? "omit" : "same-origin",
+            cache: "no-store", referrerPolicy: "no-referrer",
+            signal: AbortSignal.any([controller.signal, AbortSignal.timeout(16_000)]),
+          });
+          return response.status === 200 && (await response.json() as { state: string }).state === "confirmed";
+        } catch { return false; }
+      }));
+      if (controller.signal.aborted) return;
+      if (visible.length && visible.every(Boolean)) setConfirmed(true);
+      else if (index < delays.length) retry = setTimeout(() => void check(index + 1), delays[index]);
     };
     void check(0);
     return () => { controller.abort(); clearTimeout(retry); };
-  }, [links, latest.id, publishedUpdateId]);
+  }, [publicOrigin, receipt, record]);
 
   const { public: preview } = renderIncidentUpdate({
-    ...latest,
+    ...update,
     incidentReference: incident.reference,
     incidentTitle: incident.title,
   });
   return <div className="published-update">
     <div className="publication-confirmation">
-      <p ref={confirmation} tabIndex={-1} role="status"><strong>Published.</strong>{confirmed ? includesPublic ? " Customers can see this now." : " Readers can see this now." : null}</p>
-      {links.map(link => <a className="text-link" key={link.href} href={link.href} target="_blank" rel="noopener">{link.label}</a>)}
+      <p ref={confirmation} tabIndex={-1} role="status">{confirmed ? <><strong>Published.</strong>{includesPublic ? " Customers can see this now." : " Readers can see this now."}</> : publication.message}</p>
+      {receipt.pages.map(({ path }) => {
+        const publicPage = path === PUBLIC_PAGE_PATH;
+        const page = pages?.find(page => page.path === path);
+        const href = publicPage ? new URL(record, publicOrigin + "/").href
+          : page ? new URL(record, page.url).href : `/status-pages/${encodeURIComponent(path)}/${record}`;
+        return <a className="text-link" key={path} href={href} target="_blank" rel="noopener">{publicPage ? "View public page" : `View ${page?.pageName ?? path}`}</a>;
+      })}
     </div>
     <section className="live-preview" aria-labelledby={headingId}>
-      <h2 id={headingId}>{confirmed && includesPublic ? "What customers see now" : "Published update"}</h2>
+      <h2 id={headingId}>{confirmed ? includesPublic ? "What customers see now" : "Published update" : "Update preview"}</h2>
       <PreviewCard heading={preview.heading} lifecycle={preview.lifecycle} fields={preview.fields} />
     </section>
   </div>;

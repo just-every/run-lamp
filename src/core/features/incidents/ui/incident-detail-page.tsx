@@ -7,6 +7,7 @@ import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useSta
 import { createUlid } from "../../../shared/ids";
 import type { UpdateChannel } from "../../../shared/domain";
 import type { IncidentDraftInput } from "../../../shared/schemas";
+import type { IncidentPublicationResponse } from "../publication-status";
 import type { IncidentsService } from "../service";
 import type { RenderedIncidentUpdate } from "../renderer";
 import type { AppliedIncidentTemplate } from "../template-service";
@@ -72,8 +73,8 @@ function IncidentVisit({ incidentId }: { incidentId: string }) {
   // this visit: read once here, then dropped from the history entry, so a reload or a return never replays it.
   const notice = useRouterState({ select: state => state.location.state.incidentNotice });
   const arrival = useRef(notice).current;
-  const [publishedUpdateId, setPublishedUpdateId] = useState(arrival?.publishedUpdateId);
-  const [draftOpen, setDraftOpen] = useState(!arrival?.publishedUpdateId);
+  const [publishedUpdate, setPublishedUpdate] = useState(arrival?.publishedUpdate);
+  const [draftOpen, setDraftOpen] = useState(!arrival?.publishedUpdate);
   const [pendingComponents, setPendingComponents] = useState<PendingComponent[]>([]);
   useEffect(() => {
     const { incidentNotice, ...entry } = window.history.state ?? {};
@@ -104,7 +105,7 @@ function IncidentVisit({ incidentId }: { incidentId: string }) {
   const availableChannels = emailOff ? channels.filter(channel => channel !== "email") : channels;
   const publishChannels = publicSelected ? availableChannels : [];
   const [timing, setTiming] = useState<PublishTiming>(arrival?.publication?.timing ?? { mode: "now", at: null });
-  const [publishState, setPublishState] = useState<"idle" | "publishing" | "scheduled" | "published" | "error">(arrival?.error ? "error" : arrival?.publishedUpdateId ? "published" : "idle");
+  const [publishState, setPublishState] = useState<"idle" | "publishing" | "scheduled" | "published" | "error">(arrival?.error ? "error" : arrival?.publishedUpdate ? "published" : "idle");
   const [publishMessage, setPublishMessage] = useState<string | null>(arrival?.text ?? null);
   const [overrideReason, setOverrideReason] = useState("");
   const [correcting, setCorrecting] = useState<string | null>(null);
@@ -321,7 +322,7 @@ function IncidentVisit({ incidentId }: { incidentId: string }) {
     try {
       if (correcting) await appApi(`/api/app/incidents/${incident.id}/draft/correction`, { method: "POST", headers: { "If-Match": version.current }, body: JSON.stringify({ updateId: correcting }) });
       if (!isCurrent()) return;
-      const { update } = await appApi<{ update: { id: string } }>(`/api/app/incidents/${incident.id}/publish`, { method: "POST", headers: { "If-Match": version.current }, body: JSON.stringify({ channels: publishChannels, ...(firstPublication ? { pagePaths } : {}), ...(draft.lifecycle === "Resolved" && overrideReason.trim() ? { overrideReason: overrideReason.trim() } : {}), ...(historicalPublishedAt ? { publishedAt: historicalPublishedAt } : {}) }) });
+      const { publication } = await appApi<IncidentPublicationResponse>(`/api/app/incidents/${incident.id}/publish`, { method: "POST", headers: { "If-Match": version.current }, body: JSON.stringify({ channels: publishChannels, ...(firstPublication ? { pagePaths } : {}), ...(draft.lifecycle === "Resolved" && overrideReason.trim() ? { overrideReason: overrideReason.trim() } : {}), ...(historicalPublishedAt ? { publishedAt: historicalPublishedAt } : {}) }) });
       if (!isCurrent()) return;
       // Publication consumes one update's authority, even without navigation.
       // Suggestions, templates, previews or saves started for that update must
@@ -349,7 +350,7 @@ function IncidentVisit({ incidentId }: { incidentId: string }) {
       setChannels(current => [...current.filter(channel => channel !== "social"), ...(socialData?.postByDefault ? ["social" as const] : [])]);
       setTiming({ mode: "now", at: null });
       setPendingComponents([]);
-      setPublishedUpdateId(update.id);
+      setPublishedUpdate(publication);
       setDraftOpen(false);
       setPublishState("published");
       refresh();
@@ -404,7 +405,7 @@ function IncidentVisit({ incidentId }: { incidentId: string }) {
 
   return <div className="incident-page">
     <IncidentHeader incident={incident} />
-    {publishedUpdateId && incident.updates.length ? <PublishedIncidentPreview key={publishedUpdateId} incident={incident} publishedUpdateId={publishedUpdateId} publicOrigin={publicPageOrigin} pages={pages.data?.pages} /> : null}
+    {publishedUpdate && incident.updates.some(update => update.id === publishedUpdate.receipt.updateId) ? <PublishedIncidentPreview key={publishedUpdate.receipt.updateId} incident={incident} publication={publishedUpdate} publicOrigin={publicPageOrigin} pages={pages.data?.pages} /> : null}
     {incident.updates.length ? <button type="button" className="next-draft-toggle" aria-expanded={draftOpen} aria-controls={`draft-editor ${draftActionsId} draft-preview`} onClick={() => setDraftOpen(open => !open)}>Next update (draft)</button> : null}
     <div className={`incident-compose${draftOpen ? "" : " is-draft-collapsed"}`}>
       <section id="draft-editor" hidden={!draftOpen} className="composer-panel" aria-labelledby="composer-title" inert={publishState === "publishing"}>

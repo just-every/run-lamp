@@ -175,7 +175,8 @@ export function createAppServices(bindings: AppBindings, blobs: BlobStore, execu
   }, extensions.updateReviewPolicy,
   async ({ incidentId, draftId, scheduledPublishAt }) => deliveries.queueOperatorAlert({ eventId: `scheduled-review/${draftId}/${scheduledPublishAt}`, title: "Lamp held a scheduled incident update for review", text: `Scheduled update for incident ${incidentId} requires review by another operator before it can publish.` }),
   extensions.updateDuePolicy,
-  { trafficRecovery: trafficAlerts.recovery, events: extensions.events, formatPreviewTimestamp, formatPreviewEmail: async (email, displayBody) => {
+  { selectedGeneration: path => (path === "public" ? primarySnapshot : scopedSnapshots.forPage(path)).selectedGeneration(),
+    trafficRecovery: trafficAlerts.recovery, events: extensions.events, formatPreviewTimestamp, formatPreviewEmail: async (email, displayBody) => {
     const settings = await pageSettings.get();
     if (!settings) throw new Error("Page settings are not configured.");
     return { ...brandEmail(email, { branding: settings.emailBranding, pageName: settings.pageName, fromAddress: settings.mailFromAddress, origin: publicPageOrigin(authOrigin(bindings), bindings.LAMP_PAGE_HOST), hasLogo: Boolean(settings.logoKey), displayBody }), deliverySuppressed: local || !mail.configured, deliveryNotice: local || isLoopbackHostname(new URL(authOrigin(bindings)).hostname) ? "This computer does not send email. A hosted page uses your sender address." : "Email is not set up. This preview will not be sent." };

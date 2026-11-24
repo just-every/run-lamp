@@ -24,6 +24,7 @@ function namedRowBindings(env: Parameters<typeof worker.fetch>[1]) {
 }
 
 let paused = false;
+let heldSelector: string | null = null;
 const executionBindings = (env: Parameters<typeof worker.fetch>[1]) => paused ? { ...env, EFFECTS_PAUSED: '1' } : env;
 
 // Request-local provider observations let the retained-read journey prove that
@@ -56,7 +57,10 @@ async function observeAudienceReads(request: Request, env: AppBindings, context:
   const SNAPSHOTS = new Proxy(env.SNAPSHOTS, { get(target, key) {
     const value = Reflect.get(target, key);
     if (typeof value !== 'function') return value;
-    return (...args: unknown[]) => {
+    return async (...args: unknown[]) => {
+      if (key === 'put' && typeof args[0] === 'string') {
+        while (heldSelector === args[0]) await new Promise(resolve => setTimeout(resolve, 10));
+      }
       if (key === 'get' || key === 'head' || key === 'list') objectReads++;
       return Reflect.apply(value, target, args);
     };
@@ -78,6 +82,10 @@ export default {
   },
   async fetch(request: Request, env: Parameters<typeof worker.fetch>[1], context: ExecutionContext) {
     const url = new URL(request.url);
+    if (url.hostname === env.LAMP_APP_HOST && url.pathname === '/test/hold-selector' && request.method === 'PUT') {
+      heldSelector = (await request.json<{ key: string | null }>()).key;
+      return new Response(null, { status: 204 });
+    }
     if (url.hostname === env.LAMP_APP_HOST && url.pathname === '/test/effects' && request.method === 'PUT') {
       paused = (await request.json<{ paused: boolean }>()).paused;
       return new Response(null, { status: 204 });

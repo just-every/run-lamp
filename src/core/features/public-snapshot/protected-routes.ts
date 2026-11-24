@@ -50,8 +50,8 @@ export async function protectedStatusPage(
   url.pathname = address.resource;
   const app = new Hono<AppEnv>();
   registerPublicSnapshotRoutes(app, runtime.services.scopedSnapshots.forPage(address.page), {
-    prefix: statusPagePrefix(address.page), accentColor: page.accentColor,
+    path: address.page, prefix: statusPagePrefix(address.page), accentColor: page.accentColor,
   });
-  const response = await app.fetch(new Request(url, { method: request.method }), bindings, execution);
+  const response = await app.fetch(new Request(url, { method: request.method, signal: request.signal }), bindings, execution);
   return new Response(response.body, { status: response.status, headers: protectedSnapshotHeaders(new Headers(response.headers)) });
 }

@@ -23,6 +23,7 @@ const STALE_BUILD_MS = 5 * 60_000;
 const RETRY_LEASE_MS = 2 * 60_000;
 // A healthy minute scheduler publishes a fresh timestamp and rolling windows.
 const SNAPSHOT_REFRESH_MS = 5 * 60_000;
+const PUBLICATION_SURFACES = ["page.html", "feed.atom", "feed.rss", "widget.js", "embed/script.js"];
 const LOGO_CONTENT_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
 export const PUBLIC_SNAPSHOT_RENDERER_VERSION = "lamp-public-snapshot-v25";
 
@@ -54,12 +55,21 @@ function logoDataUrl(logo: { bytes: ArrayBuffer; contentType: string }) {
   return `data:${logo.contentType};base64,${btoa(binary)}`;
 }
 
+interface PublicationObservation {
+  updateId: string;
+  afterGeneration: number | null;
+  wait: boolean;
+  signal: AbortSignal;
+}
+
 export interface PublicSnapshotService {
   rebuild(force?: boolean): Promise<void>;
   /** Publish pending source changes and confirm the public selector covers them. */
   confirmPublication(): Promise<void>;
   requestedRevision(): Promise<number>;
   includesRevision(revision: number): Promise<boolean>;
+  selectedGeneration(): Promise<number>;
+  observeIncidentPublication(key: string, observation: PublicationObservation): Promise<{ bytes: ArrayBuffer; version: string } | null>;
   hasCurrentSnapshot(): Promise<boolean>;
   readArtifact(key: string): Promise<{ bytes: ArrayBuffer; contentType: string; version: string; generatedAt: string; stale: boolean; retainedReady?: boolean; prelaunch: boolean } | null>;
   /** Whether the page customers see now is a pre-launch page. Reads only the snapshot store, never D1. */
@@ -338,10 +348,52 @@ export function createPublicSnapshotService(
     return next;
   }
 
+  async function selectedArtifact(pointer: SnapshotPointer, key: string) {
+    let object = protectedSnapshot ? await blobs.getBytes(`snapshots/${pointer.version}/${key}`) : await readGenerationArtifact(blobs, pointer.version, key);
+    if (!object && repository.loadArchive) {
+      const context = await blobs.getText(`snapshots/${pointer.version}/archive-context.json`);
+      const source = context ? await repository.loadArchive(JSON.parse(context.text), key, pointer.generatedAt) : null;
+      const artifact = source ? renderArchiveArtifact(source, key, pointer.generatedAt, policies, slots) : null;
+      if (artifact) {
+        await blobs.putText(`snapshots/${pointer.version}/${key}`, artifact.body, artifact.contentType);
+        object = { bytes: new TextEncoder().encode(artifact.body).buffer, contentType: artifact.contentType };
+      }
+    }
+    if (!object && ["page.html", "feed.atom", "widget.js", "status.json"].includes(key)) throw new Error("Published snapshot artifact is missing.");
+    return object;
+  }
+
+  async function observeIncidentPublication(key: string, { updateId, afterGeneration, wait, signal }: PublicationObservation) {
+    // One authenticated reader request can wait for the switch without
+    // repeating protected-page D1 session and page lookups on each R2 check.
+    const delays = wait ? [0, 250, 500, 1_000, 2_000, 4_000, 4_000] : [0];
+    for (const delay of delays) {
+      if (delay) await new Promise(resolve => setTimeout(resolve, delay));
+      if (signal.aborted) return null;
+      const pointer = await readPointer();
+      if (!pointer || (afterGeneration !== null && pointer.generation <= afterGeneration) || await staleRevisionNeedsRebuild(pointer)) continue;
+      if (afterGeneration === null) {
+        // If the prior selector was unreadable at commit time, only immutable
+        // build input can distinguish the update from a cold archive read.
+        const input = await readBuildSource(blobs, pointer.version, pointer.generatedAt, repository.sourceConfiguration);
+        if (!input?.source.updates.some(update => update.id === updateId)) continue;
+      }
+      // Reader routes revalidate this selector. A missing artifact cannot
+      // confirm, even if the detail can be hydrated from D1.
+      const available = await Promise.all(PUBLICATION_SURFACES.map(key => blobs.has(`snapshots/${pointer.version}/${key}`)));
+      if (!available.every(Boolean)) continue;
+      const object = await selectedArtifact(pointer, key);
+      return object ? { bytes: object.bytes, version: pointer.version } : null;
+    }
+    return null;
+  }
+
   return {
     rebuild: enqueueRebuild,
     async requestedRevision() { return (await repository.currentWork()).requestedRevision; },
     includesRevision,
+    async selectedGeneration() { return (await readPointer())?.generation ?? 0; },
+    observeIncidentPublication,
     async confirmPublication() {
       const { requestedRevision } = await repository.currentWork();
       await enqueueRebuild();
@@ -370,17 +422,7 @@ export function createPublicSnapshotService(
           const bundle = await retained?.read();
           return bundle ? retainedArtifact(bundle, key) : null;
         }
-        let object = protectedSnapshot ? await blobs.getBytes(`snapshots/${pointer.version}/${key}`) : await readGenerationArtifact(blobs, pointer.version, key);
-        if (!object && repository.loadArchive) {
-          const context = await blobs.getText(`snapshots/${pointer.version}/archive-context.json`);
-          const source = context ? await repository.loadArchive(JSON.parse(context.text), key, pointer.generatedAt) : null;
-          const artifact = source ? renderArchiveArtifact(source, key, pointer.generatedAt, policies, slots) : null;
-          if (artifact) {
-            await blobs.putText(`snapshots/${pointer.version}/${key}`, artifact.body, artifact.contentType);
-            object = { bytes: new TextEncoder().encode(artifact.body).buffer, contentType: artifact.contentType };
-          }
-        }
-        if (!object && ["page.html", "feed.atom", "widget.js", "status.json"].includes(key)) throw new Error("Published snapshot artifact is missing.");
+        const object = await selectedArtifact(pointer, key);
         const marker = await staleMarker();
         let retainedReady = false;
         if (retained) {

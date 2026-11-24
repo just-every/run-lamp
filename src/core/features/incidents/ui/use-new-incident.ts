@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { INCIDENT_CLAIM_STATES, type IncidentClaimState } from "../../../shared/incident-component-changes";
 import type { IncidentFirstUpdateInput } from "../../../shared/schemas";
 import type { RenderedIncidentUpdate } from "../renderer";
+import type { IncidentPublication, IncidentPublicationResponse } from "../publication-status";
 import type { IncidentsService } from "../service";
 import type { IncidentTemplate } from "../template-repository";
 import { appApi, useAppData } from "../../../app/client/ui/api";
@@ -17,7 +18,7 @@ declare module "@tanstack/react-router" {
 /** What the incident page opens with after the new-incident screen, on that visit only. `publication` carries the operator's
  * notification and timing choices when the update stayed private (saved as a draft, or refused), so a retry offers what they
  * chose. A scheduled update needs none: the server holds its time and channels, and the incident page starts from them. */
-export type IncidentNotice = { text?: string; error: boolean; publishedUpdateId?: string; publication?: { channels: Channel[]; timing: PublishTiming; pagePaths: string[] } };
+export type IncidentNotice = { text?: string; error: boolean; publishedUpdate?: IncidentPublication; publication?: { channels: Channel[]; timing: PublishTiming; pagePaths: string[] } };
 export type NewClaim = { componentId: string; state: IncidentClaimState | null; relationship: "Primary" | "Dependent" };
 export interface NewIncident { title: string; claims: NewClaim[]; update: IncidentFirstUpdateInput; openedAt: string | null; channels: Channel[]; timing: PublishTiming; pagePaths: string[] }
 type Created = Awaited<ReturnType<IncidentsService["create"]>>;
@@ -135,8 +136,8 @@ export function useNewIncident(emailOff: boolean) {
         await appApi(`/api/app/incidents/${incident.id}/draft/schedule`, { method: "POST", headers: { "If-Match": version }, body: JSON.stringify({ publishAt: timing.at, channels, pagePaths: form.pagePaths }) });
         notice = { text: "Update scheduled. It stays private until then.", error: false };
       } else {
-        const { update } = await appApi<{ update: { id: string } }>(`/api/app/incidents/${incident.id}/publish`, { method: "POST", headers: { "If-Match": version }, body: JSON.stringify({ channels, pagePaths: form.pagePaths, ...(timing.mode === "backdate" ? { publishedAt: timing.at } : {}) }) });
-        notice = { publishedUpdateId: update.id, error: false };
+        const { publication: publishedUpdate } = await appApi<IncidentPublicationResponse>(`/api/app/incidents/${incident.id}/publish`, { method: "POST", headers: { "If-Match": version }, body: JSON.stringify({ channels, pagePaths: form.pagePaths, ...(timing.mode === "backdate" ? { publishedAt: timing.at } : {}) }) });
+        notice = { publishedUpdate, error: false };
       }
     } catch (cause) { notice = { text: `Not published: ${cause instanceof Error ? cause.message : "the update could not be published."}`, error: true, publication: { channels: form.channels, timing, pagePaths: form.pagePaths } }; }
     await navigate({ to: "/app/incidents/$incidentId", params: { incidentId: incident.id }, state: (current) => ({ ...current, incidentNotice: notice }) });

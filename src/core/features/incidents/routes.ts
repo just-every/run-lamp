@@ -11,6 +11,8 @@ import { incidentDraftSchema, incidentFirstUpdateSchema } from "../../shared/sch
 import { InvalidIncidentUpdateError, type IncidentsService } from "./service";
 import { RecoveryCheckError } from "../brief/recovery-check";
 import { draftFromIncident } from "./draft";
+import { publicationProof } from "./publication-proof";
+import { publicationPending } from "./publication-status";
 
 const incidentCursorSchema = z.string().max(100).transform(value => {
   const [openedAt, id, ...extra] = value.split("|");
@@ -175,9 +177,17 @@ export function registerIncidentRoutes(app: Hono<AppEnv>, service: IncidentsServ
     const incidentId = incidentIdFrom(context); const parsed = publishSchema.safeParse(await context.req.json().catch(() => null));
     if (!incidentId.success || !parsed.success) return context.json({ error: "Invalid publication request." }, 400);
     try {
-      const update = await service.publish(incidentId.data, context.get("operator").id, { ...parsed.data, expectedVersion: context.req.header("If-Match")! });
-      if (update) context.executionCtx.waitUntil(service.finishPublication(update));
-      return update ? context.json({ update }) : context.json({ error: "A saved draft is required." }, 409);
+      const committed = await service.publishForApp(incidentId.data, context.get("operator").id, { ...parsed.data, expectedVersion: context.req.header("If-Match")! });
+      if (!committed) return context.json({ error: "A saved draft is required." }, 409);
+      const { update, reference, targets } = committed;
+      context.executionCtx.waitUntil(service.finishPublication(update, targets.some(page => page.path === "public")));
+      const expiresAt = Date.now() + 5 * 60_000;
+      const pages = await Promise.all(targets.map(async target => ({
+        ...target,
+        proof: await publicationProof(context.env.SESSION_SECRET, reference, update.id, target, expiresAt),
+      })));
+      context.header("Cache-Control", "no-store");
+      return context.json({ update, publication: { ...publicationPending, receipt: { pages, updateId: update.id, expiresAt } } });
     } catch (cause) {
       if (cause instanceof RecoveryCheckError) return context.json({ error: cause.message, recovery: cause.recovery }, 409);
       return context.json({ error: cause instanceof Error ? cause.message : "The update could not be published." }, cause instanceof InvalidIncidentUpdateError || cause instanceof UnknownStatusPageError ? 400 : 409);

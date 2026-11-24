@@ -10,6 +10,7 @@ export interface BlobBytes {
 }
 
 export interface BlobStore {
+  has(key: string): Promise<boolean>;
   getText(key: string): Promise<BlobObject | null>;
   putText(key: string, text: string, contentType: string): Promise<void>;
   putTextConditionally(key: string, text: string, contentType: string, condition: { eTag: string | null }): Promise<boolean>;

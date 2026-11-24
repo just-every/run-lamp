@@ -52,6 +52,16 @@ export async function addStatusPage(j, {path, kind, pageName, tagline, accentCol
   return page;
 }
 
+
+function publicationProbe(j, reference, receipt, page) {
+  const target = receipt.pages.find(target => target.path === (page?.path ?? 'public'));
+  const query = new URLSearchParams({
+    update: receipt.updateId, after: String(target.afterGeneration), expires: String(receipt.expiresAt), proof: target.proof,
+  });
+  const path = `/incidents/${reference}/publication?${query}`;
+  return page ? privateStatusUrl(page, path) : new URL(path, j.publicOrigin).href;
+}
+
 async function representation(j, page, path, privateRead = true) {
   const response = privateRead
     ? await j.request(privateStatusUrl(page, path))
@@ -227,16 +237,21 @@ export async function audiencePagesFlow() {
     const afterRefusal = await j.read(shared.id);
     assert.equal(afterRefusal.draft.id, beforePublish.draft.id);
     assert.deepEqual(afterRefusal.updates, []);
-    const { update: sharedUpdate } = await j.publish(shared.id, { channels: ['email'], pagePaths: ['public', staffPath] });
+    const { update: sharedUpdate, publication: sharedPublication } = await j.publish(shared.id, { channels: ['email'], pagePaths: ['public', staffPath] });
     assert.deepEqual((await j.read(shared.id)).updates.map(({ id }) => id), [sharedUpdate.id], 'one native publication creates exactly one update');
 
     const sharedPermalink = `/incidents/${shared.reference}`;
     for (const page of [null, staff]) {
       await waitFor(j, page, sharedPermalink, sharedImpact);
+      const observation = publicationProbe(j, shared.reference, sharedPublication.receipt, page);
+      const confirmed = await eventually(() => j.request(observation), response => response.status === 200, 'the selected generation confirms the shared update');
+      const { version } = await confirmed.json();
       const read = async path => page ? (await representation(j, page, path)).body : j.publicText(path);
       for (const path of ['/', sharedPermalink, '/feed.atom', '/feed.rss', '/widget.js', '/api/public/status', '/api/public/v1/incidents']) {
         const specificIdentity = ['/feed.atom', '/feed.rss', '/api/public/v1/incidents'].includes(path) ? [sharedUpdate.id] : [];
-        requireBody(await read(path), [shared.title, sharedImpact, ...specificIdentity], [], `${page?.path ?? "Public"} ${path}`);
+        const artifact = await (page ? j.request(privateStatusUrl(page, path)) : j.publicResponse(path));
+        assert.equal(artifact.headers.get('x-lamp-snapshot-version'), version, path);
+        requireBody(await artifact.text(), [shared.title, sharedImpact, ...specificIdentity], [], `${page?.path ?? "Public"} ${path}`);
       }
       const permalink = page ? new URL(privateStatusUrl(page, sharedPermalink)).pathname : sharedPermalink;
       assert.ok((await read('/')).includes(`href="${permalink}"`), 'the page links to its own copy of the incident');
@@ -274,12 +289,42 @@ export async function audiencePagesFlow() {
     const confidential = await j.incident('Operator-only key rotation disruption', [b]);
     const confidentialImpact = 'Synthetic private wording: rotation invalidated the internal session pool.';
     await j.save(confidential.id, { customerImpact: confidentialImpact });
-    const { update: confidentialUpdate } = await j.publish(confidential.id, { channels: ['email', 'webhook'], pagePaths: [staffPath] });
+    const confidentialPermalink = `/incidents/${confidential.reference}`;
+    const holdSelector = key => j.json('/test/hold-selector', 'PUT', { key }, 204);
+    await holdSelector('status-pages/staff/snapshots/current.json');
+    let confidentialUpdate;
+    try {
+      const { publication, update } = await j.publish(confidential.id, { channels: ['email', 'webhook'], pagePaths: [staffPath] });
+      confidentialUpdate = update;
+      assert.equal(publication.state, 'pending');
+      assert.equal(typeof publication.receipt.pages[0].afterGeneration, 'number', 'the commit observed a generation fence');
+      const observation = publicationProbe(j, confidential.reference, publication.receipt, staff);
+      const priorLanding = await representation(j, staff, '/');
+      requireBody(priorLanding.body, [], [confidential.title], 'Staff landing while its generation switch is held');
+      const detail = await representation(j, staff, confidentialPermalink);
+      requireBody(detail.body, [update.id, confidentialImpact], [], 'cold Staff permalink already renders the committed update');
+      assert.equal(detail.version, priorLanding.version);
+      const pending = await j.request(observation);
+      assert.equal(pending.status, 202);
+      assert.equal((await pending.json()).state, 'pending');
+      const forged = new URL(observation);
+      forged.searchParams.set('after', '0');
+      assert.equal((await j.request(forged.href)).status, 400);
+      assert.equal((await j.raw(observation)).status, 401);
+      await holdSelector(null);
+      const confirmed = await eventually(() => j.request(observation), response => response.status === 200, 'the Staff selector catches up');
+      const { version } = await confirmed.json();
+      assert.notEqual(version, priorLanding.version);
+      for (const path of ['/', '/feed.atom', '/feed.rss', '/widget.js']) {
+        const reader = await representation(j, staff, path);
+        assert.equal(reader.version, version, path);
+        requireBody(reader.body, [confidential.title, confidentialImpact], [], `confirmed Staff ${path}`);
+      }
+    } finally { await holdSelector(null); }
     const privateWorkImpact = 'Synthetic private wording: replace the restricted console gateway.';
     const { maintenance: privateWork } = await schedule('Operator-only gateway upgrade', privateWorkImpact, b.id, [staffPath]);
     await j.json(`/api/app/maintenance/${privateWork.id}/start`, 'POST', {});
     const privateWorkLink = `/maintenance/${privateWork.reference}`;
-    const confidentialPermalink = `/incidents/${confidential.reference}`;
     const staffOnly = [confidential.title, confidentialImpact, confidential.reference, confidentialUpdate.id, privateWork.title, privateWorkImpact, privateWork.reference];
     await waitFor(j, staff, confidentialPermalink, confidentialImpact);
     await waitFor(j, staff, privateWorkLink, privateWorkImpact);

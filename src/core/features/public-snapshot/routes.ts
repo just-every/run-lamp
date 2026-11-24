@@ -8,6 +8,7 @@ import type { AppEnv } from "../../app/types";
 import { escapeHtml, escapeXml } from "./format";
 import { applyPublicIsolationHeaders } from "./headers";
 import type { PublicSnapshotService } from "./service";
+import { incidentPublicationStatus } from "./incident-publication-status";
 import { nativeApiArtifact } from "./native-api";
 import { componentFeedArchiveKey, feedArchiveKey, historyArchiveKey } from "./archive";
 import { PRELAUNCH_ROBOTS_KEY, PRELAUNCH_ROBOTS_TAG } from "../prelaunch/policy";
@@ -175,7 +176,7 @@ function currentMaintenanceOverruns(response: Response, now: number) {
     }).transform(response);
 }
 
-export function registerPublicSnapshotRoutes(app: Hono<AppEnv>, service: PublicSnapshotService, protectedPage?: { prefix: string; accentColor: string }) {
+export function registerPublicSnapshotRoutes(app: Hono<AppEnv>, service: PublicSnapshotService, protectedPage?: { path: string; prefix: string; accentColor: string }) {
   // While the page is pre-launch every answer from the page host asks search engines to stay away.
   const serve = (artifact: (context: Context<AppEnv>) => string, download = false, missingArtifact?: string) => {
     return async (context: Context<AppEnv>) => {
@@ -282,6 +283,7 @@ export function registerPublicSnapshotRoutes(app: Hono<AppEnv>, service: PublicS
   app.get("/", serve(() => "page.html"));
   app.get("/history/:month", serve(context => /^\d{4}-(?:0[1-9]|1[0-2])$/.test(context.req.param("month") ?? "") ? historyArchiveKey(context.req.param("month"), context.req.query("cursor")) : "history/invalid.html", false, "not-found.html"));
   app.get("/history", serve(context => historyArchiveKey(undefined, context.req.query("cursor")), false, "not-found.html"));
+  app.get("/incidents/:reference/publication", context => incidentPublicationStatus(context, service, protectedPage?.path ?? "public"));
   app.get("/incidents/:reference", serve((context) => `incidents/${encodeURIComponent(context.req.param("reference") ?? "")}.html`, false, "not-found.html"));
   app.get("/maintenance.ics", serve(() => "maintenance.ics"));
   app.get("/feed.atom", serve(context => feedArchiveKey("atom", context.req.query("cursor"))));

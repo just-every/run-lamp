@@ -13,7 +13,7 @@ export function assignIncidentPages(binding: D1Database, incidentId: string, pag
 }
 
 /** Update, claims, aggregate history and recipient selection share one D1 commit. */
-export async function publishIncidentDraft(binding: D1Database, input: IncidentPublishRecord, recipients: D1PreparedStatement[]) {
+export async function publishIncidentDraft(binding: D1Database, input: IncidentPublishRecord, recipients: D1PreparedStatement[], observeGeneration: boolean) {
   const statements = [publicationComponentsGuard(binding, input.incidentId, input.baselineComponents)];
   const automation = input.automation ? automationPublicationStatements(binding,input.automation,input.id,input.createdAt) : null;
   // Rule runs retain their approved attribution and transactional input fences.
@@ -32,8 +32,12 @@ export async function publishIncidentDraft(binding: D1Database, input: IncidentP
     binding.prepare("DELETE FROM incident_status_pages WHERE incident_id = ?").bind(input.incidentId),
     ...assignIncidentPages(binding, input.incidentId, input.pagePaths),
   );
+  // Capture the reservation counter in the same transaction. A snapshot
+  // with a higher generation must reserve before reading this committed data.
+  const scopeGuard = statements.length;
   statements.push(binding.prepare(`SELECT CASE WHEN EXISTS (SELECT 1 FROM incidents WHERE id = ? AND public_hidden = ?)
-    THEN 1 ELSE json('Publication scope changed') END`).bind(input.incidentId, Number(input.publicHidden)));
+    THEN 1 ELSE json('Publication scope changed') END
+    ${observeGeneration ? ", (SELECT next_generation FROM snapshot_build_control WHERE id = 'default') AS generation" : ""}`).bind(input.incidentId, Number(input.publicHidden)));
   const notificationHistoryIds: string[] = [];
   if (input.recovery) statements.push(recoverySnapshotGuard(binding, input.incidentId, input.recovery.snapshot));
   for (const change of input.stagedChanges) {
@@ -100,5 +104,6 @@ export async function publishIncidentDraft(binding: D1Database, input: IncidentP
     ...notificationHistoryIds.flatMap(historyId => componentNotificationStatements(binding, historyId, input.createdAt)),
   );
   if(automation)statements.push(...automation.after);
-  await binding.batch(statements);
+  const results = await binding.batch<{ generation?: number }>(statements);
+  return results[scopeGuard].results[0]?.generation ?? null;
 }

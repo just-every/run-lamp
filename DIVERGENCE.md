@@ -1,5 +1,13 @@
 # DIVERGENCE.md
 
+## Incident publication waits for the selected reader generations
+
+The operator editor shows publishing progress between committing an update
+and confirming it on each selected status page. The reader check uses each
+page's current generation for its landing, Atom and RSS feeds and widgets.
+A permalink can load an update from history while its landing still shows an
+older generation, so that early record alone cannot confirm publication.
+
 ## Deliberately disabled hosted email — 15 November 2026
 
 A deployment can explicitly choose MAIL_PROVIDER=none on rer 0.2.118 without

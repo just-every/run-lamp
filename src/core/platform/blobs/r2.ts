@@ -2,6 +2,7 @@ import type { BlobStore } from "./store";
 
 export function createR2BlobStore(bucket: R2Bucket): BlobStore {
   return {
+    async has(key) { return (await bucket.head(key)) !== null; },
     async getText(key) {
       const object = await bucket.get(key);
       if (!object) return null;
