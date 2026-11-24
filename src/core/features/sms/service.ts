@@ -9,10 +9,16 @@ import { validateSmsPhone } from "./phone";
 import { assertSmsWithinTwoSegments, renderSmsMessage } from "./message";
 import { sendTwilio,twilioConfigured,type TwilioConfig } from "./twilio";
 
-export function createSmsService(db:D1Database,options:TwilioConfig & {tokenSecret?:string;effectsPaused?:boolean;unavailable?:string|null;pageName:()=>Promise<string>;supportContact:()=>Promise<string|undefined>;publicOrigin:()=>Promise<string>}) {
+type SmsSubscriberConfiguration = TwilioConfig & { tokenSecret?: string; effectsPaused?: boolean; unavailable?: string | null };
+
+export function smsSubscriberConfigured(options: SmsSubscriberConfiguration) {
+  return twilioConfigured(options) && Boolean(options.tokenSecret) && !options.effectsPaused && !options.unavailable;
+}
+
+export function createSmsService(db:D1Database,options:SmsSubscriberConfiguration & {pageName:()=>Promise<string>;supportContact:()=>Promise<string|undefined>;publicOrigin:()=>Promise<string>}) {
   const repository=createSmsRepository(db),subscribers=createSubscriberRepository(db);
   const tokens=options.tokenSecret?new SubscriberTokenCodec(options.tokenSecret):null;
-  const configured=()=>twilioConfigured(options)&&Boolean(tokens)&&!options.effectsPaused&&!options.unavailable;
+  const configured=()=>smsSubscriberConfigured(options);
   function ensureConfigured() { if(!configured())throw new Error("SMS sending is not configured. Ask the owner to configure Twilio."); }
   async function settings() {
     const value=await repository.settings();

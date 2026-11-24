@@ -4,7 +4,7 @@ import { themeSchema } from "../../shared/page-theme";
 import { themeChrome } from "./theme-rendering";
 import { publicMetricsSection } from "../metrics/public-chart";
 import { renderMaintenanceCalendar } from "./maintenance-calendar";
-import { renderPreferenceFields } from "../subscribers/preferences";
+import { subscriptionMarkup } from "./subscription-markup";
 import { PRELAUNCH_ROBOTS_KEY, PRELAUNCH_ROBOTS_TXT } from "../prelaunch/policy";
 import { incidentFollowMarkup } from "../subscribers/incident-follow-markup";
 import { publicMasthead } from "./page-chrome";
@@ -100,7 +100,7 @@ function toPublicModel(source: PublicSnapshotSource, generatedAt: string, polici
   const maintenance = source.maintenance
     .map((item) => ({ ...item, components: attachedByMaintenance.get(item.id) ?? [], notices: noticesByMaintenance.get(item.id) ?? [], importedUpdates: (source.importedMaintenanceUpdates ?? []).filter(update => update.maintenanceId === item.id) }))
     .filter((item) => source.protectedPage || attachedMaintenanceIds.has(item.id)) satisfies PublicMaintenance[];
-  return { bounded: source.bounded, archive: source.archive, theme, prelaunch: source.prelaunch === true, emailEnabled: source.emailEnabled !== false, incidentIncludeReport:source.incidentIncludeReport===true, smsEnabled: source.smsEnabled ?? false, slackEnabled: source.slackEnabled ?? false, teamsEnabled: source.teamsEnabled ?? false, metrics: source.metrics ?? [], websiteUrl: source.websiteUrl, origin: source.publicOrigin ?? `https://${source.settings.hostname}`, settings: source.settings, components, visibleComponents, incidents, maintenance, generatedAt, policies, overall: policies.pageStatusRollup([...components.map((component) => component.state), ...(source.dependencies ?? []).filter(row => row.mode === "rollup" && row.state !== null).map(row => row.state!)]) };
+  return { bounded: source.bounded, archive: source.archive, theme, prelaunch: source.prelaunch === true, subscriptionChannels: source.subscriptionChannels, incidentIncludeReport: source.incidentIncludeReport === true, metrics: source.metrics ?? [], websiteUrl: source.websiteUrl, origin: source.publicOrigin ?? `https://${source.settings.hostname}`, settings: source.settings, components, visibleComponents, incidents, maintenance, generatedAt, policies, overall: policies.pageStatusRollup([...components.map((component) => component.state), ...(source.dependencies ?? []).filter(row => row.mode === "rollup" && row.state !== null).map(row => row.state!)]) };
 }
 
 export type PublicSnapshotModel = ReturnType<typeof toPublicModel>;
@@ -165,19 +165,6 @@ function componentHealthMarkup(model: ReturnType<typeof toPublicModel>) {
   return `<section class="component-health" aria-labelledby="components-title"><header class="section-heading"><h2 id="components-title">Components</h2><p>Uptime over the last ${model.theme.historyDays} days</p></header><div class="availability-charts">${charts}</div>${since}<div class="availability-foot"><aside class="availability-legend" aria-label="Availability legend"><span><i class="legend-good"></i>Available</span><span><i class="legend-degraded"></i>Degraded</span><span><i class="legend-downtime"></i>Downtime</span><span><i class="legend-no-data"></i>No data</span></aside><details class="availability-method"><summary>How availability is calculated</summary>${method}</details></div></section>`;
 }
 
-// Native disclosures keep all subscription choices usable without script (PAGE-002).
-function subscriptionMarkup(model: PublicSnapshotModel) {
-  const components = model.visibleComponents;
-  const choices = groupComponentsByHeading(components).flatMap(([, values]) => values).map((component) => `<label><input type="checkbox" name="componentId" value="${escapeHtml(component.id)}"> ${escapeHtml(component.name)}</label>`).join("");
-  const picker = choices ? `<details class="subscribe-components"><summary>Choose components</summary><fieldset><legend>Send me updates only about</legend><p>Leave every box clear to follow every component, including ones added later.</p>${choices}</fieldset></details>` : "";
-  const preferences = () => `<details class="subscribe-components"><summary>Choose updates</summary>${renderPreferenceFields()}</details>`;
-  const email = model.emailEnabled ? `<form method="post" action="/subscribe"><label for="email">Email address</label><div class="subscribe-row"><input id="email" name="email" type="email" autocomplete="email" required><button type="submit">Subscribe</button></div>${picker}${preferences()}</form>` : "<p>Email subscriptions are unavailable for this installation.</p>";
-  const slack = model.slackEnabled ? `<details class="subscribe-channel"><summary>Get updates in Slack</summary><form method="post" action="/subscribe/slack">${picker}${preferences()}<button type="submit">Get updates in Slack</button></form></details>` : "";
-  const sms = model.smsEnabled ? `<details class="subscribe-channel"><summary>Get updates by SMS</summary><form method="post" action="/subscribe/sms"><label for="sms-phone">Mobile number</label><input id="sms-phone" name="phone" type="tel" autocomplete="tel" placeholder="+12025550100" required>${picker}${preferences()}<button type="submit">Send opt-in text</button></form></details>` : "";
-  const teams = model.teamsEnabled ? `<details class="subscribe-channel"><summary>Get updates in Teams</summary><form method="post" action="/subscribe/teams"><p><a href="/subscribe/teams/guide">Create a Teams Workflows webhook</a> before pasting its URL.</p><label for="teams-url">Teams Workflows webhook URL</label><input id="teams-url" name="url" type="url" autocomplete="off" required>${picker}${preferences()}<button type="submit">Send verification card</button></form></details>` : "";
-  return `<section id="subscribe" class="subscribe" aria-labelledby="subscribe-title"><div class="subscribe-copy"><h2 id="subscribe-title">Subscribe to status updates</h2><p>Choose how to receive future updates.</p></div><div class="subscribe-options">${email}${sms}${slack}${teams}</div></section>`;
-}
-
 function timelineEntry(kind: "incident" | "maintenance" | "resolved", body: string) {
   return `<div class="timeline-entry timeline-${kind}">${body}</div>`;
 }
@@ -219,6 +206,7 @@ function renderPage(model: ReturnType<typeof toPublicModel>, slots: LampServerSl
     slot: (id) => slotMarkup(slots, id, model),
     incidentSlot: (incident) => incidentSlotMarkup(slots, incident, model),
     footerResources: footerResources(model),
+    otherSubscriptions: subscriptionMarkup(model, false),
   });
   const { settings, incidents, overall, generatedAt } = model;
   const newest = incidents.filter((incident) => incident.lifecycle !== "Resolved").flatMap((incident) => incident.updates.map((update) => ({ incident, update }))).sort((left, right) => right.update.publishedAt.localeCompare(left.update.publishedAt))[0];
@@ -226,7 +214,7 @@ function renderPage(model: ReturnType<typeof toPublicModel>, slots: LampServerSl
   const status = `<section class="status-banner ${stateClass(overall)}" aria-labelledby="overall-status"><div id="status-live" role="status" aria-live="polite" aria-atomic="true"><div class="status-summary">${publicIcon(statusIcon, "overall-status-icon")}<div><p class="eyebrow">Current status</p><h1 id="overall-status" data-overall>${escapeHtml(componentStateLabel(overall))}</h1></div></div><p class="status-live-update" data-newest-update>${escapeHtml(newest ? updateSummary(newest.incident, newest.update) : "There are no open incidents.")}</p></div><p class="status-generated" data-generated-at>Updated ${timestamp(generatedAt, settings.timezone)}.</p><div data-generation-details>${timestampDetails(settings.timezone, ["Updated", generatedAt])}</div></section>`;
   const pageTitle = /\bstatus\s*$/i.test(settings.pageName.trim()) ? settings.pageName : `${settings.pageName} status`;
   const timeline = timelineMarkup(model, slots);
-  return pageShell(pageTitle, `${status}${timeline.active}${componentHealthMarkup(model)}<div class="component-extension">${slotMarkup(slots, "status-page.components.after.v1", model)}</div>${timeline.rest}${model.prelaunch ? "" : subscriptionMarkup(model)}`, model, slots, "root");
+  return pageShell(pageTitle, `${status}${timeline.active}${componentHealthMarkup(model)}<div class="component-extension">${slotMarkup(slots, "status-page.components.after.v1", model)}</div>${timeline.rest}${subscriptionMarkup(model)}`, model, slots, "root");
 }
 
 function renderIncidentPage(incident: PublicIncident, model: ReturnType<typeof toPublicModel>, slots: LampServerSlots) {
@@ -236,7 +224,7 @@ function renderIncidentPage(incident: PublicIncident, model: ReturnType<typeof t
   const resolved = incident.lifecycle === "Resolved" && incident.resolvedAt
     ? `<p class="incident-resolution">${resolutionUpdateCarriesTime ? "" : `Resolved at ${timestamp(incident.resolvedAt, timezone)}. `}Duration: ${escapeHtml(durationText(incident.openedAt, incident.resolvedAt))}</p>`
     : "";
-  const content = `<div class="incident-document"><div class="incident-document-main">${incidentMarkup(incident, timezone, undefined, "Incident", "h1")}${resolved ? `<section class="about"><h2>About this incident</h2>${resolved}</section>` : ""}${report}${model.prelaunch ? "" : incidentFollowMarkup(incident, model.smsEnabled,model.incidentIncludeReport)}</div><aside class="incident-summary" aria-label="Incident status"><p class="eyebrow">Incident status</p><h2 class="summary-state">${statePill(incident.lifecycle)}</h2><dl><div><dt>Opened</dt><dd>${timestamp(incident.openedAt, timezone)}</dd></div><div><dt>Updates</dt><dd>${incident.updates.length}</dd></div></dl>${timestampDetails(timezone, ["Opened", incident.openedAt], ...(incident.resolvedAt ? [["Resolved", incident.resolvedAt] as [string, string]] : []))}<a class="text-link" href="/">Current status</a></aside></div>`;
+  const content = `<div class="incident-document"><div class="incident-document-main">${incidentMarkup(incident, timezone, undefined, "Incident", "h1")}${resolved ? `<section class="about"><h2>About this incident</h2>${resolved}</section>` : ""}${report}${model.prelaunch ? "" : incidentFollowMarkup(incident, model.subscriptionChannels, model.incidentIncludeReport)}</div><aside class="incident-summary" aria-label="Incident status"><p class="eyebrow">Incident status</p><h2 class="summary-state">${statePill(incident.lifecycle)}</h2><dl><div><dt>Opened</dt><dd>${timestamp(incident.openedAt, timezone)}</dd></div><div><dt>Updates</dt><dd>${incident.updates.length}</dd></div></dl>${timestampDetails(timezone, ["Opened", incident.openedAt], ...(incident.resolvedAt ? [["Resolved", incident.resolvedAt] as [string, string]] : []))}<a class="text-link" href="/">Current status</a></aside></div>`;
   return pageShell(`${incident.title} · ${model.settings.pageName}`, content, model, slots, "other");
 }
 

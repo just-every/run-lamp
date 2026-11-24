@@ -101,6 +101,14 @@ publication immutability, lifecycle rules and ordering remain unchanged.
 Publishing closes the consumed correction chooser while keeping other open
 update panels available to review the next draft’s choices.
 
+## Public subscription availability — 24 November 2026
+
+Lamp publishes subscription availability with the public snapshot. The landing
+layouts and incident permalinks use the same sender and SMS configuration to
+offer subscriptions visitors can confirm. Incident webhook signup requires
+confirmation email and a configured webhook sender. The incident's report
+choice accompanies each available incident channel.
+
 ## Notification provider guidance — 12 November 2026
 
 Settings → Notifications reports the composed sender's actual configuration and

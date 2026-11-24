@@ -5,12 +5,11 @@ import { createDependenciesService } from "../features/dependencies/service";
 import { createRuleWorkRepository } from "../features/intake/rule-work.repository";
 import { createAlertRuleRepository } from "../features/intake/rule-repository";
 import { createAlertRuleService } from "../features/intake/rule-service";
-import { twilioConfigured } from "../features/sms/twilio";
 import { createSocialService } from "../features/social/service";
 import { createTrafficStorage } from "../features/traffic-alerts/storage";
 import { createTrafficIncidentRepository } from "../features/traffic-alerts/repository";
 import { createTrafficAlerts } from "../features/traffic-alerts/service";
-import { createSmsService } from "../features/sms/service";
+import { createSmsService, smsSubscriberConfigured } from "../features/sms/service";
 import { createMetricsService } from "../features/metrics/service";
 import { createTeamsSubscriptionsService } from "../features/subscribers/teams-subscriptions";
 import { createPromiseDraftRepository } from "../features/incidents/promise-draft.repository";
@@ -72,10 +71,21 @@ export function createAppServices(bindings: AppBindings, blobs: BlobStore, execu
       : null,
   };
   const snapshotOrigin = bindings.LAMP_LOCAL_ORIGIN ? publicPageOrigin(bindings.LAMP_LOCAL_ORIGIN, bindings.LAMP_PAGE_HOST) : undefined;
-  const primarySnapshot = createPublicSnapshotService(createSnapshotRepository(bindings.DB, snapshotOrigin, twilioConfigured({accountSid:bindings.TWILIO_ACCOUNT_SID,authToken:bindings.TWILIO_AUTH_TOKEN,fromNumber:bindings.TWILIO_FROM_NUMBER,messagingService:bindings.TWILIO_MESSAGING_SERVICE}) && Boolean(bindings.SUBSCRIBER_TOKEN_SECRET) && bindings.EFFECTS_PAUSED !== "1" && !outboundUnavailable(bindings,"SMS messages"), {
+  const smsConfiguration = {
+    accountSid: bindings.TWILIO_ACCOUNT_SID, authToken: bindings.TWILIO_AUTH_TOKEN,
+    fromNumber: bindings.TWILIO_FROM_NUMBER, messagingService: bindings.TWILIO_MESSAGING_SERVICE,
+    tokenSecret: bindings.SUBSCRIBER_TOKEN_SECRET, effectsPaused: bindings.EFFECTS_PAUSED === "1",
+    unavailable: outboundUnavailable(bindings, "SMS messages"),
+  };
+  const webhookSecrets = bindings.WEBHOOK_SIGNING_SECRET?.split(",").map(secret => secret.trim()).filter(Boolean);
+  const primarySnapshot = createPublicSnapshotService(createSnapshotRepository(bindings.DB, snapshotOrigin, {
+    email: mail.configured && Boolean(bindings.SUBSCRIBER_TOKEN_SECRET),
+    mailFromAddress: bindings.MAIL_FROM_ADDRESS,
+    sms: smsSubscriberConfigured(smsConfiguration),
+    webhook: Boolean(webhookSecrets?.length) && bindings.EFFECTS_PAUSED !== "1",
     slack: Boolean(bindings.SLACK_CLIENT_ID && bindings.SLACK_CLIENT_SECRET && bindings.SLACK_SIGNING_SECRET && bindings.WEBHOOK_SIGNING_SECRET && bindings.SUBSCRIBER_TOKEN_SECRET) && !outboundUnavailable(bindings, "Slack subscriptions"),
     teams: Boolean(bindings.WEBHOOK_SIGNING_SECRET && bindings.SUBSCRIBER_TOKEN_SECRET) && !outboundUnavailable(bindings, "Teams subscriptions"),
-  }, bindings.MAIL_PROVIDER !== "none"), blobs, extensions.publicSnapshotPolicies, extensions.publicSnapshotEvents, extensions.slots, createRetainedSnapshotCache(bindings), runningReleaseIdentity(bindings));
+  }), blobs, extensions.publicSnapshotPolicies, extensions.publicSnapshotEvents, extensions.slots, createRetainedSnapshotCache(bindings), runningReleaseIdentity(bindings));
   const statusPages = createStatusPageRepository(bindings.DB);
   const scopedSnapshots = createScopedSnapshots(bindings, blobs, statusPages, extensions.publicSnapshotPolicies);
   const publicSnapshots = {
@@ -139,15 +149,14 @@ export function createAppServices(bindings: AppBindings, blobs: BlobStore, execu
     emailBranding: async () => { const settings = await pageSettings.get(); if (!settings) throw new Error("Page settings are not configured."); return { branding: settings.emailBranding, hasLogo: Boolean(settings.logoKey) }; },
     fromAddress: configuredFromAddress,
     subscriberTokenSecret: bindings.SUBSCRIBER_TOKEN_SECRET,
-    webhookSigningSecret: bindings.WEBHOOK_SIGNING_SECRET?.split(",").map((secret) => secret.trim()).filter(Boolean),
+    webhookSigningSecret: webhookSecrets,
     events: {
       subscriberDeactivated: extensions.events.subscriberDeactivated,
       notificationFailed: extensions.events.notificationFailed,
     },
   });
   const sms = createSmsService(bindings.DB, {
-    accountSid:bindings.TWILIO_ACCOUNT_SID,authToken:bindings.TWILIO_AUTH_TOKEN,fromNumber:bindings.TWILIO_FROM_NUMBER,messagingService:bindings.TWILIO_MESSAGING_SERVICE,
-    tokenSecret:bindings.SUBSCRIBER_TOKEN_SECRET,effectsPaused:bindings.EFFECTS_PAUSED === "1",unavailable:outboundUnavailable(bindings,"SMS messages"),
+    ...smsConfiguration,
     pageName:configuredPageName,supportContact:configuredFromAddress,publicOrigin:()=>notificationOrigin(bindings),
   });
   const social = createSocialService(bindings.DB, {

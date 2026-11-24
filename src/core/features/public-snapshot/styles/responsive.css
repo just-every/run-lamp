@@ -1,7 +1,6 @@
 @media (max-width: 900px) {
   .incident-document { grid-template-columns: minmax(0, 1fr); }
   .incident-summary { position: static; }
-  .subscribe { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 640px) {
   .page { padding: 0 16px 32px; }
@@ -18,7 +17,7 @@
   .overall-status-icon svg { width: 26px; height: 26px; }
   .status-summary h1 { font-size: 26px; }
   .status-live-update { margin-top: 18px; padding-top: 14px; }
-  .component-health, .history-timeline, .subscribe { margin-top: 44px; }
+  .component-health, .history-timeline { margin-top: 44px; }
   .component-group { padding: 0 16px; }
   .component-group > h3 { margin-inline: -16px; padding-inline: 16px; }
   .component { padding: 16px 0; gap: 12px; }
@@ -31,10 +30,6 @@
   .updates { margin-left: 3px; padding-left: 18px; }
   .update::before { left: -25px; }
   .update dl, .report dl { grid-template-columns: minmax(0, 1fr); gap: 10px; }
-  .subscribe { padding: 24px 20px; }
-  .subscribe-row { flex-direction: column; }
-  .subscribe input { font-size: 16px; }
-  .subscribe button { width: 100%; }
   .history-intro h1, .not-found h1 { font-size: 26px; }
   .history-item, .incident-document-main > .incident, .about, .report, .incident-summary { padding: 20px 18px; }
   .incident-document-main > .incident .record-title h1 { font-size: 23px; }

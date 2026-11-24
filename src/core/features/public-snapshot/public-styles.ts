@@ -1,3 +1,4 @@
+import subscriptionSource from "./styles/subscription.css?raw";
 import type { PageTheme } from "../../shared/page-theme";
 import { themeStyles } from "./theme-rendering";
 import foundationSource from "./styles/foundation.css?raw";
@@ -12,5 +13,5 @@ import { accentInk } from "../../shared/accent-ink";
 /** The public page's stylesheet: the business's accent substituted into Lamp's warm, quiet public design. */
 export function publicStyles(accentColor: string, theme?: PageTheme, origin?: string) {
   const foundation = foundationSource.replace("__LAMP_ACCENT_COLOR__", accentColor).replace("__LAMP_ACCENT_INK__", accentInk(accentColor));
-  return `${localPublicPageFonts}${foundation}${statusSource}${componentsSource}${recordSource}${documentsSource}${responsiveSource}${theme ? themeStyles(theme, origin!) : ""}`;
+  return `${localPublicPageFonts}${foundation}${statusSource}${componentsSource}${recordSource}${subscriptionSource}${documentsSource}${responsiveSource}${theme ? themeStyles(theme, origin!) : ""}`;
 }

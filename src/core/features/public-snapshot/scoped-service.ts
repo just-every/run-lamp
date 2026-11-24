@@ -33,7 +33,7 @@ export function createScopedSnapshots(
 ) {
   function forPage(path: string) {
     const origin = new URL(statusPagePrefix(path), authOrigin(bindings)).href;
-    const repository = createSnapshotRepository(bindings.DB, origin, false, undefined, false, { path, pages });
+    const repository = createSnapshotRepository(bindings.DB, origin, undefined, { path, pages });
     return createPublicSnapshotService(repository, withinPage(blobs, path), policies, undefined, {},
       createRetainedSnapshotCache(bindings, "status-page:" + path), runningReleaseIdentity(bindings), true);
   }

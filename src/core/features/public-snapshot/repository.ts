@@ -1,3 +1,4 @@
+import { noPublicSubscriptionChannels, type PublicSubscriptionChannels } from "../subscribers/public-subscription-channels";
 import { loadArchiveSource, publicIncident, publicMaintenance, scopedRecord } from "./archive.repository";
 import { projectImportedIncidentUpdates } from "../statuspage-import/imported-update.repository";
 import type { createStatusPageRepository } from "../page-settings/status-page.repository";
@@ -52,10 +53,7 @@ export interface PublicSnapshotSource {
   archive?: import("./archive").ArchivePage;
   bounded?: boolean;
   dependencies?: Awaited<ReturnType<ReturnType<typeof createDependencyRepository>["publicRows"]>>;
-  emailEnabled?: boolean;
-  smsEnabled?: boolean;
-  slackEnabled?: boolean;
-  teamsEnabled?: boolean;
+  subscriptionChannels: PublicSubscriptionChannels;
   incidentIncludeReport?:boolean;
   /** Pre-launch: the page offers no way to subscribe and asks search engines to stay away. Set by the service from the owner setting. */
   prelaunch?: boolean;
@@ -97,7 +95,18 @@ export interface PublicSnapshotSource {
   maintenanceNotices: Array<{ id: string; maintenanceId: string; kind: string; body: string; publishedAt: string }>;
 }
 
-export function createSnapshotRepository(binding: D1Database, publicOrigin?: string, smsEnabled = false, chat: { slack: boolean; teams: boolean } = { slack: false, teams: false }, emailEnabled = true, scope?: { path: string; pages: ReturnType<typeof createStatusPageRepository> }): SnapshotRepository {
+export function createSnapshotRepository(
+  binding: D1Database,
+  publicOrigin?: string,
+  configuration: PublicSubscriptionChannels & { mailFromAddress?: string } = noPublicSubscriptionChannels,
+  scope?: { path: string; pages: ReturnType<typeof createStatusPageRepository> },
+): SnapshotRepository {
+  const { mailFromAddress, ...channels } = configuration;
+  function subscriptionChannels(settings: PublicSnapshotSource["settings"]): PublicSubscriptionChannels {
+    const email = channels.email && Boolean(settings.mailFromAddress ?? mailFromAddress);
+    // Webhook deliveries still require the subscriber to confirm by email.
+    return { ...channels, email, webhook: email && channels.webhook };
+  }
   const database = createDatabase(binding);
   const path = scope?.path ?? "public";
   // The global revision watches shared component and record source mutations.
@@ -112,7 +121,7 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
   }
 
   return {
-    sourceConfiguration: JSON.stringify([publicOrigin, smsEnabled, chat.slack, chat.teams, emailEnabled]),
+    sourceConfiguration: JSON.stringify([publicOrigin, channels, Boolean(mailFromAddress)]),
     async load() {
       const settings = await database.select().from(pageSettings).where(eq(pageSettings.id, "default")).get();
       if (!settings) return null;
@@ -231,10 +240,7 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
         bounded: true,
         protectedPage: scope?.path,
         websiteUrl: website?.url ?? null,
-        emailEnabled,
-        smsEnabled,
-        slackEnabled: chat.slack,
-        teamsEnabled: chat.teams,
+        subscriptionChannels: subscriptionChannels(settings),
         incidentIncludeReport:(await createIncidentFollowSettingsRepository(binding).get()).includeReport,
         publicOrigin,
         publicApiIds, incidentImpacts: Object.fromEntries(incidentRowsWithImpact.flatMap(({ id, peakImpact }) => peakImpact === null ? [] : [[id, peakImpact]])),
@@ -255,7 +261,11 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
         maintenanceNotices, importedMaintenanceUpdates, metrics: scope ? [] : await createMetricsRepository(binding).publicSeries(),
       };
     },
-    loadArchive: (context, key, generatedAt) => loadArchiveSource(binding, context, key, generatedAt),
+    loadArchive: (context, key, generatedAt) => loadArchiveSource(binding, {
+      ...context,
+      // A retained generation from an older release did not store channel availability.
+      subscriptionChannels: context.subscriptionChannels ?? subscriptionChannels(context.settings),
+    }, key, generatedAt),
     async startBuild(input) {
       await database.insert(snapshotBuilds).values({ ...input, pagePath: path });
     },

@@ -659,6 +659,11 @@ test('Mail-off keeps email unavailable, operator alerts pending and status work 
     const html = await publicPage.text(); assert.ok(html.includes(incident.title) && html.includes(maintenance.title));
     assert.doesNotMatch(html, /<form\b[^>]*action=["']\/subscribe["']/i, 'a deliberately mail-off page offers no email subscription form');
     assert.match(html, /Email subscriptions are unavailable/i);
+    const permalink = await raw(`${pageOrigin}/incidents/${incident.reference}`);
+    assert.equal(permalink.status, 200);
+    const incidentHtml = await permalink.text();
+    assert.ok(incidentHtml.includes(incident.title));
+    assert.doesNotMatch(incidentHtml, /<form\b[^>]*action="\/subscribe\/incident"/i, 'an incident permalink offers no unusable email, webhook or SMS signup');
     const live = (await (await call('/api/app/overview/live')).json()).live;
     assert.equal(live.sender.state, 'off', 'deliberately disabled email is not a sender failure');
     assert.equal(live.sender.checkedAt, null, 'mail-off needs no provider verification');
