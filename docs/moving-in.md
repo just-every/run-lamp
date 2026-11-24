@@ -299,7 +299,9 @@ with a hidden prompt or private key file. Lamp uses the key for GET requests onl
 and never stores it. Only move material intended to be public and unrestricted.
 Source visibility, audience rules and private-page access do not transfer.
 
-Sorry shows a parent row once, as its children's group, so a page of 16 component rows arrives as 14 components + 2 groups; the dry run and the receipt state that count, name the rows shown as groups, and warn only about rows that are genuinely not carried.
+Sorry shows a parent row once, as its children's group, so a page of 16 component rows arrives as 14 components + 2 groups; the dry run and the receipt state that count, name the rows shown as groups, and warn only about rows that are genuinely not carried. Lamp lists ungrouped components after every group, so an
+ungrouped Sorry component that sits before a group in Sorry's order moves to **Other services** after the groups; the field
+ledger marks it **Changed**.
 
 ### Review every supplied field
 

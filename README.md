@@ -166,7 +166,12 @@ from the deploying checkout with the default `lamp-<environment>` resource prefi
 It prints a private, single-use link without sending email; see
 [terminal sign-in](docs/operators-and-sign-in.md#terminal-entry-for-the-hosted-owner)
 for custom prefixes and other prerequisites.
-To retire an installation, see the [removal command and record limits](docs/deploy.md#remove-an-installation).
+To retire an installation, run this from the Lamp folder that deployed it, with the same environment and input file
+(it needs Node 22 or later on your PATH; the [removal guide](docs/deploy.md#remove-an-installation) gives the record limits):
+
+```sh
+node scripts/remove-deployment.mjs --environment production --env-file "$HOME/.config/lamp/production.env" --yes
+```
 
 Before `~/.local/bin/rer verify`, stop the active development server or production preview
 with the corresponding command above. A passing source verifier does not

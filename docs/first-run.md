@@ -14,10 +14,29 @@ need the page's API key; move them in later from Settings → Move in.
 Lamp reads only public addresses, follows at most five redirects, and runs
 nothing from the site. Settings → Page can read the site again later.
 
+The first-run card has two ways in. **Read website** fills the card from your
+site. **Skip, I'll fill it in** (shown only before a website has been read or skipped) opens the
+same card empty: fill in the page name, tagline, accent colour and components.
+Either way, finish with the button at the bottom: **Open Lamp** after Skip, and
+**Looks right, open Lamp** after a website was read.
+
 Before you share the address, decide whether the page is ready for readers: while
 it is not, turn on [Pre-launch](subscribers-and-notifications.md#before-you-launch)
 in Settings → Notifications. It hides every subscribe form, refuses subscriptions
 and asks search engines to stay away until you turn it off.
+
+## Set-up order and first check
+
+The public page shows the company's components, so set Lamp up after the tools
+whose components it shows, and keep one component for each of them. Lamp does not
+probe services: a component's state comes from an operator or from a monitoring
+tool you connect in Settings → Connected tools
+([alerts](alerts-from-monitoring-tools.md)), which you can do once Lamp is up.
+
+Lamp's first check is the page itself. Open the public page address in a
+signed-out window: it shows the overall status and a Components section with
+every component you did not hide. A page with no visible components has no
+Components section at all, so a missing section means no component is visible.
 
 ## Nothing else to set up
 

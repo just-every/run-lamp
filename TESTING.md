@@ -8,6 +8,10 @@ pnpm verify
 
 It runs TypeScript checking, syntax checks, release and manifest validation, real local Vite/Cloudflare Start Worker journeys, export/import round-trip, a compiled generated Start Worker exercise, a production Vite build, and built-client namespace checks. It deliberately fails while any `CONTRACT.md` clause lacks a meaningful tagged behavior test.
 
+Lamp's test suites bind system-chosen loopback ports (port 0, through `reservePort` in
+`tests/e2e/worker-startup.mjs`, which retries a collision), never fixed ones. They need no
+particular port free and can run beside `rer dev` or another checkout.
+
 Install the pinned browser once before running the browser journeys locally:
 
 ```sh

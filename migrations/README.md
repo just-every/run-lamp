@@ -8,7 +8,10 @@ does not rename or recreate that ledger or rewrite applied SQL.
 Preserve applied filenames and bytes. Add new migrations for later schema work;
 a failed migration stops the command and can be corrected while still unapplied.
 Existing core and owner data and previously applied entries remain in place.
-The current directory is a convenience, not an ownership restriction.
+Company migrations go in `migrations/ext/` (it does not exist until you add one), never in the
+numbered `migrations/core/` list. No code refuses a file in `migrations/core/`, but its numbers
+belong to Lamp's releases: each release's `RELEASE.json` names the files it adds, and applied
+core files must stay byte-identical, so an update would have to merge around yours.
 
 Lamp's existing archive manifest validates owner migration filenames and hashes.
 Restore still requires the archive's matching migration inventory and an empty

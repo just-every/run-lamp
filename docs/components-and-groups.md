@@ -21,7 +21,11 @@ organize those services on the public page.
 5. In **History**, review state changes, or open **Correct a past period** to
    record a correction with its reason.
 
-Group order and component order are reflected on the public page. Deleting a
+Group order and component order are reflected on the public page. Components
+without a group list after every group, under the heading **Other services**
+(the heading appears only beside named groups; a page with no groups lists its
+components with none), and the operator's component list shows them last, under
+**Ungrouped**. Deleting a
 component removes its public state history and uptime, while published incident
 and maintenance updates keep its recorded name.
 

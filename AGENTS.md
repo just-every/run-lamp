@@ -46,6 +46,19 @@ build jobs must never receive production environment secrets.
 
 Live check: `GET <url>/health` returns 200. Public surfaces are at `deploy.publicPaths` in `seed.json`.
 
+First-run card: choose **Skip, I'll fill it in** (or **Read website**), then **Open Lamp**
+(**Looks right, open Lamp** after a website was read).
+
+Set-up order and first check: the public page shows the company's components, so set Lamp up after
+the tools whose components it shows. Its first check is the public page address in a signed-out
+window: it lists every visible component with its state (a page with none has no Components
+section). Components without a group list after every group, under **Other services**. The
+[first-run guide](docs/first-run.md#set-up-order-and-first-check) has the detail.
+
+Roles: an invitation gives the role chosen in Settings → Operators (default Communicator). Before
+1.11.23 every invitee of an Owner became an Owner; lower the role in Settings → Operators after
+their first sign-in on an installation older than that.
+
 If anything is missing the tooling names it. Do not substitute services or invent config.
 
 ## Ownership
@@ -53,7 +66,7 @@ If anything is missing the tooling names it. Do not substitute services or inven
 All tracked application source, integration, recipe, tests and deployment definitions
 belong to this edition. `src/core/` and `src/ext/` retain useful integration conventions;
 they are not ownership restrictions. Edit any source needed to preserve the owner's
-requirements. Preserve already-applied migration history; new migrations may change core schema. `edition.json` selects source,
+requirements. Preserve already-applied migration history; new company migrations (in `migrations/ext/`) may change core schema. `edition.json` selects source,
 `sources.lock.json` records comparison origins, and `AUTHORING.md` describes local
 build and source publication. No build replaces this instruction file or local edits.
 
@@ -67,7 +80,7 @@ Use configuration and extensions when they save work. Direct core, schema, UI or
 |---|---|
 | Use the unified import door | Built for Statuspage, Sorry, Better Stack and Instatus: owner opt-in (or Business first-owner-claim healing), permanent key revocation, uploads, saved-response plan, reviewed silent apply with Business subscribers held, native reconcile, preserve-conflicts undo and bounded catch-up grants. See `docs/moving-in.md` and [the unified import-door implementation record](docs/contract/operations-details.md#unified-import-door--existing-implementation-status). `tests/e2e/sorry-import.test.mjs` covers the seeded lifecycle and catch-up; this is synthetic test-install proof, not real-export verification. |
 | Rename things, toggle features, change copy, branding | `src/ext/config.ts`; tokens in `src/core/app/theme` |
-| Add a field to a record | Use existing custom fields (`seed.json`), a sidecar table, or a new core schema migration as appropriate. |
+| Add a field to a record | Use existing custom fields (`seed.json`), a sidecar table, or a migration in `migrations/ext/` (it runs after core and may alter core tables). |
 | Add a page, route, nav entry, settings section, job, cron, queue consumer | `src/ext/local/<name>/`, registered from `index.server.ts` / `index.client.tsx` |
 | Add UI to an existing screen | Contribute to a slot. IDs in `seed.json`. |
 | Change a product decision (assignment, permissions, AI instructions) | Override the policy if one exists; otherwise edit the feature's `service.ts` |
@@ -77,6 +90,15 @@ Use configuration and extensions when they save work. Direct core, schema, UI or
 | Inbound webhook | Route in `server.ts` under `/api/ext/`. Idempotent. |
 | Redesign a core screen beyond what slots allow | Edit `src/core/features/<name>/ui/` |
 
+- Company migrations go in `migrations/ext/` (own ledger `lamp_ext_migrations`, run after core), never in the numbered
+  `migrations/core/` list, whose numbers belong to Lamp's releases ([`migrations/README.md`](migrations/README.md)).
+- The stored public page is rebuilt when a core `*_snapshot_dirty` trigger raises `public_snapshot_work.requested_revision`,
+  when the stored page's `PUBLIC_SNAPSHOT_RENDERER_VERSION` (`src/core/features/public-snapshot/service.ts`) is not the code's,
+  or when the running release identity (`RER_RELEASE_DIGEST`, else the Worker version id, where the host names it) is not the one
+  that built it. Since 1.11.35 timed refreshes reuse the saved snapshot inputs, so a change to how the page renders moves
+  `PUBLIC_SNAPSHOT_RENDERER_VERSION`, and a company table whose rows reach the public page needs triggers like the core's
+  (`migrations/core/0006_snapshot_build_ordering.sql`: `UPDATE public_snapshot_work SET requested_revision = requested_revision + 1
+  WHERE id = 'default'`) or its changes wait for another rebuild.
 - DB access only through a `repository.ts`. Never from a route or component.
 - Existing extensions import core via `src/core/api/` and `src/core/shared/`; adapt integration deliberately when changing that boundary.
 - New API operation: zod input, typed output, standard error format, test.
@@ -115,7 +137,8 @@ restart local work with `rer dev` after the command completes.
 rer verify
 ```
 
-Before saying anything is done. It runs the declared upstream behavior and baseline suites. It does not automatically discover `tests/local/`; the owner's agent runs those tests explicitly and checks every preserved requirement. For user-facing changes, also exercise the journey on `rer dev` or `rer preview`.
+Before saying anything is done. It runs the declared upstream behavior and baseline suites. It does not automatically discover `tests/local/`; the owner's agent runs those tests explicitly and checks every preserved requirement. For user-facing changes, also exercise the journey on `rer dev` or `rer preview`. The suites bind system-chosen ports, so
+they need no particular port free ([TESTING.md](TESTING.md)).
 
 ## Update
 
@@ -125,7 +148,9 @@ Resolve by answering: what did upstream intend, what does this installation inte
 
 ## Leave
 
-`rer export` and `rer import` move a local installation. For a deployed Cloudflare installation, use the technical archive and restore procedure in `OPERATIONS.md`; it documents the owner-side tooling and empty-target requirement. The owner may run this version without the marketplace; the terms are in `LICENSE`.
+`rer export` and `rer import` move a local installation. For a deployed Cloudflare installation, use the technical archive and restore procedure in `OPERATIONS.md`; it documents the owner-side tooling and empty-target requirement. To remove a deployed installation, run `node scripts/remove-deployment.mjs --environment production --env-file <input file> --yes`
+from the Lamp folder that deployed it, with Node 22 or later on the PATH ([removal guide](docs/deploy.md#remove-an-installation)).
+The owner may run this version without the marketplace; the terms are in `LICENSE`.
 
 ## Do not
 

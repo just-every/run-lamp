@@ -203,6 +203,9 @@ fresh link approval and starts with provider sign-in disabled.
 In Settings → Operators, choose a role before inviting someone. Communicator is
 the default: they can write and publish updates without managing settings or
 other operators. The form explains every role, and pending invitations show the
-chosen role. In Settings → Look, pick an accent colour or type a value such as
+chosen role. The invitee receives exactly that role. Releases before 1.11.23
+had no role choice: an Owner's invitation made every invitee an Owner, so on an
+installation older than that, lower the role in Settings → Operators after the
+invitee's first sign-in (or update first). In Settings → Look, pick an accent colour or type a value such as
 #1F3A5F; invalid text stays in the field with help, while the swatch keeps the
 saved colour until you correct it.
