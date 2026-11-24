@@ -55,7 +55,7 @@
     "test:delivery": "node --test --test-concurrency=1 tests/e2e/delivery-contract.test.mjs",
     "test:publishing": "node --test --test-concurrency=1 tests/e2e/publishing-contract.test.mjs tests/e2e/incident-brief.test.mjs tests/e2e/update-reminders.test.mjs",
     "test:public": "node --test --test-concurrency=1 tests/e2e/public-contract.test.mjs tests/e2e/snapshot-retained.test.mjs",
-    "test:runtime": "node --test --test-concurrency=1 tests/e2e/start-runtime.test.mjs tests/e2e/independent-release.test.mjs",
+    "test:runtime": "node --test --test-concurrency=1 tests/e2e/start-runtime.test.mjs tests/e2e/independent-release.test.mjs tests/e2e/scheduled-read-budget.test.mjs",
     "test:site": "node --test --test-concurrency=1 tests/lamp-site/browser.test.mjs tests/e2e/website-onboarding.test.mjs tests/e2e/site-reader-security.test.mjs",
     "test": "node scripts/verification/run.mjs",
     "test:baseline": "node scripts/baseline/run.mjs",

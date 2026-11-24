@@ -26,7 +26,7 @@ function sentLine(reach: ReachSummary) {
  * appears only once the server reports a send. */
 export function useIncidentReach(incidentId: string, updateIds: readonly string[]) {
   const path = `/api/app/incidents/${encodeURIComponent(incidentId)}/reach`;
-  const read = usePanelRead<IncidentReachResponse>(path, [...updateIds].sort().join(","));
+  const read = usePanelRead<IncidentReachResponse>(path, [...updateIds].sort().join(","), 15_000);
   return { ...read, path, line: read.data ? sentLine(read.data.incident) : null };
 }
 

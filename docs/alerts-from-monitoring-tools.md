@@ -200,6 +200,10 @@ Token authentication remains API-001's obligation. POST
 minute in epoch milliseconds. Each value is that minute's aggregate, and replacing
 a minute is idempotent. Only the last day's minute aggregates are accepted.
 
+A metric's first data, a reset to no data and a source going stale or resuming
+republish the page at once. Later points appear at the page's next five-minute
+refresh, so a feed pushed every minute never rebuilds the whole page each minute.
+
 Lamp keeps minute aggregates for one day, hourly aggregates for thirty days and
 daily aggregates for ninety days. Charts are inline SVG and readable without
 script. Missing minutes split the line; a stopped source states when it last

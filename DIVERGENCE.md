@@ -1,5 +1,22 @@
 # DIVERGENCE.md
 
+## Scheduled reads stay flat as history grows — 25 November 2026
+
+Every tool on a Workers Free account shares one daily D1 read allowance, so a
+minute Cron must not reread history. Each scheduled query reads only work that
+is still due through an index that matches it: unfinished alert rule work,
+chat and social posts whose delivery is not queued yet, and provider callbacks
+not yet applied. A callback no send of ours claims within fifteen minutes,
+such as another sender's on a shared provider account, leaves the minute sweep;
+recording its send later still applies it. Public metric charts read one stored
+series row per metric. A metric's first data, a reset or a stale change
+republishes the page at once; later points wait for the five-minute refresh.
+The communication performance card reads on view and on Refresh, not on a timer.
+`tests/e2e/scheduled-read-budget.test.mjs` holds scheduled runs under a
+ceiling and flat between one and thirty days of history.
+
+Strategy session (Claude Opus 5.5), 25 November 2026. Implements d1-reads-lamp.
+
 ## Incident publication waits for the selected reader generations
 
 The operator editor shows publishing progress between committing an update

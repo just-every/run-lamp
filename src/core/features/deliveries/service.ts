@@ -23,6 +23,8 @@ import { RETRY_DELAYS_MS } from "./retry-policy";
 const RESEND_IDEMPOTENCY_WINDOW_MS = 24 * 60 * 60 * 1000;
 const DELIVERY_CLAIM_MS = 5 * 60 * 1000;
 const PROVIDER_CALLBACK_CLAIM_MS = 5 * 60 * 1000;
+// Three callback leases: a callback no send of ours has claimed by then leaves the minute sweep.
+const UNMATCHED_PROVIDER_CALLBACK_MS = 3 * PROVIDER_CALLBACK_CLAIM_MS;
 
 type FrozenMailPayload = MailMessage & { frozenAt: string };
 
@@ -381,6 +383,7 @@ export function createDeliveriesService(
           await repository.retryOutbox(job.id, { attempts, availableAt: new Date(failoverAt===null?plannedAt:Math.min(plannedAt,failoverAt)).toISOString(), error: error instanceof Error ? error.message : "Notification dispatch failed.", now: nowIso(), failed: attempts > RETRY_DELAYS_MS.length && failoverAt===null });
         }
       }
+      await repository.setAsideUnmatchedProviderEvents(new Date(Date.now() - UNMATCHED_PROVIDER_CALLBACK_MS).toISOString(), nowIso());
       for (const providerMessageId of await repository.listPendingProviderMessageIds(limit)) {
         await applyPendingProviderEvents(providerMessageId);
       }

@@ -309,8 +309,9 @@ In **Settings → Reports**, use **Communication performance** to choose the cal
 in the page's configured timezone. The cohort contains incidents opened from
 the first instant of that local month, inclusive, to the next month's first
 instant, exclusive. Their later publications and current delivery outcomes stay
-with that opening month. Expand an incident for its individual figures, or open
-its communication panel. The CSV includes raw counts, known timing totals,
+with that opening month. The card reads its month when it comes into view and
+when you choose **Refresh performance**; it does not poll. Expand an incident
+for its individual figures, or open its communication panel. The CSV includes raw counts, known timing totals,
 averages, timezone and measurement time.
 
 Alert-to-first-update latency starts at the first accepted alert receipt. A

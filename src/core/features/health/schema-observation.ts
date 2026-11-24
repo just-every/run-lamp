@@ -15,7 +15,9 @@ export interface SchemaObservation {
 
 const ROW_LIMIT = 2048;
 const READ_TIMEOUT_MS = 500;
-const OBSERVATION_TTL_MS = 5 * 60_000;
+// A release applies its migrations before its Worker starts, so new isolates
+// observe them at once; an hour keeps probes from rereading the ledger.
+const OBSERVATION_TTL_MS = 60 * 60_000;
 const observations = new WeakMap<D1Database, SchemaObservation>();
 
 export async function observeSchema(database?: D1Database): Promise<SchemaObservation> {

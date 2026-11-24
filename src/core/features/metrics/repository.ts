@@ -59,10 +59,10 @@ export function createMetricsRepository(db: D1Database) {
     async claim(row: StoredMetric, now: number) { const result=await db.prepare("UPDATE public_metrics SET pull_lease_until=?,pull_after=? WHERE id=? AND version=? AND (pull_lease_until IS NULL OR pull_lease_until<=?)").bind(now+60_000,now+60_000,row.id,row.version,now).run(); return Boolean(result.meta.changes); },
     async finish(row: StoredMetric, error: string | null) { await db.prepare("UPDATE public_metrics SET error=?,pull_lease_until=NULL WHERE id=? AND version=?").bind(error,row.id,row.version).run(); },
     async maintain(now: number) { await db.batch([...retentionStatements(db,now),db.prepare("UPDATE public_metrics SET stale=1 WHERE stale=0 AND last_reported_at<?").bind(now-120_000)]); },
+    /** Minute points as kept by the metric_points triggers: one stored series row per public metric. */
     async publicSeries(): Promise<PublicMetric[]> {
-      const rows=await db.prepare(`SELECT m.id,m.component_id AS componentId,m.name,m.unit,m.provider AS source,m.last_reported_at AS lastReportedAt FROM public_metrics m JOIN components c ON c.id=m.component_id WHERE c.internal=0 ORDER BY m.created_at,m.id LIMIT 10`).all<Omit<PublicMetric,"points">>();
-      const points=await db.prepare("SELECT metric_id AS metricId,bucket AS at,value_sum/samples AS value FROM metric_points WHERE resolution=60 ORDER BY bucket").all<AggregatePoint & {metricId:string}>();
-      return rows.results.map(row=>({...row,points:points.results.filter(p=>p.metricId===row.id).map(({at,value})=>({at,value}))}));
+      const rows=await db.prepare(`SELECT m.id,m.component_id AS componentId,m.name,m.unit,m.provider AS source,m.last_reported_at AS lastReportedAt,s.points_json AS pointsJson FROM public_metrics m JOIN components c ON c.id=m.component_id LEFT JOIN public_metric_series s ON s.metric_id=m.id WHERE c.internal=0 ORDER BY m.created_at,m.id LIMIT 10`).all<Omit<PublicMetric,"points"> & {pointsJson:string|null}>();
+      return rows.results.map(({pointsJson,...row})=>({...row,points:Object.entries(JSON.parse(pointsJson ?? "{}") as Record<string,number>).map(([at,value])=>({at:Number(at),value})).sort((left,right)=>left.at-right.at)}));
     },
   };
 }

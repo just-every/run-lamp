@@ -8,7 +8,8 @@ import { usePanelRead } from "./use-panel-read";
 import { ReachCounts, duration } from "./reach-counts";
 import "./performance.css";
 
-/** Mounted in Overview; month changes and polling leave its other cards alone. */
+/** Mounted in Overview; month changes and refreshes leave its other cards alone. A month
+ * reads every delivery in it, so the card reads on view and on Refresh, never on a timer. */
 export function CommunicationPerformance() {
   const timezone = usePageTimezone(), time = useOperatorTime();
   // The server chooses the initial calendar month, including at a month boundary.
@@ -20,7 +21,7 @@ export function CommunicationPerformance() {
   return <section className="data-card communication-panel" aria-label="Communication performance" ref={element}>
     <div className="card-heading"><h2>Communication performance</h2>{data && data.summary.incidentCount > 0 ? <Button asChild variant="secondary"><a href={`${path}${selectedMonth ? "&" : "?"}format=csv`} download={`communication-performance-${month}.csv`}>Download CSV</a></Button> : null}</div>
     {error ? <FormError>{error}</FormError> : null}
-    {error ? <Button type="button" variant="secondary" onClick={refresh}>Refresh performance</Button> : null}
+    {error && !data ? <Button type="button" variant="secondary" onClick={refresh}>Refresh performance</Button> : null}
     {loading && !data ? <p role="status">Loading communication performance…</p> : null}
     {data?.summary.incidentCount === 0 ? <><p>No incidents this month. Figures appear after your first update.</p><details><summary>Choose month</summary>{monthPicker}</details></> : null}
     {data && data.summary.incidentCount > 0 ? <>
@@ -31,5 +32,6 @@ export function CommunicationPerformance() {
       <details className="communication-definitions"><summary>How these figures are measured</summary><p>Incidents opened from {time(data.startsAt)} up to {time(data.endsAt)}. Includes later updates and their current delivery results.</p>{Object.entries(data.definitions).map(([key, definition]) => <p key={key}>{definition}</p>)}</details>
       <p className="communication-note">Updated {time(data.measuredAt)}</p>
     </> : null}
+    {data ? <Button type="button" variant="secondary" onClick={refresh}>Refresh performance</Button> : null}
   </section>;
 }

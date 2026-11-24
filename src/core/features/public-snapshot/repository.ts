@@ -34,6 +34,8 @@ export interface SnapshotRepository {
   sourceConfiguration?: string;
   load(): Promise<PublicSnapshotSource | null>;
   loadArchive?(context: PublicSnapshotSource, key: string, generatedAt: string): Promise<PublicSnapshotSource | null>;
+  /** The public metric series alone. Timed refreshes read it fresh; minute points never request a full rebuild. */
+  loadMetrics?(): Promise<PublicMetric[]>;
   startBuild(input: typeof snapshotBuilds.$inferInsert): Promise<void>;
   finishBuild(input: { id: string; status: "published" | "failed"; version: string | null; error: string | null; attempts: number; finishedAt: string; updatedAt: string }): Promise<void>;
   hasPublishedBuild?(id: string, version: string): Promise<boolean>;
@@ -120,6 +122,7 @@ export function createSnapshotRepository(
     await binding.prepare("INSERT OR IGNORE INTO status_page_snapshot_work (id, created_at, updated_at) VALUES (?,?,?)").bind(workId, now, now).run();
   }
 
+  const loadMetrics = async () => scope ? [] : createMetricsRepository(binding).publicSeries();
   return {
     sourceConfiguration: JSON.stringify([publicOrigin, channels, Boolean(mailFromAddress)]),
     async load() {
@@ -258,9 +261,10 @@ export function createSnapshotRepository(
         maintenance: maintenanceRows,
         maintenanceComponents: attachedMaintenanceComponents,
         reports,
-        maintenanceNotices, importedMaintenanceUpdates, metrics: scope ? [] : await createMetricsRepository(binding).publicSeries(),
+        maintenanceNotices, importedMaintenanceUpdates, metrics: await loadMetrics(),
       };
     },
+    loadMetrics,
     loadArchive: (context, key, generatedAt) => loadArchiveSource(binding, {
       ...context,
       // A retained generation from an older release did not store channel availability.

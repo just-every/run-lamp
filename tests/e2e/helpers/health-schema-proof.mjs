@@ -20,7 +20,7 @@ export function assertMigrationObservation(observation, pairs, partialCount = 0)
 
 export function schemaProbeClock(request) {
   let now = Date.now();
-  return async (advance = 10 * 60_000) => {
+  return async (advance = 61 * 60_000) => {
     now += advance;
     const response = await request('/test/clock', { method: 'PUT', body: JSON.stringify({ now }) });
     assert.equal(response.status, 204);
