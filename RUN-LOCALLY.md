@@ -83,7 +83,7 @@ rer setup
 rer dev
 ```
 
-When `rer setup` asks, use the original owner's email from before the reset.
+When `rer setup` asks, use the Owner's current sign-in email in the archive.
 After an import, run setup before restarting Lamp so its local private settings
 match that restored owner.
 

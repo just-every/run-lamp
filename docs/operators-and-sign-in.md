@@ -9,17 +9,29 @@ keeping the opaque audit attribution.
 ## Change your owner account
 
 As a signed-in Owner, open **Settings → Team → Operators → Owner account**.
-Edit your own name or sign-in email, then choose **Save owner details**.
-If Lamp asks for confirmation, choose **Confirm my identity** and open the link
-sent to your current email in the same browser, then return and save. If hosted
-email is off, sign in with [`rer signin`](#terminal-entry-for-the-hosted-owner)
-and save from that session.
+Edit your own name or sign-in email, then choose **Save owner details**. A
+name-only change takes effect as soon as you save.
 
-Choose an email that is available in this installation. After you save a new
-address, use it for email sign-in. Lamp revokes outstanding links for the old
-address. Your existing sessions, passkeys and pending invitations to other
-operators stay valid. With email enabled, Lamp sends a notice to the new address.
-If the notice fails, the new address is still saved.
+If Lamp asks you to confirm your identity before saving an email change, open
+the link sent to your current address in the same browser session, then save
+again. With hosted mail off, start from a fresh
+[`rer signin` session](#terminal-entry-for-the-hosted-owner).
+
+An email change stays pending for up to 10 minutes. Open the link sent to the
+new address in the same session that requested the change. Locally, use
+**Open Owner confirmation link**. With hosted mail off, the installation Owner
+runs `rer signin` again and opens the new one-time Owner link in the same
+session. On the confirmation page, choose **Confirm email change**. You can
+cancel in Owner account while the change is pending. The current address stays
+active until you confirm. With mail enabled, Lamp then notifies the previous
+address and records both addresses in the audit log.
+
+For a handover, leave **Sign out every other session and revoke minted
+credentials and linked sign-ins** checked. Confirmation keeps the current
+session and removes the other sessions, management credentials, linked
+identity-provider sign-ins and local passkeys. Turn the option off for a rename
+that keeps existing access. The account ID, Move in history and outstanding
+invitations to other operators stay with the account.
 
 ## Terminal entry for the hosted owner
 

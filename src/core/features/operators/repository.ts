@@ -60,6 +60,7 @@ export function createOperatorRepository(db: D1Database) {
         db.prepare('DELETE FROM oa_provider_session_pins WHERE session_id IN (SELECT id FROM oa_sessions WHERE operator_id=?) AND ' + witnessed).bind(id, ...witness),
         db.prepare('UPDATE oa_tokens SET revoked_at=COALESCE(revoked_at,?) WHERE (operator_id=? OR issuer_id=?) AND ' + witnessed).bind(revokedAt, id, id, ...witness),
         db.prepare('UPDATE oa_credentials SET revoked_at=COALESCE(revoked_at,?) WHERE operator_id=? AND ' + witnessed).bind(revokedAt, id, ...witness),
+        db.prepare('DELETE FROM oa_owner_email_changes WHERE operator_id=? AND ' + witnessed).bind(id, ...witness),
         db.prepare('DELETE FROM oa_step_up_challenges WHERE operator_id=? AND ' + witnessed).bind(id, ...witness),
         db.prepare('UPDATE oa_sessions SET revoked_at=COALESCE(revoked_at,?) WHERE operator_id=? AND ' + witnessed).bind(revokedAt, id, ...witness),
         db.prepare("UPDATE audit_entries SET reason=NULL,payload_json='{}',updated_at=? WHERE entity_type='operator' AND entity_id=? AND " + witnessed).bind(now, id, ...witness),

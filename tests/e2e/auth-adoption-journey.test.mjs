@@ -223,7 +223,7 @@ test('SETUP-002 ACCESS-001 TEAM-002 TEAM-006 native rer setup, owner sign-in, in
     assert.equal(colleague.operator.role,'communicator');
     await context.close();
    }
-   await localPasskeyFlow({browser,ownerPage:devPage,origin,terminalLink});
+   await localPasskeyFlow({browser,ownerPage:devPage,origin,terminalLink,capture});
    await devContext.close();
    t.diagnostic("A fresh local install kept the same account and passkey after its sign-in email changed.");
    await stop();

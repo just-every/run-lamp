@@ -8,6 +8,7 @@ export function isRerBookkeepingTable(name) {
   const normalized = name.toLowerCase();
   // Older portability schemas also have bookkeeping without the leading underscore.
   return normalized === "status_page_snapshot_work" || normalized === "oa_local_passkeys" || normalized === "oa_local_passkey_challenges"
+    || normalized === "oa_owner_email_changes"
     || normalized.startsWith("_rer_") || normalized.startsWith("rer_portability_");
 }
 

@@ -2,7 +2,7 @@
 
 ## 1.11.38
 
-- **Owners can update their account.** Signed-in owners can change their name and sign-in email in **Settings → Team → Operators → Owner account** or through `POST /auth/owner-profile` with fresh identity proof. Move in uses the stored owner account and keeps its history after an email change. Existing sessions and passkeys stay with the account.
+- **Owners can update or hand over their account.** Signed-in owners can change their name immediately in **Settings → Team → Operators → Owner account** or through `POST /auth/owner-profile`. Email changes stay pending until confirmed in the requesting session. With mail off, confirmation uses a one-time Owner link. Lamp notifies the previous address when mail is enabled and records both addresses in the audit log. A handover defaults to revoking other sessions, minted credentials and linked sign-ins. Turn off revocation for a rename. Move in keeps its history.
 - **Hosted Staff publication waits for the reader view.** Lamp confirms that readers can see an incident update only after the Staff landing page and the other selected pages serve the generation that includes it. This change passed the Opus review labeled 1.11.38.
 - **Public incident follow respects the mail setting.** With mail off, public incident pages no longer offer email follow. The page shows the other follow options only when they are available.
 - **The first-run guide explains set-up order and the first check.** Set Lamp up after the tools whose components it shows. For the first check, open the public page signed out and verify that each visible component shows its state.
@@ -10,7 +10,7 @@
 
 ### Upgrading from 1.11.37
 
-Back up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.38`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release adds no migrations. If you change the owner email, verify sign-in at the new address and check that Move in still uses the same owner account.
+Back up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.38`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. Apply the owner email confirmation migration before starting the updated Worker. If you change the owner email, confirm it from the same session, verify sign-in at the new address and check that Move in still uses the same owner account.
 
 ## 1.11.37
 

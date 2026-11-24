@@ -61,15 +61,29 @@ test('ordinary host configuration carries public Business trust into a read-only
   assert.equal((await (await read()).json()).importDoor.enabled,false,'a disabled import choice is retained');
   const otherEnv={...env,SETUP_OPERATOR_EMAIL:'other@example.com'};
   assert.equal((await createApp(otherEnv).app.fetch(new Request(origin+'/api/rer/owner-claim-status',{method:'POST',headers:{Host:new URL(origin).host,Authorization:`Bearer ${grant({email:'other@example.com'}).token}`,'Content-Type':'application/json'},body:'{}'}),otherEnv)).status,403,'a changed bootstrap email cannot authorize a Business grant');
-  const terminalToken=randomBytes(32).toString('base64url'), now=Date.now();
-  await storage.db.prepare(`INSERT INTO oa_owner_signins(id,token_hash,operator_id,operator_version,created_at,expires_at)
-    SELECT ?,?,id,version,?,? FROM lamp_sign_in_owner`)
-    .bind(randomUUID(),await ownerSigninDigest(terminalToken),now,now+60_000).run();
-  const terminal=await call('/auth/owner-signin',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:terminalToken})});
+  async function ownerGrant() {
+    const token=randomBytes(32).toString('base64url'), now=Date.now();
+    await storage.db.prepare(`INSERT INTO oa_owner_signins(id,token_hash,operator_id,operator_version,created_at,expires_at)
+      SELECT ?,?,id,version,?,? FROM lamp_sign_in_owner`)
+      .bind(randomUUID(),await ownerSigninDigest(token),now,now+60_000).run();
+    return token;
+  }
+  const post=(path, data, session)=>call(path,{method:'POST',headers:{...(session?{Cookie:session}:{}),'Content-Type':'application/json'},body:JSON.stringify(data)});
+  const terminal=await post('/auth/owner-signin',{token:await ownerGrant()});
   assert.equal(terminal.status,303);
   const ownerCookie=terminal.headers.get('set-cookie').split(';')[0], email='new-owner@example.com';
-  const edited=await call('/auth/owner-profile',{method:'POST',headers:{Cookie:ownerCookie,'Content-Type':'application/json'},body:JSON.stringify({email,displayName:'New Owner Name'})});
-  assert.equal(edited.status,200);
+  const earlier=await ownerGrant();
+  const edited=await post('/auth/owner-profile',{email,displayName:'New Owner Name',revokeAccess:false},ownerCookie);
+  assert.equal(edited.status,202);
+  assert.equal((await read()).status,200,'the original email still authorizes a Business grant before confirmation');
+  const approve=(token,session)=>post('/auth/owner-signin',{token,confirmEmailChange:'1'},session);
+  assert.equal((await approve(earlier,ownerCookie)).status,400,'a grant minted before staging cannot confirm');
+  const token=await ownerGrant();
+  assert.equal((await approve(token,cookie)).status,400,'a different Owner session cannot confirm');
+  const confirmed=await approve(token,ownerCookie);
+  assert.equal(confirmed.status,200);
+  assert.equal((await confirmed.json()).notice,'none');
+  assert.equal((await approve(token,ownerCookie)).status,400,'the one-time grant is consumed by confirmation');
   assert.equal((await read()).status,403,'the original email no longer authorizes a Business grant');
   const updatedGrant=grant({email});
   const updatedStatus=await read(updatedGrant);

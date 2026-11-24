@@ -657,20 +657,35 @@ product attribution retain their authority.
 during setup. To update the stored owner account, use [Owner account](docs/operators-and-sign-in.md#change-your-owner-account).
 
 An agent uses `POST /auth/owner-profile` on the app origin with the signed-in
-Owner's session and an `Origin` header matching that origin. Send a JSON body
-with `displayName`, `email` or both. The request edits the signed-in Owner's own
-account. Lamp management scopes alone are insufficient.
+Owner's session and a matching `Origin` header. Send JSON with `displayName`,
+`email`, or both. A name-only save takes effect immediately. Management tokens
+cannot make profile changes.
 
-A recent native email sign-in provides the required proof. Otherwise, send
-`POST /auth/step-up` with `{"action":"email:change"}` and complete the emailed
-confirmation in the same session before saving. With hosted mail off, obtain a
-fresh Owner session using `rer signin`. Key-gated local Owner sessions use the
-existing local step-up rules.
+An email change needs a recent email-link sign-in or step-up proof. Request
+`POST /auth/step-up` with `{"action":"email:change"}` and complete that proof
+in the same session before saving. With hosted mail off, open a fresh Owner
+session using `rer signin`. Local Owner sessions use the existing local proof
+rules.
 
-An email already in use returns HTTP 409 with `email_in_use`. A successful save
-returns the `operator` and a `notice` of `sent`, `none` or `failed`. A failed
-notice reports an email delivery error after the save. Once an email changes,
-the old address no longer signs in to that owner account.
+A pending request returns HTTP 202 with the current `operator` and a `pending`
+record. An unavailable address returns HTTP 409 with `email_in_use`.
+`GET /auth/owner-profile` reads the current state. To cancel, send the pending
+`id` to `POST /auth/owner-profile/cancel` in the requesting session.
+
+With mail enabled, open the confirmation link sent to the proposed address or
+POST its `token` to `/auth/owner-profile/confirm` from the requesting session.
+Locally, the pending response includes a one-time `confirmationUrl`. With
+hosted mail off, run `rer signin` again for a fresh one-time Owner link. Open
+the Owner link in the requesting session and confirm, or POST its `token`
+and `"confirmEmailChange":"1"` to `/auth/owner-signin` with the same cookie
+and origin. Confirmation keeps the existing account ID and Move in history.
+The JSON confirmation response contains the updated `operator` and a `notice`
+of `sent`, `none` or `failed` for the previous address.
+
+A handover defaults to `revokeAccess: true` in the staging request. Other
+sessions, minted credentials, linked identity-provider sign-ins and local
+passkeys lose access on confirmation. Set `revokeAccess: false` for a rename
+that retains them. Pending invitations to other operators stay valid.
 
 ## AI provider configuration
 

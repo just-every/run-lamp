@@ -161,8 +161,8 @@ Run `~/.local/bin/rer verify` separately for the full source and browser checks;
 not run the verifier. The deploy ends by naming the sign-in address (your
 `LAMP_APP_HOST`). Use the same environment on later deploys.
 To change your owner name or sign-in email, open **Settings → Team → Operators**
-and save it under **Owner account** with fresh identity confirmation. The setup
-configuration seeds the first owner. See [changing the owner account](docs/operators-and-sign-in.md#change-your-owner-account).
+and save it under **Owner account**. Confirm a new address in the same signed-in
+session. The setup configuration seeds the first owner. See [changing the owner account](docs/operators-and-sign-in.md#change-your-owner-account).
 
 For terminal entry to the hosted owner account, use
 `~/.local/bin/rer signin --environment production --env-file "$HOME/.config/lamp/production.env"`

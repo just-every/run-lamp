@@ -5,7 +5,7 @@ import { createOperatorRepository } from '../../features/operators/repository';
 import { createOperatorRolesRepository } from '../../features/operators/roles.repository';
 import { OPERATOR_ROLES, type OperatorRole } from '../../features/operators/permissions';
 import { authConfig } from './config';
-import { ownerProfileChange } from './owner-profile';
+import { ownerProfile } from './owner-profile';
 
 export function createLampAuth(env: AppBindings, mail?: MailSender, stored?: AuthConfig['providers']) {
   const repository = createOperatorRepository(env.DB);
@@ -44,15 +44,13 @@ export function createLampAuth(env: AppBindings, mail?: MailSender, stored?: Aut
     await createOperatorRolesRepository(env.DB).change(session,target,role);
     return { ...target, role: role === 'owner' || role === 'admin' ? role : 'member' as const };
   }
-  const changeOwnerProfile = ownerProfileChange(env, auth, mail);
+  const profile = ownerProfile(env, auth, mail);
   return Object.freeze({
     ...auth,
-    changeOwnerProfile,
-    async changeEmail(request: Request, input: { email: string }) {
-      return (await changeOwnerProfile(request, input)).operator;
-    },
+    ownerProfile: profile,
+    changeEmail: undefined,
     async changeDisplayName(request: Request, input: { displayName: string }) {
-      return (await changeOwnerProfile(request, input)).operator;
+      return (await profile.change(request, input)).operator;
     },
     setProductRole,
     async inviteWithRole(request: Request, input: { email: string; displayName: string; role: OperatorRole }) {

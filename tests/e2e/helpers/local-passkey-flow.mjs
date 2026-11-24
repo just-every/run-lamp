@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { operatorHydrated } from './operator-hydrated.mjs';
 
-export async function localPasskeyFlow({ browser, ownerPage, origin, terminalLink }) {
+export async function localPasskeyFlow({ browser, ownerPage, origin, terminalLink, capture }) {
   const create = async (path, data) => {
     const response = await ownerPage.request.post(origin+path,{data,headers:{Origin:origin}});
     assert.equal(response.status(),201,path);
@@ -52,8 +52,53 @@ export async function localPasskeyFlow({ browser, ownerPage, origin, terminalLin
     assert.equal((await cdp.send('WebAuthn.getCredentials',{authenticatorId})).credentials.length,1);
     const session = async () => (await (await ownerPage.request.get(origin+'/api/app/session')).json()).operator;
     const original = await session(), changedEmail = 'local-passkey-owner@example.test';
-    const changeEmail = email => ownerPage.request.post(origin+'/auth/owner-profile',{data:{email},headers:{Origin:origin}});
-    assert.equal((await changeEmail(changedEmail)).status(),200,'the local owner can change their email without mail');
+    const settings = origin+'/app/settings#operators';
+    const screenshots = async (name, page = ownerPage) => {
+      for (const width of [1440,390]) {
+        await page.setViewportSize({width,height:1000});
+        assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${name} fits the viewport`);
+        await capture(page,`owner-account-${name}-${width}`);
+      }
+    };
+    await ownerPage.goto(settings);
+    await operatorHydrated(ownerPage);
+    const card = ownerPage.getByRole('region',{name:'Owner account',exact:true});
+    const email = card.getByLabel('Sign-in email');
+    await email.fill('dispatch-transferr@example.test');
+    const revoke = card.getByRole('checkbox');
+    assert.equal(await revoke.isChecked(),true);
+    await screenshots('handover-option');
+    await card.getByRole('button',{name:'Save owner details'}).click();
+    const link = card.getByRole('link',{name:'Open Owner confirmation link'});
+    await link.waitFor();
+    assert.equal((await session()).email,original.email,'the local change waits for confirmation');
+    await screenshots('pending');
+    await card.getByRole('button',{name:'Cancel email change'}).click();
+    await email.waitFor();
+    assert.equal(await email.inputValue(),original.email);
+    await screenshots('cancelled');
+
+    await email.fill(changedEmail);
+    await revoke.uncheck();
+    await card.getByRole('button',{name:'Save owner details'}).click();
+    await link.waitFor();
+    // The local confirmation link uses the Owner entry endpoint but it cannot sign anyone in.
+    const href = await link.getAttribute('href');
+    const other = await browser.newContext();
+    try {
+      const otherPage = await other.newPage();
+      const refused = await otherPage.goto(origin+href).catch(() => assert.fail('Could not open the refused confirmation page.'));
+      assert.equal(refused.status(),400);
+      await screenshots('different-session', otherPage);
+    } finally { await other.close(); }
+    await link.click();
+    const approve = ownerPage.getByRole('button',{name:'Confirm email change'});
+    await approve.waitFor();
+    await screenshots('confirmation');
+    await approve.click();
+    await email.waitFor();
+    assert.equal(await email.inputValue(),changedEmail);
+    await screenshots('confirmed');
     const signOut = await ownerPage.request.post(origin+'/api/app/session/signout',{data:{},headers:{Origin:origin}});
     assert.equal(signOut.status(),204);
     await ownerPage.context().clearCookies();
@@ -62,5 +107,19 @@ export async function localPasskeyFlow({ browser, ownerPage, origin, terminalLin
     await reachedPartners(ownerPage);
     const after = await session();
     assert.deepEqual([after.id,after.email],[original.id,changedEmail],'the existing passkey still admits the same account');
+
+    await ownerPage.goto(settings);
+    await operatorHydrated(ownerPage);
+    const handover = 'dispatch-owner@example.test';
+    await email.fill(handover);
+    assert.equal(await revoke.isChecked(),true);
+    await card.getByRole('button',{name:'Save owner details'}).click();
+    await link.click();
+    await approve.click();
+    await email.waitFor();
+    assert.deepEqual([(await session()).id,await email.inputValue()],[original.id,handover]);
+    await ownerPage.context().clearCookies();
+    await goToSignIn(ownerPage);
+    assert.equal(await ownerPage.getByRole('button',{name:/sign in with a passkey/i}).count(),0,'a handover removes the previous passkey sign-in');
   } finally { await cdp.detach(); }
 }

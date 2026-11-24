@@ -1895,6 +1895,12 @@ The installation owner can require an enabled OpenID Connect provider after it c
 ## Owner account details
 
 ChargeDesk set-up needs to replace a stand-in owner's name and email through
-Lamp itself. Under TEAM-002 the existing Owner updates their own account with
-fresh proof. The stored account ID keeps sign-in credentials and Move in tied
-to the installation through an address change.
+Lamp itself. Under TEAM-002, the existing Owner can change their own name
+directly. Email changes require fresh identity proof and a second confirmation
+in the same session. The stored account ID keeps Move in tied to the
+installation. Revocation on confirmation is the default for a handover. Owners
+can keep existing access for a rename.
+
+Lamp limits Base's self-service `/auth/email` and `/auth/display-name` to the
+signed-in Owner's own account. Admins, communicators, editors and viewers
+receive `owner_required` when they POST to either route.

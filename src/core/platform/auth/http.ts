@@ -1,8 +1,6 @@
 import { installationSignIn } from "./installation-presentation";
 import { createOperatorRolesRepository } from '../../features/operators/roles.repository';
 import { AuthError, createAuthHandler, createSignInHandler, securityHeaders } from '@runeditrun/rer/modules/operator-auth';
-import { readInput } from '@runeditrun/rer/internal/modules/operator-auth/input.mjs';
-import { requirePost } from '@runeditrun/rer/internal/modules/operator-auth/http.mjs';
 import { hashToken } from '@runeditrun/rer/internal/modules/operator-auth/crypto.mjs';
 import { createDependencies } from '@runeditrun/rer/modules/dependencies';
 import { createIdpOwnerClaimHandler, createOwnerClaimHandler } from '@runeditrun/rer/modules/owner-claim';
@@ -10,6 +8,7 @@ import { authConfig } from './config';
 import { identitySettingsPage } from './identity-settings-page';
 import { ownerClaimConfig } from './claim';
 import { hostedOwnerSignInReturn } from './owner-signin-return';
+import { ownerProfileResponse } from './owner-profile-http';
 import { openDoorAtFirstClaim } from '../../features/statuspage-import/door-claim';
 import type { AppBindings } from '../../app/types';
 import type { AppServices } from '../../app/services';
@@ -25,10 +24,8 @@ async function authResponseInternal(request:Request,env:AppBindings,services:App
   try {
     // Google and Okta set up in Settings are composed in before Base builds its providers.
     const stored=await services.signIn.composed(),auth=await services.signInAuth(request),config=authConfig(env,stored),url=new URL(request.url);
-    if (url.pathname === '/auth/owner-profile') {
-      requirePost(request, config);
-      return Response.json(await auth.changeOwnerProfile(request, await readInput(request)), { headers: securityHeaders() });
-    }
+    const profile = await ownerProfileResponse(request, url, auth.ownerProfile, config);
+    if (profile) return profile;
     const signedIn = await signedInOwnerRedirect(request, auth);
     if (signedIn) return signedIn;
     // A host-configured key set selects native signed claims. Claims never choose their own authority.
