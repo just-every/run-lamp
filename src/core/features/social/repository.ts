@@ -37,8 +37,8 @@ export function createSocialRepository(db:D1Database) {
     async pending(limit:number) {
       // Earlier unresolved posts serialize each account's incident thread. Other
       // accounts keep moving even when one provider is down.
-      return (await db.prepare(`SELECT ${postColumns} FROM social_posts p JOIN social_accounts a ON a.id=p.account_id
-        WHERE a.removed_at IS NULL AND p.post_id IS NULL AND NOT EXISTS(SELECT 1 FROM integration_deliveries d WHERE d.namespace='lamp-social' AND d.id=p.id)
+      return (await db.prepare(`SELECT ${postColumns} FROM social_posts p INDEXED BY social_posts_unqueued JOIN social_accounts a ON a.id=p.account_id
+        WHERE p.enqueued_at IS NULL AND a.removed_at IS NULL AND p.post_id IS NULL AND NOT EXISTS(SELECT 1 FROM integration_deliveries d WHERE d.namespace='lamp-social' AND d.id=p.id)
         AND NOT EXISTS(SELECT 1 FROM social_posts earlier LEFT JOIN integration_deliveries d ON d.namespace='lamp-social' AND d.id=earlier.id
           WHERE p.incident_id IS NOT NULL AND earlier.incident_id=p.incident_id AND earlier.account_id=p.account_id
           AND (earlier.queued_at<p.queued_at OR (earlier.queued_at=p.queued_at AND earlier.id<p.id))

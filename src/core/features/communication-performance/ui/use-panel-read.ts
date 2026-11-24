@@ -1,8 +1,10 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { appApi, AppDataContext } from "../../../app/client/ui/api";
 
-/** Refreshes only this resource; never invalidates incident/composer page data. */
-export function usePanelRead<T>(path: string, publicationKey = "") {
+/** Refreshes only this resource; never invalidates incident/composer page data.
+ * It reads when the panel comes into view and the tab becomes visible; it polls
+ * only when given `pollMs`, for a cheap one-record read such as an incident's reach. */
+export function usePanelRead<T>(path: string, publicationKey = "", pollMs?: number) {
   const snapshot = useContext(AppDataContext);
   const initial = snapshot[path];
   const initialState = { path, snapshot, data: initial?.error ? null : initial?.data as T ?? null, error: initial?.error ?? null, loading: !initial };
@@ -31,8 +33,8 @@ export function usePanelRead<T>(path: string, publicationKey = "") {
     if (element.current) observer.observe(element.current);
     const onVisibility = () => { if (document.visibilityState === "visible") void read(); };
     document.addEventListener("visibilitychange", onVisibility);
-    const timer = window.setInterval(() => void read(), 15000);
+    const timer = pollMs ? window.setInterval(() => void read(), pollMs) : undefined;
     return () => { disposed = true; controller?.abort(); observer.disconnect(); window.clearInterval(timer); document.removeEventListener("visibilitychange", onVisibility); };
-  }, [path, publicationKey, revision, snapshot]);
+  }, [path, publicationKey, revision, snapshot, pollMs]);
   return { element, ...(state.path === path && state.snapshot === snapshot ? state : initialState), refresh };
 }

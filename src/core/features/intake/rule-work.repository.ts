@@ -3,9 +3,10 @@
 export function createRuleWorkRepository(db: D1Database) {
   return {
     get: (receiptId: string) => db.prepare("SELECT source_version AS sourceVersion,completed_at AS completedAt FROM alert_rule_work WHERE receipt_id=?").bind(receiptId).first<{sourceVersion:string;completedAt:string|null}>(),
+    /** Reads only unfinished work with retries left, never every stored receipt. */
     async pending(now: number) {
       return (await db.prepare(`SELECT r.id AS receiptId,r.source_id AS sourceId,r.incident_id AS incidentId,r.payload_json AS payloadJson,r.received_at AS receivedAt
-        FROM alert_rule_work work JOIN alert_receipts r ON r.id=work.receipt_id
+        FROM alert_rule_work work INDEXED BY alert_rule_work_due JOIN alert_receipts r ON r.id=work.receipt_id
         WHERE work.completed_at IS NULL AND work.attempts<5 AND work.next_attempt_at<=?
         ORDER BY r.rowid LIMIT 10`).bind(now).all<{receiptId:string;sourceId:string;incidentId:string|null;payloadJson:string;receivedAt:string}>()).results;
     },

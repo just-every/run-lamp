@@ -109,6 +109,7 @@ export interface DeliveryRepository {
   findDeliveryByProviderMessageId(providerMessageId: string): Promise<{ id: string; subscriberId: string; channel: "email" | "webhook" } | null>;
   listPendingProviderEvents(providerMessageId: string): Promise<PendingProviderEvent[]>;
   listPendingProviderMessageIds(limit: number): Promise<string[]>;
+  setAsideUnmatchedProviderEvents(receivedBefore: string, now: string): Promise<void>;
   claimProviderEvent(eventId: string, now: string, reclaimBefore: string): Promise<boolean>;
   completeProviderEvent(eventId: string, deliveryId: string, now: string): Promise<void>;
   countConsecutiveOutcomes(subscriberId: string, channel: "email" | "webhook", outcomes: string[], limit: number): Promise<number>;
@@ -175,6 +176,13 @@ export function createDeliveryRepository(binding: D1Database, mailReceipts?: { p
       AND NOT EXISTS (SELECT 1 FROM notification_attempt_records a WHERE a.delivery_id=d.id
         AND (a.provider_message_id IS NOT NULL OR a.local_capture_id IS NOT NULL))`, [now,deliveryId,reclaimBefore,now]);
   }
+
+  // A callback belongs to this installation when one of its own sends, not a
+  // local capture, recorded the provider message ID.
+  const matchedProviderAttempt = `EXISTS (SELECT 1 FROM notification_attempt_records attempt WHERE attempt.provider_message_id = event.provider_message_id
+    AND NOT EXISTS (SELECT 1 FROM notification_attempt_records captured WHERE captured.delivery_id = attempt.delivery_id AND captured.local_capture_id IS NOT NULL))`;
+  const unappliedEvents = `mail_provider_webhook_events event INDEXED BY mail_provider_webhook_events_unapplied
+    WHERE event.applied_at IS NULL AND event.provider_message_id IS NOT NULL AND event.unmatched_at IS NULL`;
 
   function pendingEventsStatement(providerMessageId: string) {
     return binding.prepare("SELECT id, event_type AS eventType, hard_bounce AS hardBounce FROM mail_provider_webhook_events WHERE provider_message_id = ? AND applied_at IS NULL ORDER BY received_at ASC, id ASC").bind(providerMessageId);
@@ -376,9 +384,13 @@ export function createDeliveryRepository(binding: D1Database, mailReceipts?: { p
       return result.meta.changes === 1;
     },
     async findDeliveryByProviderMessageId(providerMessageId) {
-      return (await binding.prepare(`SELECT a.delivery_id AS id, d.subscriber_id AS subscriberId, d.channel FROM notification_attempt_records a JOIN notification_delivery_records d ON d.id = a.delivery_id WHERE a.provider_message_id = ?
-        AND NOT EXISTS (SELECT 1 FROM notification_attempt_records captured WHERE captured.delivery_id = d.id AND captured.local_capture_id IS NOT NULL)
-        ORDER BY a.attempted_at DESC LIMIT 1`).bind(providerMessageId).first<{ id: string; subscriberId: string; channel: "email" | "webhook" }>()) ?? null;
+      // Each attempt table belongs to its own delivery table. Seeking them
+      // in pairs keeps the union views from materializing every delivery.
+      const pairs = [["notification_delivery_attempts", "notification_deliveries"], ["component_delivery_attempts", "component_notification_deliveries"], ["report_delivery_attempts", "report_notification_deliveries"]];
+      return (await binding.prepare(`SELECT found.id, found.subscriberId, found.channel FROM (${pairs.map(([attempts, deliveries]) => `
+          SELECT a.delivery_id AS id, d.subscriber_id AS subscriberId, d.channel, a.attempted_at AS attemptedAt FROM ${attempts} a JOIN ${deliveries} d ON d.id = a.delivery_id WHERE a.provider_message_id = ?`).join(" UNION ALL ")}) found
+        WHERE NOT EXISTS (SELECT 1 FROM notification_attempt_records captured WHERE captured.delivery_id = found.id AND captured.local_capture_id IS NOT NULL)
+        ORDER BY found.attemptedAt DESC LIMIT 1`).bind(providerMessageId, providerMessageId, providerMessageId).first<{ id: string; subscriberId: string; channel: "email" | "webhook" }>()) ?? null;
     },
     async listPendingProviderEvents(providerMessageId) {
       const result = await pendingEventsStatement(providerMessageId).all<Omit<PendingProviderEvent, "hardBounce"> & { hardBounce: number }>();
@@ -386,12 +398,16 @@ export function createDeliveryRepository(binding: D1Database, mailReceipts?: { p
     },
     async listPendingProviderMessageIds(limit) {
       const result = await binding.prepare(`SELECT DISTINCT event.provider_message_id AS providerMessageId
-        FROM mail_provider_webhook_events event
-        JOIN notification_attempt_records attempt ON attempt.provider_message_id = event.provider_message_id
-        WHERE event.applied_at IS NULL AND event.provider_message_id IS NOT NULL
-          AND NOT EXISTS (SELECT 1 FROM notification_attempt_records captured WHERE captured.delivery_id = attempt.delivery_id AND captured.local_capture_id IS NOT NULL)
+        FROM ${unappliedEvents} AND ${matchedProviderAttempt}
         ORDER BY event.received_at ASC LIMIT ?`).bind(limit).all<{ providerMessageId: string }>();
       return result.results.map((event) => event.providerMessageId);
+    },
+    async setAsideUnmatchedProviderEvents(receivedBefore, now) {
+      // A shared provider account delivers other senders' callbacks too. Once
+      // no send of ours has claimed one for a while, the minute sweep stops
+      // rereading it; recording that send later still applies it.
+      await binding.prepare(`UPDATE mail_provider_webhook_events SET unmatched_at = ? WHERE id IN (
+        SELECT event.id FROM ${unappliedEvents} AND event.received_at < ? AND NOT ${matchedProviderAttempt})`).bind(now, receivedBefore).run();
     },
     async claimProviderEvent(eventId, now, reclaimBefore) {
       const result = await binding.prepare("UPDATE mail_provider_webhook_events SET claimed_at = ? WHERE id = ? AND applied_at IS NULL AND (claimed_at IS NULL OR claimed_at < ?)")

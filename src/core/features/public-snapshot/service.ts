@@ -225,6 +225,9 @@ export function createPublicSnapshotService(
         const previous = clockSource?.buildId && await repository.hasPublishedBuild?.(clockSource.buildId, clockSource.version)
           ? await readBuildSource(blobs, clockSource.version, generatedAt, repository.sourceConfiguration)
           : null;
+        // Metric points change every minute without a source revision. A timed
+        // refresh carries the saved inputs forward with the current series.
+        if (previous && repository.loadMetrics) previous.source = { ...previous.source, metrics: await repository.loadMetrics() };
         const input = previous ?? await loadBuildSource(repository, generatedAt);
         const { source, feed, incidents, maintenance } = buildSources(input, generatedAt, protectedSnapshot || await readPrelaunch(blobs));
         const iconAsset = (JSON.parse(source.settings.themeAssets ?? "{}") as ThemeAssets).icon;

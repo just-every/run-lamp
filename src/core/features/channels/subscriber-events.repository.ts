@@ -23,13 +23,13 @@ export function createChatEventRepository(db: D1Database) {
       return (await db.prepare(`SELECT x.id,x.subscriber_id AS subscriberId,x.kind,d.kind AS channelKind,
         c.component_name AS componentName,c.previous_state AS previousState,c.new_state AS newState,c.changed_at AS changedAt,c.claimant_kind AS claimantKind,
         m.reference,m.title,n.kind AS noticeKind,n.body AS noticeBody,n.published_at AS publishedAt,p.timezone
-        FROM channel_subscriber_events x CROSS JOIN subscriber_directory s ON s.id=x.subscriber_id AND s.state='active'
+        FROM channel_subscriber_events x INDEXED BY channel_subscriber_events_unqueued CROSS JOIN subscriber_directory s ON s.id=x.subscriber_id AND s.state='active'
         JOIN delivery_channel_destinations d ON d.id=s.id AND d.removed_at IS NULL
         JOIN page_settings p ON p.id='default'
         LEFT JOIN component_notification_events c ON c.id=x.event_id AND x.kind='component'
         LEFT JOIN maintenance_notices n ON n.id=x.event_id AND x.kind='maintenance'
         LEFT JOIN maintenance m ON m.id=n.maintenance_id
-        WHERE NOT EXISTS(SELECT 1 FROM integration_deliveries i WHERE i.namespace='lamp-channels' AND i.id=x.id)
+        WHERE x.enqueued_at IS NULL AND NOT EXISTS(SELECT 1 FROM integration_deliveries i WHERE i.namespace='lamp-channels' AND i.id=x.id)
         ORDER BY x.queued_at,x.id LIMIT ?`).bind(limit).all<{
           id:string;subscriberId:string;kind:"maintenance"|"component";channelKind:"slack"|"teams";
           componentName:string|null;previousState:string|null;newState:string|null;changedAt:string|null;claimantKind:string|null;
