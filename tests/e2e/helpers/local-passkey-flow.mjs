@@ -116,6 +116,13 @@ export async function localPasskeyFlow({ browser, ownerPage, origin, terminalLin
     await card.getByRole('button',{name:'Save owner details'}).click();
     await link.click();
     await approve.click();
+    const handoverLink = await ownerPage.getByRole('textbox',{name:'One-time Owner sign-in link'}).inputValue();
+    assert.equal((await ownerPage.request.get(origin+'/api/app/session')).status(),401,'confirmation ends the outgoing session');
+    await ownerPage.goto(handoverLink).catch(() => assert.fail('Could not open the new Owner sign-in link.'));
+    await ownerPage.getByRole('button',{name:'Confirm',exact:true}).click();
+    await ownerPage.waitForURL(url => url.pathname==='/app');
+    await ownerPage.goto(settings);
+    await operatorHydrated(ownerPage);
     await email.waitFor();
     assert.deepEqual([(await session()).id,await email.inputValue()],[original.id,handover]);
     await ownerPage.context().clearCookies();

@@ -8628,7 +8628,7 @@
       "executable": false
     },
     "tests/e2e/helpers/local-passkey-flow.mjs": {
-      "sha256": "afbee230fb8c9476cf74abefcc9de2486371cfef8c9a7f9ffc8db62ff34553c2",
+      "sha256": "2119b6b31a6929d082f3770eff61ced1aa1f91e1258b44d38032e2b6098217df",
       "executable": false
     },
     "tests/e2e/helpers/local-subscribers-flow.mjs": {
