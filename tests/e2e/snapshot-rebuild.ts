@@ -1,3 +1,4 @@
+import { noPublicSubscriptionChannels } from "../../src/core/features/subscribers/public-subscription-channels";
 import { createPublicSnapshotService } from "../../src/core/features/public-snapshot/service";
 import { createR2BlobStore } from "../../src/core/platform/blobs/r2";
 import { createRetainedSnapshotCache } from "../../src/core/platform/blobs/retained";
@@ -11,10 +12,11 @@ export async function exerciseRebuild(env, input) {
   let overlap = null, overlapped = false;
   let loads = 0, completed = false, pointerWrites = 0;
   const builds = [];
-  const source = input.source ?? {
+  const fixture = input.source ?? {
     settings: { id: "default", pageName: "Retained rebuild", tagline: "Verified fixture", accentColor: "#16794C", timezone: "UTC", hostname: "status.example.test", footerCreditEnabled: false, logoKey: null, logoContentType: null, widgetAllowedOrigins: "[]", mailFromAddress: "lamp@example.test", aiToneInstructions: "", feedId: "retained-fixture", createdAt: "2026-09-08T00:00:00.000Z", updatedAt: "2026-09-08T00:00:00.000Z" },
     components: [], claims: [], history: [], corrections: [], incidents: [], incidentComponents: [], updates: [], maintenance: [], maintenanceComponents: [], reports: [], maintenanceNotices: [],
   };
+  const source = { subscriptionChannels: noPublicSubscriptionChannels, ...fixture };
   const repository = {
     load: async () => { loads++; return source; },
     startBuild: async () => {}, finishBuild: async value => { builds.push(value); }, latestBuild: async () => null,

@@ -9064,7 +9064,7 @@
       "executable": false
     },
     "tests/e2e/snapshot-rebuild.ts": {
-      "sha256": "fe3f3964ec7202fb2051a1ce7eeabdf793dd8a8cb704594920f8e282c739fa5c",
+      "sha256": "9e98160929ce2ae6aea0a2f4ab9cfd0bc4495a1f33bd1a455b30b137450c1b5a",
       "executable": false
     },
     "tests/e2e/snapshot-retained.test.mjs": {
