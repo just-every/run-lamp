@@ -496,7 +496,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "9044f8ca95bb8b3e6e5ebfdbe8588c8ede2d5997401b0615070e17c1bedefd77",
+      "sha256": "839d37e490e78e847b4c65976c440593c73b3cf9eace3aee8fe707b1505f8301",
       "executable": false
     },
     "CLAUDE.md": {
@@ -548,7 +548,7 @@
       "executable": false
     },
     "docs/accessibility/vpat.md": {
-      "sha256": "b47c79e12d2fcaca71b8fa78581fbc970979e3a8c2952f5bbba5c402ca828031",
+      "sha256": "999b17aa1334554f7b060e28de454aa93948ca78f33f605e7fed053a32394be7",
       "executable": false
     },
     "docs/ai-assistance.md": {
@@ -2664,7 +2664,7 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "bb2189394750608fb0ce13f8a82fa1f9e722a9121f2f7ec2bd48b826f34ea15b",
+      "sha256": "fd757d30694dd2e0436344f8a41b151aa52c4a92f665c6d25bd5da31a2df2529",
       "executable": false
     },
     "patches/@runeditrun__rer@0.2.133.patch": {
@@ -2959,6 +2959,14 @@
       "sha256": "771a0b8b4f5f6967e6ec5642b0531a729cef346911752fd2146076942e02b25c",
       "executable": false
     },
+    "release-history/1.11.37.CONTRACT.md": {
+      "sha256": "a4b02314dc265c850a64e7bd1fca7063294c6c77a352de563b185240d5e7b7b0",
+      "executable": false
+    },
+    "release-history/1.11.37.json": {
+      "sha256": "351f5a8820effa548eb047286be07c7df71f5ebaa0c2115452d3a9f1c5bad947",
+      "executable": false
+    },
     "release-history/1.11.4.CONTRACT.md": {
       "sha256": "2a72e905c96ba05640e2b01ac04d573651f0cfe4f597d42e4895ef32de961a35",
       "executable": false
@@ -3104,7 +3112,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "351f5a8820effa548eb047286be07c7df71f5ebaa0c2115452d3a9f1c5bad947",
+      "sha256": "d56025409d683adbe42b1415a95f97827e435394214930a1a4a9867682f80632",
       "executable": false
     },
     "rer-packaging.json": {
@@ -4244,7 +4252,7 @@
       "executable": false
     },
     "seed.json": {
-      "sha256": "a4a18a82b91ebb0a1a6338faf3ae76ea97dac5a5b46dea6be799e4a5ac237970",
+      "sha256": "dbc4b5980a1c9d6f6cc8776cf0d3662d2ac45f7a96eadb83499e5f92252e64ee",
       "executable": false
     },
     "src/base/actor.ts": {
