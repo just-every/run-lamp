@@ -35,19 +35,15 @@ export function createCommunicationPerformanceRepository(db: D1Database): Commun
         db.prepare(`${cohort} SELECT u.id AS updateId,u.incident_id AS incidentId,u.lifecycle,u.published_at AS publishedAt,u.created_at AS createdAt,u.next_update_at AS nextUpdateAt,u.is_retroactive AS isRetroactive,
           (${imported} AND u.is_retroactive = 1 AND u.created_at = i.created_at) AS retainedImport
           FROM cohort i JOIN incident_updates u ON u.incident_id = i.id WHERE julianday(u.created_at) <= julianday(?) ORDER BY u.created_at,u.id`).bind(...parameters, scope.measuredAt),
-        // Attempts are reduced to one row per delivery BEFORE aggregation. A
+        // Attempts are reduced to one value per delivery BEFORE aggregation. A
         // retried delivery never multiplies committed, outcome or reach counts.
         // Only notification_deliveries carry an incident update (component and
         // report deliveries CHECK it NULL), so the cohort seeks its own rows.
-        db.prepare(`${cohort}, accepted AS MATERIALIZED (
-          SELECT a.delivery_id,MIN(a.attempted_at) AS acceptedAt FROM cohort i
+        db.prepare(`${cohort}, facts AS MATERIALIZED (
+          SELECT d.*,u.incident_id,(SELECT MIN(a.attempted_at) FROM notification_delivery_attempts a WHERE a.delivery_id = d.id
+            AND a.provider_message_id IS NOT NULL AND a.error IS NULL AND julianday(a.attempted_at) <= julianday(?)) AS acceptedAt FROM cohort i
           CROSS JOIN incident_updates u ON u.incident_id = i.id CROSS JOIN notification_deliveries d ON d.incident_update_id = u.id
-          CROSS JOIN notification_delivery_attempts a ON a.delivery_id = d.id
-          WHERE a.provider_message_id IS NOT NULL AND a.error IS NULL AND julianday(a.attempted_at) <= julianday(?) GROUP BY a.delivery_id
-        ), facts AS MATERIALIZED (
-          SELECT d.*,u.incident_id,a.acceptedAt FROM cohort i
-          CROSS JOIN incident_updates u ON u.incident_id = i.id CROSS JOIN notification_deliveries d ON d.incident_update_id = u.id
-          LEFT JOIN accepted a ON a.delivery_id = d.id WHERE julianday(d.created_at) <= julianday(?)
+          WHERE julianday(d.created_at) <= julianday(?)
         ), scopes AS (
           SELECT 'update:' || incident_update_id AS scopeId,* FROM facts
           UNION ALL SELECT 'incident:' || incident_id AS scopeId,* FROM facts
