@@ -153,12 +153,18 @@ export function createDeliveryRepository(binding: D1Database, mailReceipts?: { p
   function deliveryAuthority(deliveryId: string) {
     return binding.prepare("SELECT CASE WHEN EXISTS(SELECT 1 FROM notification_delivery_records WHERE id=?) THEN 1 ELSE json('Unknown delivery.') END").bind(deliveryId);
   }
+  // The attempt and delivery union views do not carry a correlated id into
+  // their branches under ORDER BY or an aggregate, so such a subquery would
+  // read every attempt ever stored. These seek each table's own index instead.
+  const attemptTables = ["notification_delivery_attempts", "component_delivery_attempts", "report_delivery_attempts"] as const;
+  const attemptsOf = (deliveryId: string) => `(${attemptTables.map(table => `SELECT * FROM ${table} WHERE delivery_id=${deliveryId}`).join(" UNION ALL ")})`;
+  const attemptsOfEvent = (eventId: string) => `(${deliveryTables.map((table, index) => `SELECT a.* FROM ${table} d CROSS JOIN ${attemptTables[index]} a ON a.delivery_id=d.id WHERE d.notification_event_id=${eventId}`).join(" UNION ALL ")})`;
   // Attempts, rather than the dispatch door or an in-memory timer, own retry
   // eligibility. Use this same expression in the atomic claim and Cron wakeup.
   function retryDeadlineSql(alias: string) {
     const delay = `CASE a.attempt_number ${RETRY_DELAYS_MS.map((value, index) => `WHEN ${index + 1} THEN ${value}`).join(" ")} ELSE ${RETRY_DELAYS_MS.at(-1)} END`;
     const ordinary = `COALESCE((SELECT strftime('%Y-%m-%dT%H:%M:%fZ',a.attempted_at,'+' || ((${delay}) / 1000.0) || ' seconds')
-      FROM notification_attempt_records a WHERE a.delivery_id=${alias}.id ORDER BY a.attempt_number DESC LIMIT 1),${alias}.queued_at)`;
+      FROM ${attemptsOf(`${alias}.id`)} a ORDER BY a.attempt_number DESC LIMIT 1),${alias}.queued_at)`;
     // Safe mail failover keeps its own five-minute deadline. It never advances
     // another recipient's retry, and ambiguous submissions do not enable it.
     return `min(${ordinary},COALESCE((SELECT strftime('%Y-%m-%dT%H:%M:%fZ',r.first_retryable_failure_at,'+300 seconds')
@@ -315,8 +321,10 @@ export function createDeliveryRepository(binding: D1Database, mailReceipts?: { p
       // Both scopes and their authoritative winners share one transaction. A
       // concurrent delivery reuses the committed tokens; a revoked token is
       // never reused, and an inactive/deleted subscriber gets no new links.
-      const terminalReport = `EXISTS(SELECT 1 FROM notification_delivery_records terminal WHERE terminal.subscriber_id=subscribers.id
-        AND terminal.outcome='queued' AND ${incidentFinalDeliverySql("terminal.notification_event_id", "subscribers")})`;
+      // Only an ended follow can own a terminal send; the guard keeps every
+      // other subscriber from reading its whole delivery history.
+      const terminalReport = `(subscribers.deactivation_reason='incident-follow-ended' AND (${deliveryTables.map(table => `EXISTS(SELECT 1 FROM ${table} terminal
+        WHERE terminal.subscriber_id=subscribers.id AND terminal.outcome='queued' AND ${incidentFinalDeliverySql("terminal.notification_event_id", "subscribers")})`).join(" OR ")}))`;
       const notificationAllowed = `(state='active' OR ${terminalReport})`;
       const tokenAvailable = `(revoked_at IS NULL OR ${terminalReport})`;
       const insert = (scope: "manage" | "unsubscribe") => binding.prepare(`
@@ -349,6 +357,8 @@ export function createDeliveryRepository(binding: D1Database, mailReceipts?: { p
     },
     async completeOutbox(id, now) { await database.update(notificationOutbox).set({ completedAt: now, lockedAt: null, updatedAt: now }).where(eq(notificationOutbox.id, id)); },
     async rescheduleOutboxForEvent(eventId, now) {
+      // The job's aggregate is its event; its attempts are read through its own deliveries.
+      const eventAttempts = attemptsOfEvent("notification_outbox.aggregate_id");
       const next = `SELECT min(${retryDeadlineSql("d")}) FROM notification_delivery_records d
         WHERE d.notification_event_id=? AND ${unacceptedQueued}`;
       const [, stored] = await binding.batch<{ availableAt: string; completedAt: string | null }>([
@@ -356,14 +366,11 @@ export function createDeliveryRepository(binding: D1Database, mailReceipts?: { p
           completed_at=CASE WHEN EXISTS(SELECT 1 FROM notification_delivery_records d
             WHERE d.notification_event_id=? AND ${unacceptedQueued}) THEN NULL ELSE ? END,
           locked_at=NULL,
-          attempts=max(attempts,COALESCE((SELECT max(a.attempt_number) FROM notification_attempt_records a
-            JOIN notification_delivery_records d ON d.id=a.delivery_id WHERE d.notification_event_id=?),0)),
-          last_error=COALESCE((SELECT a.error FROM notification_attempt_records a JOIN notification_delivery_records d ON d.id=a.delivery_id
-            WHERE d.notification_event_id=? ORDER BY a.attempted_at DESC,a.attempt_number DESC LIMIT 1),last_error),
-          updated_at=max(updated_at,COALESCE((SELECT max(a.attempted_at) FROM notification_attempt_records a
-            JOIN notification_delivery_records d ON d.id=a.delivery_id WHERE d.notification_event_id=?),?))
+          attempts=max(attempts,COALESCE((SELECT max(a.attempt_number) FROM ${eventAttempts} a),0)),
+          last_error=COALESCE((SELECT a.error FROM ${eventAttempts} a ORDER BY a.attempted_at DESC,a.attempt_number DESC LIMIT 1),last_error),
+          updated_at=max(updated_at,COALESCE((SELECT max(a.attempted_at) FROM ${eventAttempts} a),?))
           WHERE kind='delivery-dispatch' AND aggregate_id=? AND completed_at IS NULL AND failed_at IS NULL`)
-          .bind(eventId,eventId,now,eventId,eventId,eventId,now,eventId),
+          .bind(eventId,eventId,now,now,eventId),
         binding.prepare(`SELECT available_at AS availableAt,completed_at AS completedAt FROM notification_outbox
           WHERE kind='delivery-dispatch' AND aggregate_id=? AND failed_at IS NULL`).bind(eventId),
       ]);

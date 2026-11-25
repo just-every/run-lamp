@@ -7,15 +7,13 @@ export function finishIncidentSubscriptionStatements(db: D1Database, now: string
         WHERE ended.ended_at IS NOT NULL AND s.id=ended.subscriber_id AND s.state IN ('pending','active'))`).bind(now,now),
     db.prepare(`UPDATE subscriber_tokens SET revoked_at=?,updated_at=? WHERE revoked_at IS NULL
       AND subscriber_id IN (SELECT subscriber_id FROM incident_subscriptions WHERE ended_at IS NOT NULL)`).bind(now,now),
-    db.prepare(`UPDATE notification_deliveries SET outcome='suppressed',outcome_at=?,updated_at=? WHERE outcome='queued'
-      AND subscriber_id IN (SELECT subscriber_id FROM incident_subscriptions x WHERE x.ended_at IS NOT NULL
-        AND (x.final_event_id IS NULL OR x.final_event_id<>notification_deliveries.notification_event_id))`).bind(now,now),
-    db.prepare(`UPDATE report_notification_deliveries SET outcome='suppressed',outcome_at=?,updated_at=? WHERE outcome='queued'
-      AND subscriber_id IN (SELECT subscriber_id FROM incident_subscriptions x WHERE x.ended_at IS NOT NULL
-        AND (x.final_event_id IS NULL OR x.final_event_id<>report_notification_deliveries.notification_event_id))`).bind(now,now),
-    db.prepare(`UPDATE sms_deliveries SET outcome='suppressed',outcome_at=? WHERE outcome='queued'
-      AND subscriber_id IN (SELECT subscriber_id FROM incident_subscriptions x WHERE x.ended_at IS NOT NULL
-        AND (x.final_event_id IS NULL OR x.final_event_id<>sms_deliveries.event_id))`).bind(now),
+    // Driven from the ended follows (erased within a day) through each
+    // follower's own deliveries, never from every queued delivery ever stored.
+    ...([["notification_deliveries","notification_event_id",",updated_at=?"],["report_notification_deliveries","notification_event_id",",updated_at=?"],["sms_deliveries","event_id",""]] as const)
+      .map(([deliveries,event,updated])=>db.prepare(`UPDATE ${deliveries} SET outcome='suppressed',outcome_at=?${updated} WHERE rowid IN (
+        SELECT d.rowid FROM incident_subscriptions x INDEXED BY incident_subscriptions_ended_work CROSS JOIN ${deliveries} d
+        WHERE x.ended_at IS NOT NULL AND d.subscriber_id=x.subscriber_id AND +d.outcome='queued'
+          AND (x.final_event_id IS NULL OR x.final_event_id<>d.${event}))`).bind(...(updated?[now,now]:[now]))),
   ];
 }
 

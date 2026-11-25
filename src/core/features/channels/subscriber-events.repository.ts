@@ -37,7 +37,7 @@ export function createChatEventRepository(db: D1Database) {
         }>()).results;
     },
     async active(id:string) {
-      const row=await db.prepare("SELECT d.created_by_operator_id AS operatorId,s.state FROM delivery_channel_destinations d LEFT JOIN subscriber_directory s ON s.id=d.id WHERE d.id=? AND d.removed_at IS NULL").bind(id).first<{operatorId:string|null;state:string|null}>();
+      const row=await db.prepare("SELECT d.created_by_operator_id AS operatorId,s.state FROM delivery_channel_destinations d LEFT JOIN subscribers s ON s.id=d.id WHERE d.id=? AND d.removed_at IS NULL").bind(id).first<{operatorId:string|null;state:string|null}>();
       return Boolean(row && (row.operatorId!==null || row.state==='active'));
     },
   };

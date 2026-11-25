@@ -31,6 +31,13 @@ WHERE provider_message_id IS NOT NULL;
 CREATE INDEX report_delivery_attempts_provider_message ON report_delivery_attempts(provider_message_id)
 WHERE provider_message_id IS NOT NULL;
 
+-- Dispatching one delivery reads that delivery's attempts, its event's
+-- deliveries and its subscriber's own links, never every stored row.
+CREATE INDEX notification_deliveries_event ON notification_deliveries(notification_event_id);
+CREATE INDEX component_deliveries_event ON component_notification_deliveries(notification_event_id);
+CREATE INDEX report_deliveries_event ON report_notification_deliveries(notification_event_id);
+CREATE INDEX subscriber_tokens_subscriber_scope ON subscriber_tokens(subscriber_id, scope, created_at);
+
 -- Public metric charts read one stored series row per metric: the minute
 -- points as a JSON object keyed by bucket, kept by the metrics repository in
 -- the same batches that write, expire or reset the points. The repository

@@ -12,6 +12,10 @@ recording its send later still applies it. Public metric charts read one stored
 series row per metric. A metric's first data, a reset or a stale change
 republishes the page at once; later points wait for the five-minute refresh.
 The communication performance card reads on view and on Refresh, not on a timer.
+Dispatching a notification reads only that delivery's attempts, its update's
+deliveries and its subscriber's own links: the attempt and delivery union views
+do not carry a correlated id into their branches, so these queries seek each
+table directly, and ending an incident follow suppresses from the follow.
 `tests/e2e/scheduled-read-budget.test.mjs` holds scheduled runs under a
 ceiling and flat between one and thirty days of history.
 
