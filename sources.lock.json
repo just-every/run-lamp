@@ -628,7 +628,7 @@
       "executable": false
     },
     "docs/deploy.md": {
-      "sha256": "5462056006db1258dd62f34b85b2909637af74f9163fefcf3aff1d1162d27cff",
+      "sha256": "d5132aaa3b70126c41ab8bd537783b19f27aaf39bf637c39134d5664c5f8a31f",
       "executable": false
     },
     "docs/deployment-reference.md": {
@@ -716,11 +716,11 @@
       "executable": false
     },
     "hosted-check-managed.json": {
-      "sha256": "d09c9998c4c2c2117026ea09aa340e1dbe82c93cd29be53c5442746eafa36dae",
+      "sha256": "ffb356bb8b114e41603721ec62ab091043e03ae5d7f8794b50e6a42d8918f761",
       "executable": false
     },
     "hosted-check.json": {
-      "sha256": "9ca1b0b33e6d48b3ecf109b0d2391edfd0e9e8b926b3a63d3cc80a73d3216544",
+      "sha256": "cdc126e4f51a659c56a1f5590197b2939384f844c31eccb0356e6c78fa30b625",
       "executable": false
     },
     "importers.json": {
@@ -2672,7 +2672,7 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "dccc30d3b8949151752fd24d14ab189bc3b1aee4e9aa85c8fa9487fb3d5e9700",
+      "sha256": "f692af1596ebc9810318f660418aa911f536a440eb5133bb93582dfd4b11b128",
       "executable": false
     },
     "patches/@runeditrun__rer@0.2.133.patch": {
@@ -3320,7 +3320,7 @@
       "executable": false
     },
     "scripts/delivery/base/packaging.json": {
-      "sha256": "0d94b505056e2a9fd773c988e9724748137e45ef4f273dce0742301221a05212",
+      "sha256": "4562f2d10a829a4e7c277d258094efb16bb1f355db30b5aa81e08c0752befaed",
       "executable": false
     },
     "scripts/delivery/base/paths.mjs": {
@@ -3380,7 +3380,7 @@
       "executable": false
     },
     "scripts/deploy.mjs": {
-      "sha256": "aad88d63198c327960533e6a711df9060475786c66bb5397f8d870b9774e20ee",
+      "sha256": "b0040c0cf02a7ea3986b7e83d6b5e1da9e4efe777eca3d1e83aa529700310323",
       "executable": false
     },
     "scripts/deployment-cpu-limit.mjs": {
@@ -4180,7 +4180,7 @@
       "executable": false
     },
     "scripts/ops-config.mjs": {
-      "sha256": "e503b959f97b2efacab33b96bf066f493276e1b8387e3d856d66ab585255cd54",
+      "sha256": "b0a8066797d42357f85d7c39172443556011bf60ff1df52515d8296abc4b8d9b",
       "executable": false
     },
     "scripts/owner-claim-config.mjs": {
@@ -4292,7 +4292,7 @@
       "executable": false
     },
     "seed.json": {
-      "sha256": "139f3aca5f6a637d64b330a40f23bf63a301e0151978ad4189cb466327f70eff",
+      "sha256": "45306ecd7ed6896b72747dbee9cc8449570f299f582fe1957d882bb429ee44e5",
       "executable": false
     },
     "src/base/actor.ts": {
@@ -4620,7 +4620,7 @@
       "executable": false
     },
     "src/core/app/mail.ts": {
-      "sha256": "81b2e99aaef9dc4d9f15cd2f53a4c4217c9a09ec30f5830f96cc6b4d7f4818f3",
+      "sha256": "2ee2e9ad1047c412578d314b6b2d4457902e21073be5d66deb710cef3ecd3da7",
       "executable": false
     },
     "src/core/app/page-data.ts": {
@@ -4640,11 +4640,11 @@
       "executable": false
     },
     "src/core/app/services.ts": {
-      "sha256": "7fefdf5cd44c60f698dd9a553e683e7b1bebffa7f1792accf8d32d51c32bc05e",
+      "sha256": "cfdb53df1c7831cd6f2345e8407edb873056e57a6b1e25b1141559b7f30e33a4",
       "executable": false
     },
     "src/core/app/types.ts": {
-      "sha256": "3ff0d41dd364ca1371de3b239a61844ca3a6eb40e6fe1ddf18d6cd1f0a4a9400",
+      "sha256": "1299c539c256710cd1a40579428f48a5315a86ccef45182dec64c490b0efbced",
       "executable": false
     },
     "src/core/app/worker-lifecycle.ts": {
@@ -7128,11 +7128,11 @@
       "executable": false
     },
     "src/core/platform/auth/config.ts": {
-      "sha256": "16239b286cba80e02ecf26593a67156952224e2b9cc09d4d8f3eb5dc3f82aeed",
+      "sha256": "803aea3825e544eaa45d30c08cf671951171205a1fa4853ce5edd34baebdeaee",
       "executable": false
     },
     "src/core/platform/auth/http.ts": {
-      "sha256": "1c6a21d9d24f65736d2bd790ddd02f277cf5113adae146a4b21ffdce510b9a44",
+      "sha256": "27cea8a0fae21d2e461c6ca6b60261bcf1eb7a916c8ab0d95844066f9f5adb0d",
       "executable": false
     },
     "src/core/platform/auth/identity-provider-guides.ts": {
@@ -7144,11 +7144,11 @@
       "executable": false
     },
     "src/core/platform/auth/index.ts": {
-      "sha256": "3ee8dc02c9c0647b2a07049a659ff0b02ea764dfae61202fb79368437403f0b8",
+      "sha256": "eb1282c1dd0afac455e43ed4ac47267a3be295f601dbcbf92f0455c959474402",
       "executable": false
     },
     "src/core/platform/auth/installation-presentation.ts": {
-      "sha256": "a44b6bc780157a724ce33350f773f3d8800a1ea53349db30479cb89bc86308f7",
+      "sha256": "ef92939399feaf505b9f72c01f2b250bfcc60896d8b8e1426b6d3d7ea5e65925",
       "executable": false
     },
     "src/core/platform/auth/local-passkey/base-auth.d.ts": {
@@ -7175,6 +7175,10 @@
       "sha256": "3918413ffac83bc2d63258a0e848c5f3fe85b833b6bf48cbfea848b95a60c0b3",
       "executable": false
     },
+    "src/core/platform/auth/mail-sender.ts": {
+      "sha256": "b4f64667f6121164b0ed6a6b98fcb49dc03e42149030df052fb924fa1799c91f",
+      "executable": false
+    },
     "src/core/platform/auth/owner-email-change.repository.ts": {
       "sha256": "d15f96ee33910bb9adc47f481d952095a7795bc6acf59bf007b6d5e9a4ea94e5",
       "executable": false
@@ -7188,7 +7192,11 @@
       "executable": false
     },
     "src/core/platform/auth/owner-profile.ts": {
-      "sha256": "1b9c0901d93dc153a66b8f5d26f60f70c64b876920394addcf1fe154676f3043",
+      "sha256": "2e4e88461e54f9850b3bab63e7149b440ad3680fd907cf70ee0e0429ec9f9a2c",
+      "executable": false
+    },
+    "src/core/platform/auth/owner-signin-mail.ts": {
+      "sha256": "e6c2531f0f40f5f95ff61954ce9f4d32160d8891d57ebd144551dcfcba3435f1",
       "executable": false
     },
     "src/core/platform/auth/owner-signin-return.ts": {
@@ -8317,6 +8325,10 @@
     },
     "tests/auth-adoption/fixtures/prechange.sql": {
       "sha256": "5b7c8c78d9e1821dc3bc33aa5051390d201d2a9706e14b7a1eb0a1b566bfc023",
+      "executable": false
+    },
+    "tests/auth-adoption/owner-signin-mail.test.mjs": {
+      "sha256": "727fc86b823f268c33d43a73f73947169094ec26cb98e8536ab19e54cb89eefd",
       "executable": false
     },
     "tests/auth-adoption/portability.test.mjs": {

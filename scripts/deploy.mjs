@@ -26,6 +26,7 @@ async function buildGeneratedWorker(configPath, expected) {
   if (built.config.name !== worker) throw new Error(`Vite emitted ${built.config.name ?? "an unnamed Worker"} instead of ${worker}.`);
   if (built.config.compatibility_date !== "2026-09-08" || !["nodejs_compat", "global_fetch_strictly_public"].every(flag => built.config.compatibility_flags?.includes(flag))) throw new Error("The compiled Worker configuration did not retain the required Start compatibility settings.");
   if (built.config.vars?.LAMP_PAGE_HOST !== expected.pageHost || built.config.vars?.LAMP_APP_HOST !== expected.appHost || built.config.vars?.MAIL_PROVIDER !== expected.mailProvider || built.config.vars?.MAIL_FROM_ADDRESS !== (expected.mailProvider === "none" ? undefined : expected.mailFromAddress)) throw new Error("The compiled Worker configuration did not retain the generated deployment bindings.");
+  if (built.config.vars?.MAIL_RECIPIENTS !== (expected.mailRecipients === "owner" ? "owner" : undefined)) throw new Error("The compiled Worker configuration did not retain MAIL_RECIPIENTS.");
   if (expected.mailProvider === "rer" && (built.config.vars?.MAIL_FROM !== expected.mailFromAddress || built.config.vars?.MAIL_RELAY_URL !== expected.mailRelayUrl)) throw new Error("The compiled Worker configuration did not retain managed mail bindings.");
   return built;
 }

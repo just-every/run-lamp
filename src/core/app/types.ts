@@ -53,6 +53,8 @@ export interface AppBindings {
   MAIL_FROM_ADDRESS: string;
   MAIL_PROVIDER_API_KEY?: string;
   MAIL_PROVIDER?: "none" | "rer" | "resend" | "sendgrid" | "mailgun" | "ses" | "postmark";
+  /** owner: product mail stays off and only the owner's own sign-in link is sent. Default any. */
+  MAIL_RECIPIENTS?: "any" | "owner";
   MAIL_SECONDARY_PROVIDER?: "resend" | "sendgrid" | "mailgun" | "ses" | "postmark";
   MAIL_SECONDARY_API_KEY?: string;
   SES_REGION?: string;

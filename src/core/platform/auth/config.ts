@@ -1,6 +1,7 @@
 import { isLoopbackHostname } from '../development/access';
 import { AuthError, type AuthConfig } from '@runeditrun/rer/modules/operator-auth';
 import type { AppBindings } from '../../app/types';
+import { productMailOff } from '../../app/mail';
 
 function providers(value?: string): AuthConfig['providers'] {
   if (!value) return undefined;
@@ -43,7 +44,7 @@ export function authConfig(env: AppBindings & InstallationKeyBindings, stored: A
     origin, local: env.AUTH_LOCAL === 'true' || Boolean(env.LAMP_LOCAL_ORIGIN && isLoopbackHostname(new URL(origin).hostname)),
     OWNER_EMAIL: (env.SETUP_OPERATOR_EMAIL || env.OWNER_EMAIL)!, SESSION_SECRET: env.SESSION_SECRET!, SETUP_TOKEN: env.SETUP_TOKEN,
     INSTALLATION_KEY: env.INSTALLATION_KEY, INSTALLATION_KEY_PREVIOUS: env.INSTALLATION_KEY_PREVIOUS,
-    MAIL_FROM: env.MAIL_PROVIDER === 'none' ? undefined : env.MAIL_FROM_ADDRESS, linkSeconds: 20 * 60,
+    MAIL_FROM: productMailOff(env) ? undefined : env.MAIL_FROM_ADDRESS, linkSeconds: 20 * 60,
     branding: { productName: 'Lamp', accentColor: '#163c60', signInPath: '/signin', theme: '/rer-theme.css' },
     dependencies: true,
     // A Worker that Lamp 1.6.0 or earlier deployed without one holds it empty, and redeploys keep it.

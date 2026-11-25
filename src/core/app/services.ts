@@ -54,7 +54,7 @@ import { createBriefRepository, createBriefService } from "../features/brief";
 import { createStatuspageImportService } from "../features/statuspage-import";
 import { createChannelsService } from "../features/channels";
 import { createPageExportRepository, createPageExportService } from "../features/page-export";
-import { configuredMailReceiptProviders, createAppMailTransport, type MailExecution } from "./mail";
+import { configuredMailReceiptProviders, createAppMailTransport, createOwnerSignInTransport, type MailExecution } from "./mail";
 import { createOpenAiCompatibleProvider } from "../platform/ai";
 import { createDemoAiProvider } from "../platform/ai/demo";
 import { createServerExtensionMount } from "./extensions/server";
@@ -62,6 +62,7 @@ import { createServerExtensionMount } from "./extensions/server";
 export function createAppServices(bindings: AppBindings, blobs: BlobStore, execution?: MailExecution) {
   const extensions = createServerExtensionMount();
   const { sender: mail, local } = createAppMailTransport(bindings, extensions.adapters["mail.sender.v1"], execution);
+  const ownerSignInMail = createOwnerSignInTransport(bindings, extensions.adapters["mail.sender.v1"]);
   // Report the composed sender's availability, including local suppression,
   // rather than treating a provider name in the environment as a working sender.
   const localMailSuppressed = local && bindings.RER_DEMO !== "1";
@@ -116,7 +117,7 @@ export function createAppServices(bindings: AppBindings, blobs: BlobStore, execu
   };
   const operators = createOperatorRepository(bindings.DB);
   let authority: ReturnType<typeof createLampAuth> | undefined;
-  const auth = () => authority ??= createLampAuth(bindings, mail);
+  const auth = () => authority ??= createLampAuth(bindings, mail, undefined, ownerSignInMail);
   // Google and Okta set up in Settings join the deploy file's providers. Base builds its providers once, when it is
   // constructed, so the auth that serves sign-in is composed first and constructed after, once per request (a runtime
   // that keeps these services across requests still composes anew for each); a change takes effect on the next request.
@@ -124,12 +125,12 @@ export function createAppServices(bindings: AppBindings, blobs: BlobStore, execu
   const composedAuth = new WeakMap<Request, Promise<ReturnType<typeof createLampAuth>>>();
   const signInAuth = (request: Request) => {
     let composed = composedAuth.get(request);
-    if (!composed) composedAuth.set(request, composed = signIn.composed().then(stored => createLampAuth(bindings, mail, stored)));
+    if (!composed) composedAuth.set(request, composed = signIn.composed().then(stored => createLampAuth(bindings, mail, stored, ownerSignInMail)));
     return composed;
   };
   const signIn = createSignInService(bindings.DB, {
     webhookSecret: bindings.WEBHOOK_SIGNING_SECRET, origin: authOrigin(bindings), unavailable: outboundUnavailable(bindings, "Google and Okta sign-in"),
-    deploy: deployProviders(bindings), auth: signInAuth, authWith: stored => createLampAuth(bindings, mail, stored),
+    deploy: deployProviders(bindings), auth: signInAuth, authWith: stored => createLampAuth(bindings, mail, stored, ownerSignInMail),
   });
   const components = createComponentsService(createComponentRepository(bindings.DB), publicSnapshots.rebuild, extensions.componentEvents);
   const componentCatalogue = createCatalogueService(createCatalogueRepository(bindings.DB), publicSnapshots.rebuild);

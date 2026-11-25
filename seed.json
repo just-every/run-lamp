@@ -519,6 +519,12 @@
       "why": "Select none deliberately to disable outbound email without sending credentials; the deployment owner uses rer signin with its account credentials and recorded deployment ownership. Missing or deferred selection never means off. Select rer for managed relay mail, or resend (default), sendgrid, mailgun, ses or postmark for enabled mail.sender.v1. SES credentials use JSON containing accessKeyId, secretAccessKey and optional sessionToken."
     },
     {
+      "name": "MAIL_RECIPIENTS",
+      "required": false,
+      "secret": false,
+      "why": "any (default) keeps ordinary mail. owner turns every product email off exactly as MAIL_PROVIDER=none does, and the selected provider sends one message only: the sign-in link the installation owner (the setup claim's active Owner account) asks for on the sign-in page. Any other address gets the same answer and no mail."
+    },
+    {
       "name": "SENDGRID_WEBHOOK_PUBLIC_KEY",
       "required": false,
       "secret": false,

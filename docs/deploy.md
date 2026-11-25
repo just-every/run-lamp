@@ -162,6 +162,30 @@ hosted sign-in page provides no local-development entry or reusable token.
 To enable email later, select and configure an enabled provider below and
 redeploy with the same environment and ownership records.
 
+### Or send only the owner's sign-in link
+
+Set `MAIL_RECIPIENTS=owner` together with an enabled provider below
+(`MAIL_PROVIDER`, its sender, DKIM selector and key). Lamp then behaves exactly
+as with email off: no invitations, subscriber or operator email, and Settings
+reports email as off. The provider sends one message only: the sign-in link
+the installation owner asks for on the sign-in page. The owner is the active
+Owner account created by the setup claim (`SETUP_OPERATOR_EMAIL`, or the
+address the owner later changed it to). Any other address, known or not, gets
+the same answer on the page and no mail. The link is single use and expires
+after 20 minutes. The default, `any`, keeps ordinary email.
+
+```text
+MAIL_PROVIDER=sendgrid
+MAIL_RECIPIENTS=owner
+MAIL_FROM_ADDRESS=status@example.com
+MAIL_DKIM_SELECTOR=s1
+MAIL_PROVIDER_API_KEY=synthetic-your-mail-provider-api-key
+```
+
+First check: open the sign-in page signed out, enter the owner address, and
+open the link in that inbox. Entering any other address must send nothing.
+Remove `MAIL_RECIPIENTS` and redeploy to turn ordinary email on.
+
 
 Lamp sends mail through SendGrid or Resend from an address on a domain you have
 authenticated there. Authenticate the exact domain of your sender address: for

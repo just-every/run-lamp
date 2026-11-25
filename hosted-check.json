@@ -65,6 +65,7 @@
   "publicSettings": [
     "LAMP_PAGE_WORKER",
     "MAIL_PROVIDER",
+    "MAIL_RECIPIENTS",
     "LAMP_RESOURCE_PREFIX",
     "LAMP_APP_HOST",
     "LAMP_PAGE_HOST"

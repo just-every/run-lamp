@@ -2,6 +2,8 @@ import { parse, parseFragment, serialize, type DefaultTreeAdapterMap } from "par
 
 const ssoNotice = `<p class="notice" role="status">Your organization requires single sign-on (SSO). Use your sign-in provider.</p>
 <p>For emergency access, the deployment owner can run <code>rer signin</code> from the checkout that deployed this environment.</p>`;
+// MAIL_RECIPIENTS=owner: the email form says who it reaches. No address is checked or revealed by the page.
+const ownerOnlyNote = `<section aria-labelledby="owner-only-signin"><h2 id="owner-only-signin">Email links go to the owner only</h2><p>This installation emails a sign-in link to its owner's address and to no one else. Other operators need a configured sign-in provider.</p></section>`;
 const terminalHelp = `<p>On this computer, paste the private <code>RER_OPEN</code> link from your terminal into this tab. For a fresh link, run <code>~/.local/bin/rer dev --as owner</code> from your Lamp folder.</p>`;
 
 type Element = DefaultTreeAdapterMap["element"];
@@ -10,7 +12,7 @@ const hasClass = (element: Element, name: string) => element.attrs.some(attribut
 const setText = (element: Element, value: string) => { element.childNodes = [{ nodeName: "#text", value, parentNode: element }]; };
 
 /** Preserve the native sign-in controls and headers in both Worker and Node handlers. */
-export async function installationSignIn(response: Response, name: string, local = false, terminalEntry = false, required = false): Promise<Response> {
+export async function installationSignIn(response: Response, name: string, local = false, terminalEntry = false, required = false, ownerOnly = false): Promise<Response> {
   if (!response.headers.get("content-type")?.includes("text/html")) return response;
   const label = name.trim() || "Lamp";
   const document = parse(await response.text());
@@ -35,6 +37,11 @@ export async function installationSignIn(response: Response, name: string, local
         for (const child of element.childNodes) if ("value" in child && /^rer\b/.test(child.value)) child.value = `~/.local/bin/${child.value}`;
       }
       rewrite(element);
+      if (element.tagName === "main" && ownerOnly && !required) {
+        const note = parseFragment(ownerOnlyNote).childNodes;
+        for (const child of note) child.parentNode = element;
+        element.childNodes.push(...note);
+      }
       if (element.tagName === "main" && local) {
         const help = parseFragment(terminalHelp).childNodes;
         for (const child of help) child.parentNode = element;

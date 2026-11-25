@@ -69,6 +69,7 @@
         "LAMP_APP_HOST",
         "MAIL_FROM_ADDRESS",
         "MAIL_PROVIDER",
+        "MAIL_RECIPIENTS",
         "LAMP_RESOURCE_PREFIX",
         "SENDGRID_WEBHOOK_PUBLIC_KEY",
         "AI_PROVIDER_URL",

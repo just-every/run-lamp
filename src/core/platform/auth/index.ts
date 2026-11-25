@@ -6,8 +6,10 @@ import { createOperatorRolesRepository } from '../../features/operators/roles.re
 import { OPERATOR_ROLES, type OperatorRole } from '../../features/operators/permissions';
 import { authConfig } from './config';
 import { ownerProfile } from './owner-profile';
+import { baseMailSender } from './mail-sender';
+import { ownerSignInLinks } from './owner-signin-mail';
 
-export function createLampAuth(env: AppBindings, mail?: MailSender, stored?: AuthConfig['providers']) {
+export function createLampAuth(env: AppBindings, mail?: MailSender, stored?: AuthConfig['providers'], ownerMail?: MailSender) {
   const repository = createOperatorRepository(env.DB);
   const config = authConfig(env, stored);
   const nativeAuth = (invitationRole?: OperatorRole) => createOperatorAuth({ db: env.DB, config,
@@ -24,13 +26,13 @@ export function createLampAuth(env: AppBindings, mail?: MailSender, stored?: Aut
       }
       return true;
     },
-    ...(mail?.configured ? { mailSender: { async send(message) {
-      const receipt = await mail.send({ from: message.from, to: message.to[0], subject: message.subject, text: message.text,
-        html: message.html, headers: message.headers, idempotencyKey: `operator-auth/${message.deliveryId}` });
-      return { status: receipt.disposition === 'suppressed' ? 'development' : 'accepted', provider: 'lamp-mail', providerMessageId: null };
-    } } } : {}),
+    ...(mail?.configured ? { mailSender: baseMailSender(mail, 'operator-auth') } : {}),
   });
   const auth = nativeAuth();
+  // MAIL_RECIPIENTS=owner: product mail is off, and the sign-in page's email link goes to the owner alone.
+  const ownerLink = ownerMail?.configured && env.MAIL_FROM_ADDRESS
+    ? ownerSignInLinks(env.DB, config, env.MAIL_FROM_ADDRESS, ownerMail, request => config.local ? 'loopback' : request.headers.get('CF-Connecting-IP') ?? '')
+    : null;
   async function setProductRole(request: Request, id: string, role: OperatorRole) {
     if (!OPERATOR_ROLES.includes(role)) throw new AuthError('invalid_role',400);
     if (request.method !== 'POST' || request.headers.get('Origin') !== new URL(request.url).origin || request.headers.get('Sec-Fetch-Site') === 'cross-site') throw new AuthError('same_origin_required',403);
@@ -47,6 +49,7 @@ export function createLampAuth(env: AppBindings, mail?: MailSender, stored?: Aut
   const profile = ownerProfile(env, auth, mail);
   return Object.freeze({
     ...auth,
+    ...(ownerLink ? { emailSignInAvailable: true, requestMagicLink: ownerLink } : {}),
     ownerProfile: profile,
     changeEmail: undefined,
     async changeDisplayName(request: Request, input: { displayName: string }) {

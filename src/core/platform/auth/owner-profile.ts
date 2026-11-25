@@ -3,7 +3,7 @@ import { hashToken, opaqueToken, validToken } from '@runeditrun/rer/internal/mod
 import { OWNER_SIGNIN_PATH, OWNER_SIGNIN_SECONDS, ownerSigninDigest } from '@runeditrun/rer/internal/modules/operator-auth/owner-signin-grant.mjs';
 import { requirePost } from '@runeditrun/rer/internal/modules/operator-auth/http.mjs';
 import { z } from 'zod';
-import { isLocalMailExecution } from '../../app/mail';
+import { isLocalMailExecution, productMailOff } from '../../app/mail';
 import type { AppBindings } from '../../app/types';
 import type { MailSender } from '../mail';
 import { createPublicWriteRateLimiter } from '../security/rate-limiter';
@@ -32,7 +32,7 @@ export function ownerProfile(env: AppBindings, auth: OperatorAuth, mail?: MailSe
   const db = env.DB;
   const sender = mail?.configured && config.MAIL_FROM ? { mail, from: config.MAIL_FROM } : null;
   const localMailOff = config.local && env.RER_DEMO !== '1' && (!sender || isLocalMailExecution(env));
-  const mode = localMailOff ? 'local' : env.MAIL_PROVIDER === 'none' ? 'terminal' : 'email';
+  const mode = localMailOff ? 'local' : productMailOff(env) ? 'terminal' : 'email';
   const limit = createPublicWriteRateLimiter(db);
 
   async function owner(request: Request) {

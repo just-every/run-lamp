@@ -16,7 +16,29 @@ export async function prepareAppMailBindings(bindings: AppBindings, _execution?:
     WEBHOOK_SIGNING_SECRET: bindings.WEBHOOK_SIGNING_SECRET || bindings.SESSION_SECRET };
 }
 
+// MAIL_RECIPIENTS=owner: the installation behaves exactly as mail-off (MAIL_PROVIDER=none) for every message,
+// and the configured provider carries one thing only, the owner's own sign-in link (platform/auth/owner-signin-mail).
+export function ownerOnlyMail(bindings: AppBindings): boolean {
+  if (bindings.MAIL_RECIPIENTS && !['any', 'owner'].includes(bindings.MAIL_RECIPIENTS)) throw new Error('MAIL_RECIPIENTS must be any or owner.');
+  return bindings.MAIL_RECIPIENTS === 'owner';
+}
+
+/** Product mail is off: deliberately (MAIL_PROVIDER=none) or because only the owner's sign-in link may be sent. */
+export function productMailOff(bindings: AppBindings): boolean {
+  return bindings.MAIL_PROVIDER === 'none' || ownerOnlyMail(bindings);
+}
+
 export function createAppMailTransport(bindings: AppBindings, extension: MailSender | undefined, _execution?: MailExecution): { sender: MailSender; local: boolean } {
+  if (ownerOnlyMail(bindings)) return { sender: new UnavailableMailSender(), local: false };
+  return providerMailTransport(bindings, extension);
+}
+
+/** The owner's sign-in link transport: only with MAIL_RECIPIENTS=owner and a configured provider. */
+export function createOwnerSignInTransport(bindings: AppBindings, extension: MailSender | undefined): MailSender | undefined {
+  return ownerOnlyMail(bindings) ? providerMailTransport(bindings, extension).sender : undefined;
+}
+
+function providerMailTransport(bindings: AppBindings, extension: MailSender | undefined): { sender: MailSender; local: boolean } {
   if (bindings.MAIL_PROVIDER === 'none') return { sender: new UnavailableMailSender(), local: false };
   if (bindings.MAIL_PROVIDER && !['rer', 'resend', 'sendgrid', 'mailgun', 'ses', 'postmark'].includes(bindings.MAIL_PROVIDER)) throw new Error('MAIL_PROVIDER must be rer, resend, sendgrid, mailgun, ses or postmark.');
   if (bindings.MAILGUN_REGION && !['us', 'eu'].includes(bindings.MAILGUN_REGION)) throw new Error('MAILGUN_REGION must be us or eu.');

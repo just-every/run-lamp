@@ -11,6 +11,7 @@ import { hostedOwnerSignInReturn } from './owner-signin-return';
 import { ownerProfileResponse } from './owner-profile-http';
 import { openDoorAtFirstClaim } from '../../features/statuspage-import/door-claim';
 import type { AppBindings } from '../../app/types';
+import { ownerOnlyMail, productMailOff } from '../../app/mail';
 import type { AppServices } from '../../app/services';
 export async function authResponse(request:Request,env:AppBindings,services:AppServices):Promise<Response> {
   const response = await authResponseInternal(request,env,services);
@@ -62,7 +63,8 @@ async function authResponseInternal(request:Request,env:AppBindings,services:App
       headers.set('Location', '/auth/settings/identity?saved=1');
       return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
     }
-    if (!required && env.MAIL_PROVIDER === 'none' && url.pathname === '/signin' && request.method === 'GET'
+    const ownerOnlySignIn = auth.emailSignInAvailable && ownerOnlyMail(env);
+    if (!required && !ownerOnlySignIn && productMailOff(env) && url.pathname === '/signin' && request.method === 'GET'
       && response.status === 200 && response.headers.get('content-type')?.includes('text/html')) {
       // Keep Base's provider buttons, notice, setup guard and security headers.
       // This is guidance only: no grant is minted or exposed by the hosted page.
@@ -72,7 +74,7 @@ async function authResponseInternal(request:Request,env:AppBindings,services:App
         element.append('<section aria-labelledby="mail-off-signin"><h2 id="mail-off-signin">Email is turned off</h2><p>Email links and invitations are unavailable. The deployment owner can run <code>rer signin</code> from the checkout that deployed this environment, with the same Cloudflare account credentials and deployment record.</p><p>Other operators need a configured sign-in provider or an administrator to enable mail.</p></section>', { html: true });
       } }).transform(response);
     }
-    if (url.pathname === '/signin') response = await installationSignIn(response, (await services.pageSettings.get())?.pageName ?? 'Lamp', false, false, Boolean(required));
+    if (url.pathname === '/signin') response = await installationSignIn(response, (await services.pageSettings.get())?.pageName ?? 'Lamp', false, false, Boolean(required), ownerOnlySignIn);
     if (url.pathname === '/auth/owner-signin' && response.status >= 400) return ownerSignInRefused(response);
     if (!config.local) response = hostedOwnerSignInReturn(request, response, config.origin);
     const test = await testFailureOnPane(request, response, auth, config.origin);
