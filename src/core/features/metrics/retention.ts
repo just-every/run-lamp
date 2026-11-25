@@ -1,8 +1,9 @@
 const DAY = 86400_000;
 /** Move each expired bucket exactly once in one transaction. Counts preserve
  * weighted means when a partial hour/day crosses a retention boundary later. */
+export const minuteRetentionCutoff = (now: number) => Math.floor((now - DAY) / 60_000) * 60_000;
 export function retentionStatements(db: D1Database, now: number) {
-  const minuteCutoff = Math.floor((now - DAY) / 60_000) * 60_000;
+  const minuteCutoff = minuteRetentionCutoff(now);
   const hourCutoff = Math.floor((now - 30 * DAY) / 3600_000) * 3600_000;
   const dayCutoff = Math.floor((now - 90 * DAY) / DAY) * DAY;
   const roll = (from: number, to: number, cutoff: number) => [

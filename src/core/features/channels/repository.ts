@@ -58,6 +58,14 @@ export function createChannelRepository(db: D1Database) {
           OR (COALESCE((SELECT cs.selection_mode FROM subscriber_directory cs WHERE cs.id=d.id),d.selection_mode) = 'selected' AND (EXISTS (SELECT 1 FROM channel_destination_components s JOIN components c ON c.id = s.component_id WHERE s.destination_id = d.id AND NOT EXISTS(SELECT 1 FROM subscriber_directory cs WHERE cs.id=d.id) AND s.component_id IN (${placeholders}) AND c.internal = 0) OR EXISTS(SELECT 1 FROM subscriber_components s JOIN components c ON c.id=s.component_id WHERE s.subscriber_id=d.id AND s.component_id IN (${placeholders}) AND c.internal=0))))`)
         .bind(input.updateId, input.updateId, input.queuedAt,input.updateId, ...input.componentIds, ...input.componentIds,...input.componentIds));
     },
+    /** Marks posts and chat events whose durable delivery is queued, including
+     * those queued before the marker existed or restored from an archive. */
+    async markQueued() {
+      await db.batch(["channel_posts", "subscriber_channel_posts", "channel_subscriber_events"].map(table => db.prepare(`UPDATE ${table}
+        SET enqueued_at = (SELECT x.created_at FROM integration_deliveries x WHERE x.namespace = 'lamp-channels' AND x.id = ${table}.id)
+        WHERE id IN (SELECT p.id FROM ${table} p INDEXED BY ${table}_unqueued WHERE p.enqueued_at IS NULL
+          AND EXISTS (SELECT 1 FROM integration_deliveries x WHERE x.namespace = 'lamp-channels' AND x.id = p.id))`)));
+    },
     /** Only posts whose durable delivery is not queued yet; sent posts never re-enter the minute scan. */
     async pending(limit: number): Promise<PendingPost[]> {
       return (await db.prepare(`SELECT p.id, p.incident_impact AS incidentImpact, p.destination_id AS destinationId, d.kind, p.incident_update_id AS incidentUpdateId, i.reference, i.title, u.lifecycle, u.customer_impact AS customerImpact, u.affected_audience AS affectedAudience, u.published_at AS publishedAt, u.component_changes_json AS componentChangesJson, u.what_still_works AS whatStillWorks, u.details, u.next_update_at AS nextUpdateAt, settings.timezone

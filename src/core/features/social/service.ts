@@ -73,6 +73,7 @@ export function createSocialService(db:D1Database,options:{webhookSecret?:string
     async dispatchPending(limit=100) {
       if(options.effectsPaused||options.unavailable)return;
       const origin=await options.publicOrigin();
+      await repository.markQueued();
       for(const pending of await repository.pending(limit)) {
         try {
           const account=await accountFor(pending.accountId);

@@ -125,6 +125,7 @@ export function createChannelsService(db: D1Database, options: { effectsPaused?:
     async dispatchPending(limit = 25) {
       if (options.effectsPaused || options.unavailable) return;
       const origin = await options.publicOrigin();
+      await repository.markQueued();
       for (const post of await repository.pending(limit)) {
         const data: ChannelPostData = { incidentImpact: post.incidentImpact, reference: post.reference, title: post.title, lifecycle: post.lifecycle, customerImpact: post.customerImpact, affectedAudience: post.affectedAudience, whatStillWorks: post.whatStillWorks, details: post.details, nextUpdateAt: post.nextUpdateAt, timezone: post.timezone, componentChanges: parsePublishedComponentChanges(post.componentChangesJson), url: new URL(`/incidents/${encodeURIComponent(post.reference)}`, origin).href };
         try {

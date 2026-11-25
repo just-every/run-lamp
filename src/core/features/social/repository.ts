@@ -34,6 +34,12 @@ export function createSocialRepository(db:D1Database) {
         FROM maintenance_notices n JOIN maintenance m ON m.id=n.maintenance_id CROSS JOIN social_accounts a
         WHERE n.id=? AND m.id=? AND a.removed_at IS NULL`).bind(input.queuedAt,input.eventId,input.maintenanceId)];
     },
+    /** Marks posts whose durable delivery is queued, including those queued before the marker existed. */
+    async markQueued() {
+      await db.prepare(`UPDATE social_posts SET enqueued_at=(SELECT d.created_at FROM integration_deliveries d WHERE d.namespace='lamp-social' AND d.id=social_posts.id)
+        WHERE id IN (SELECT p.id FROM social_posts p INDEXED BY social_posts_unqueued WHERE p.enqueued_at IS NULL
+          AND EXISTS(SELECT 1 FROM integration_deliveries d WHERE d.namespace='lamp-social' AND d.id=p.id))`).run();
+    },
     async pending(limit:number) {
       // Earlier unresolved posts serialize each account's incident thread. Other
       // accounts keep moving even when one provider is down.
