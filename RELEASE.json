@@ -28,7 +28,7 @@
   "migrations": [
     {
       "id": "0091_bounded_scheduled_reads.sql",
-      "buyerSteps": "Apply before starting the updated Worker. The migration adds indexes for due scheduled work, queued markers on chat and social posts filled from their existing deliveries, a set-aside marker for unmatched provider callbacks, and a stored public series per metric filled from the current minute points. Minute metric points stop requesting a full page rebuild. Existing records keep their values."
+      "buyerSteps": "Apply before starting the updated Worker. The migration adds indexes for due scheduled work, a queued marker on chat and social posts, a set-aside marker for unmatched provider callbacks, and a public series table per metric. It writes no rows: the first scheduled run marks posts already queued and builds each metric's series from its stored minute points, and a restored archive is handled the same way. Minute metric points stop requesting a full page rebuild."
     }
   ],
   "breaking": false,
