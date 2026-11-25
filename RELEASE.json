@@ -1,40 +1,22 @@
 {
-  "version": "1.11.41",
-  "previousVersion": "1.11.40",
+  "version": "1.11.42",
+  "previousVersion": "1.11.41",
   "date": "2026-11-25",
-  "publicReleaseNotes": "- **`/health` is cheap enough for an uptime monitor.** It checks that D1 answers (one `select 1`, reused for 30 seconds within an isolate) and that the R2 and Queue bindings are present, and returns 503 naming the failed dependency. It no longer writes an R2 object or puts a Queue message on a refresh, so a cold or long-idle Worker answers within a 2-second monitor limit. `/health/deep` on the app host runs the full check: D1, an R2 write, read and delete, and a Queue message, reusing a passing answer for 30 seconds. The heartbeat runs the deep check live. The dependency-health D1 row is no longer written or read.\n- **An unavailable vendor source no longer shows a stale all-clear.** After three failed reads, the public page shows when the vendor's status became unavailable and names a last reported state only when it was a disruption. The public vendor API returns `state: null` while the source is unavailable and its last observation was Operational. Operators keep the last observation. For a custom Statuspage v2 source, enter the public URL ending in `/api/v2/summary.json`.\n- **Published reports confirm on the reader view.** After you publish an incident report, Lamp queues the page build in a separate Worker invocation, and the editor confirms publication once every selected page serves a generation that includes the report. The editor stops checking after five minutes or a reported build failure and offers a page-build retry, which uses the saved report and its original publication and does not repeat subscriber notifications.\n- **Queued Move in jobs resume.** A reviewed import that was queued before the door recorded its job ID can be applied again with the same reviewed fingerprint.\n- **Local readiness matches local mail.** A local installation with suppressed mail omits the email form and its readiness check. The page address is still checked, and hosted mail still requires the form.\n\n### Upgrading from 1.11.40\n\nBack up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.41`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release adds no migrations. Point uptime monitors at `/health`; use `/health/deep` on the app host when you need the storage and queue round trip.",
+  "publicReleaseNotes": "- **Each component and group shows its reliability over all history.** Under the 90-day record, the public page shows an **All time** figure and a compact monthly bar for every component and group, on every layout, and states the method. Lamp works it out from stored incidents. Each public incident counts from its start to its resolution, or up to now while it is open, on the components it affected, at the downtime weight of its impact. Overlapping incidents count once, at the most severe. A component's record starts at its uptime start date, or else at its creation or its first incident, whichever is earlier. A group combines its components' downtime over their tracked time. History moved in through **Settings › Move in** counts, including an incident still open. Lamp computes the figures when it builds the stored page, with one query per build, so page views read nothing from the database. In a local test, a build with 7 incidents read 43 D1 rows for them.\n\n### Upgrading from 1.11.41\n\nBack up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.42`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release adds no migrations. The stored public page rebuilds once after the update.",
   "contractChanges": {},
   "proseChanges": [
     {
-      "document": "OPERATIONS.md",
-      "section": "Dependency failure",
+      "document": "docs/public-page.md",
+      "section": "Read history and uptime",
       "change": "changed",
       "date": "2026-11-25",
-      "summary": "/health is a cheap check; /health/deep runs the storage and queue round trip.",
-      "was": "/health checked D1, R2 and Queue reachability, recording a good result and refreshing it in the background.",
-      "now": "/health checks that D1 answers and the R2 and Queue bindings are present, writing nothing. /health/deep on the app host runs the R2 write, read and delete and a Queue message; the heartbeat runs it live."
-    },
-    {
-      "document": "docs/contract/public-details.md",
-      "section": "PAGE-006 — Serving through a failure",
-      "change": "changed",
-      "date": "2026-11-25",
-      "summary": "/health reports 503 when the database is unreachable, and /health/deep when storage or the queue is; the public page does not depend on either.",
-      "was": "/health reported 503 when the database, the queue or object storage was unreachable.",
-      "now": "/health reports 503 when the database is unreachable or a binding is missing; /health/deep on the app host reports 503 when object storage or the queue is unreachable."
-    },
-    {
-      "document": "docs/contract/public-details.md",
-      "section": "DEP-001 — Vendor components that follow vendor status",
-      "change": "changed",
-      "date": "2026-11-25",
-      "summary": "An unavailable vendor source shows when it became unavailable and never reports a stale Operational publicly.",
-      "was": "Three consecutive failed reads showed the first unavailable time and preserved the last observation on the public page and API.",
-      "now": "Three consecutive failed reads show when the source became unavailable. Operators keep the last observation; the public page shows a last reported disruption with the notice, and the public vendor API returns `state: null` when the last observation was Operational."
+      "summary": "Each component and group shows its all-history reliability under the 90-day record.",
+      "was": "The public page showed a 90-day uptime window for each visible component.",
+      "now": "The public page also shows each component's and group's All time reliability and a monthly bar, worked out from stored incidents including moved-in history and an incident still open."
     }
   ],
   "extensionPointChanges": [],
   "migrations": [],
   "breaking": false,
-  "agentUpdateInstructions": "Back up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.41`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release adds no migrations. Point uptime monitors at `/health`; use `/health/deep` on the app host when you need the storage and queue round trip. After deploying, check that `/health` answers 200 within 2 seconds and that `/health/deep` on the app host answers 200."
+  "agentUpdateInstructions": "Back up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.42`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release adds no migrations. The stored public page rebuilds once after the update. After deploying, open the public page signed out and check that each component and group shows an All time figure with its monthly bar."
 }

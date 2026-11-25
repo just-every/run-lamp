@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.11.42
+
+- **Each component and group shows its reliability over all history.** Under the 90-day record, the public page shows an **All time** figure and a compact monthly bar for every component and group, on every layout, and states the method. Lamp works it out from stored incidents. Each public incident counts from its start to its resolution, or up to now while it is open, on the components it affected, at the downtime weight of its impact. Overlapping incidents count once, at the most severe. A component's record starts at its uptime start date, or else at its creation or its first incident, whichever is earlier. A group combines its components' downtime over their tracked time. History moved in through **Settings › Move in** counts, including an incident still open. Lamp computes the figures when it builds the stored page, with one query per build, so page views read nothing from the database. In a local test, a build with 7 incidents read 43 D1 rows for them.
+
+### Upgrading from 1.11.41
+
+Back up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.42`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release adds no migrations. The stored public page rebuilds once after the update.
+
 ## 1.11.41
 
 - **`/health` is cheap enough for an uptime monitor.** It checks that D1 answers (one `select 1`, reused for 30 seconds within an isolate) and that the R2 and Queue bindings are present, and returns 503 naming the failed dependency. It no longer writes an R2 object or puts a Queue message on a refresh, so a cold or long-idle Worker answers within a 2-second monitor limit. `/health/deep` on the app host runs the full check: D1, an R2 write, read and delete, and a Queue message, reusing a passing answer for 30 seconds. The heartbeat runs the deep check live. The dependency-health D1 row is no longer written or read.
