@@ -2999,6 +2999,14 @@
       "sha256": "c0055a2fcc0c73f34f5a970058d6a1e2e4032f6ca9bfe6ea0b357c7c2d764cf0",
       "executable": false
     },
+    "release-history/1.11.41.CONTRACT.md": {
+      "sha256": "a4b02314dc265c850a64e7bd1fca7063294c6c77a352de563b185240d5e7b7b0",
+      "executable": false
+    },
+    "release-history/1.11.41.json": {
+      "sha256": "e28eb3d96f19af36ff55710ca365e25944a61fd0a615d6841032cf7d3f4924b8",
+      "executable": false
+    },
     "release-history/1.11.5.CONTRACT.md": {
       "sha256": "2a72e905c96ba05640e2b01ac04d573651f0cfe4f597d42e4895ef32de961a35",
       "executable": false
