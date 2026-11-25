@@ -234,11 +234,12 @@ test('AUD-001 THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published stat
     const beforeOutage = pings;
     await (await j.runtime.getWorker()).scheduled({ cron: '* * * * *', scheduledTime: Date.now() });
     assert.equal(pings, beforeOutage, 'a running Cron cannot certify a failed Queue dependency');
-    assert.equal((await j.request('/health')).status, 503);
+    assert.equal((await j.request('/health/deep')).status, 503, 'the deep check names a failed Queue');
+    assert.equal((await j.request('/health')).status, 200, '/health puts nothing on the Queue, so it stays fast and answers from the database and bindings');
     for (const [path, body] of expected) assert.equal(await j.publicText(path), body, `${path} retains its published state`);
     await eventually(() => alarm, Boolean, 'the separate monitor reports missed receipts');
     await j.raw('/test/queue', { method: 'PUT', body: JSON.stringify({ outage: false }) });
-    await j.tick(Date.now()); assert.ok(pings > beforeOutage); assert.equal((await j.request('/health')).status, 200);
+    await j.tick(Date.now()); assert.ok(pings > beforeOutage); assert.equal((await j.request('/health/deep')).status, 200);
     await j.close(); j = null;
 
     // Real public routes, R2 and durable replica. Its repository throws on every

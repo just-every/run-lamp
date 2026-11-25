@@ -29,7 +29,6 @@ import { isLocalMailExecution, type MailExecution } from "./mail";
 import { createAppServices } from "./services";
 import { createSnapshotBlobStore } from "../platform/blobs/r2";
 import { createDependencyProber } from "../platform/health";
-import { createQueueDispatcher } from "../platform/jobs";
 import { createPublicWriteRateLimiter } from "../platform/security/rate-limiter";
 import { registerComponentRoutes } from "../features/components";
 import { registerCatalogueRoutes } from "../features/components/catalogue-routes";
@@ -66,7 +65,7 @@ export function createApp(bindings: AppBindings, execution?: MailExecution) {
   const app = new Hono<AppEnv>();
   const authorizedReads = new WeakMap<Request, OperatorReadSession>();
   const services = createAppServices(bindings, createSnapshotBlobStore(bindings), execution);
-  const healthService = createHealthService(createHealthRepository(bindings.DB), createDependencyProber(bindings.SNAPSHOTS, createQueueDispatcher(bindings.JOBS)), async () => {
+  const healthService = createHealthService(createHealthRepository(bindings.DB), createDependencyProber(bindings.SNAPSHOTS, bindings.JOBS), async () => {
     if (await services.publicSnapshots.hasCurrentSnapshot()) {
       // A deploy that changed the code leaves the previous page in storage; rebuild it from
       // this release. Health still answers if the rebuild fails: the work stays pending for the next try.

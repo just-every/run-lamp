@@ -27,7 +27,7 @@ install and full `pnpm verify`, with no skipped or failed requirements, plus:
 - Original-data export, clean restore, equivalent re-export, failed-restore recovery,
   previous-release migration and preserved owner customizations/intent.
 - D1, Queue and R2 failure branches: public retained snapshots remain readable,
-  `/health` reports dependency failure, failed work is visible, and recovery
+  `/health/deep` reports dependency failure, failed work is visible, and recovery
   publishes current data. Cached outage proof states whether the edge was warm;
   it must never be represented as independently hosted global outage protection.
 - A release record that names the exact source/tag and deployment, provider,

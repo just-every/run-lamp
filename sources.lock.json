@@ -544,7 +544,7 @@
       "executable": false
     },
     "DIVERGENCE.md": {
-      "sha256": "6c7e901d65b1fa2bd23ff4de57bad15b0e523e3f92d0d96fa0df2ca576f0c566",
+      "sha256": "9055bea65b091190157a1f2fb01ef1679d5f55cba7ed411d37cb3eee5b12d922",
       "executable": false
     },
     "docs/accessibility/vpat.md": {
@@ -620,7 +620,7 @@
       "executable": false
     },
     "docs/contract/public-details.md": {
-      "sha256": "4a11e76b442e5ad2e586332e8731550d709d02280ee222011de4b58762fef0a5",
+      "sha256": "dd0501578497324f0726c15d6bc37a3ef668a80df0c9a0396ec0c400fd13268d",
       "executable": false
     },
     "docs/contract/publishing-details.md": {
@@ -704,7 +704,7 @@
       "executable": false
     },
     "docs/verify.md": {
-      "sha256": "d37cc3e4dc1f33021722bf70c5fd19a91946326f34ce8f2f9ab4c649c414b0ef",
+      "sha256": "ee44ae3e7ba31b330cfe416ca77f25e610b6b325298b13605df916b2bf292076",
       "executable": false
     },
     "edition.json": {
@@ -2664,11 +2664,11 @@
       "executable": false
     },
     "OPERATIONS.json": {
-      "sha256": "1a0842dcae195ef8349e017ab111c5f4425cc94b92a9fd83c99b1e066fedf382",
+      "sha256": "68b3974950436149d088478dc4792f2c4095ab0a99d398d9c69caad1149682f6",
       "executable": false
     },
     "OPERATIONS.md": {
-      "sha256": "0046676e87ecc4ad9c3ae00977d9b6ed889bfa30c3b55bb1f06a0165397cbfc6",
+      "sha256": "de03e5c4df63324627c66369ce577b60f23d63f8cb82b9bac0d8fa34bb3324a4",
       "executable": false
     },
     "package.json": {
@@ -4588,11 +4588,11 @@
       "executable": false
     },
     "src/core/app/external-heartbeat.ts": {
-      "sha256": "944f80b4d96ea4f034fcf98f0c1a1aedb0d735b6119d44653c6dd05abae6e6ec",
+      "sha256": "be227bca211dfe2486365e36b48d51d45ca6bdbcd9ddccf25580674d7e4141fe",
       "executable": false
     },
     "src/core/app/host-dispatch.ts": {
-      "sha256": "61a996f4fa5e708a16b8f997cb6542d7249a6981389427cada2148dca5a4b7cd",
+      "sha256": "4fc056a6388e069c12c115144a585ca048df4c0e50c638ff56d96cd60a540030",
       "executable": false
     },
     "src/core/app/hosting.ts": {
@@ -4620,7 +4620,7 @@
       "executable": false
     },
     "src/core/app/server.ts": {
-      "sha256": "ba5af89fd0e92321596b8119db6566a7daf7a563af289b197d3772601eef96ef",
+      "sha256": "220169176f618f1d7ee3c9e121602ead969ca7f12eac8884113a88e250cbc8ad",
       "executable": false
     },
     "src/core/app/services.ts": {
@@ -5116,11 +5116,11 @@
       "executable": false
     },
     "src/core/features/health/repository.ts": {
-      "sha256": "67b3d64cae2c19cde1af89315e9daa7fd6ebce66e8c949f56eddd28c0fa6edff",
+      "sha256": "7edb808935fef45f42515f06007712a80ac0b7f8d38e8b59d4fc7548a9aa2945",
       "executable": false
     },
     "src/core/features/health/routes.ts": {
-      "sha256": "ee899f44a463b5604a1d08a9ea4da6ff2274c9a651bc189934c59a4b80e9e005",
+      "sha256": "476a61d013a0571ae33b57816b5aadc99d5b2cd36cd407c7e16b5784fead3886",
       "executable": false
     },
     "src/core/features/health/schema-observation.ts": {
@@ -5128,7 +5128,7 @@
       "executable": false
     },
     "src/core/features/health/service.ts": {
-      "sha256": "52b67af60fdd72dda2623324b43ba5417d986a452497bdc4b74d37beee72b9c0",
+      "sha256": "1ce5f57d426b27938d563c5648492cf4ad86d7692f25ccad3ec21b46028be0b6",
       "executable": false
     },
     "src/core/features/incident-impact/index.ts": {
@@ -7228,7 +7228,7 @@
       "executable": false
     },
     "src/core/platform/health/probes.ts": {
-      "sha256": "e01d5fbc547871d108f756ab08d9c924cf3569edb4cc25f94018429477ef130b",
+      "sha256": "7820169e6188c09c1b5e02ff76e93f4cc134414ba0d1e1163597779b2c4fda5d",
       "executable": false
     },
     "src/core/platform/jobs/dispatcher.ts": {
@@ -7660,7 +7660,7 @@
       "executable": false
     },
     "src/server.ts": {
-      "sha256": "df3c411cd026920845967a7a909e1efdbf450fdccb9bd20420018437040718b9",
+      "sha256": "e831f292c97d519d41636a7000d2e397853a4bfb9cd41c2ed21737e4e23798d5",
       "executable": false
     },
     "src/site/docs/body.ts": {
@@ -9144,11 +9144,11 @@
       "executable": false
     },
     "tests/e2e/snapshot-retained.test.mjs": {
-      "sha256": "f57f934d3c9b9bb183abd96c86f2c2dcaa80f08a3d6a987be387dc063a7ef98e",
+      "sha256": "0d89ee95f8a870228cc07dc6209cd02cb3e9a9474fe8ff26e839f8fafd81a3bc",
       "executable": false
     },
     "tests/e2e/snapshot-retained.worker.ts": {
-      "sha256": "633690b0b9091747574b1a0d5be5c762dbbdb1748a1aaa78a3a09daf28e5fdfa",
+      "sha256": "3b9c5878d1ae4ab67074a81e5a43355cf586481ab22b93872b75237233a6a696",
       "executable": false
     },
     "tests/e2e/snapshot-retention.worker.ts": {

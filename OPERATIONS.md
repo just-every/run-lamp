@@ -392,12 +392,14 @@ successful responses in its local edge cache for the one-hour outage window and
 marks that response as last known state when snapshot storage reads fail. A cold
 edge cache with inaccessible storage cannot recover bytes it has never seen;
 retain the original data and verify the tested deployment's warmed-cache path.
-`/health` checks D1, R2 and Queue reachability separately and returns503 naming
-the failed dependency. A good result is recorded and answers later probes without
-storage calls; once it is 30 seconds old a probe refreshes it in the background,
-and after 10 minutes a probe checks every dependency itself. A failure is never
-recorded, so every probe after a failed refresh checks again until it passes: a
-dependency failure shows within one 30-second refresh period. A successful public
+`/health` is cheap enough for an uptime monitor's 2-second limit: it checks that
+D1 answers (one `select 1`, reused for 30 seconds within an isolate) and that the R2
+and Queue bindings are present, and returns 503 naming the failed dependency. It
+writes nothing to R2 and puts nothing on the Queue. `/health/deep` on the app host
+runs the reachability check: D1, an R2 write, read and delete, and a Queue message,
+returning 503 naming the failed dependency; a passing answer is reused for 30
+seconds so requests cannot multiply storage writes. The heartbeat runs the same
+deep check live. A successful public
 response is not a healthy-backend proof. `/health` also publishes a configured
 page's first snapshot before reporting readiness, including the initial migrated
 state in previews where cron is disabled. A failed snapshot build returns 503.
@@ -596,7 +598,7 @@ or establishes hosted health.
 
 Set `LAMP_HEARTBEAT_URL` to the public HTTPS ping URL of the owner's chosen external heartbeat service. It is off when omitted. Keep this capability URL secret. `LAMP_HEARTBEAT_INTERVAL_MINUTES` defaults to 5. Configure the service's expected interval and grace period to match; the service sends the alarm when pings stop. Choose the receiving mailbox and phone on infrastructure independent of this hosting provider.
 
-The minute cron sends an empty GET only on the heartbeat interval grid, after scheduled work completes and a live check (never `/health`'s recorded result) verifies D1, R2 and Queue. Failed dependencies and the hosting-move `EFFECTS_PAUSED=1` hold stop pings. No subscriber, incident, page, visitor or owner data travels. A successful ping establishes the service acknowledged that ping; it does not prove human receipt. This watch does not provide standby hosting.
+The minute cron sends an empty GET only on the heartbeat interval grid, after scheduled work completes and a live deep check (an R2 round trip and a Queue message, which `/health` leaves out) verifies D1, R2 and Queue. Failed dependencies and the hosting-move `EFFECTS_PAUSED=1` hold stop pings. No subscriber, incident, page, visitor or owner data travels. A successful ping establishes the service acknowledged that ping; it does not prove human receipt. This watch does not provide standby hosting.
 
 ## Shared operator authentication
 

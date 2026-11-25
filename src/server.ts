@@ -23,7 +23,7 @@ function isHonoRequest(surface: LampSurface, request: Request, pathname: string)
   if (surface === "page") return true;
   return pathname === "/setup/status"
     || (pathname === "/setup" && request.method !== "GET" && request.method !== "HEAD")
-    || pathname === "/health"
+    || pathname === "/health" || pathname === "/health/deep"
     || pathname === "/api/chat/slack" || pathname === "/api/chat/teams"
     || pathname === "/api/app"
     || pathname.startsWith("/api/app/")

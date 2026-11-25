@@ -182,7 +182,7 @@
   ],
   "health": {
     "path": "/health",
-    "semantics": "Dependency health, answered on the app host and the page host; local input checks never assert deployed health."
+    "semantics": "Cheap dependency health (D1 answers, R2 and Queue bindings present; no storage write or queue message), answered on the app host and the page host. /health/deep on the app host runs the R2 round trip and Queue message. Local input checks never assert deployed health."
   },
   "acceptance": {
     "document": "ACCEPTANCE.md"

@@ -30,7 +30,7 @@ The minute scheduler also rereads the source and republishes snapshots once they
 
 ## PAGE-006 — Serving through a failure
 
-When the database, the queue, or object storage is unreachable, the three surfaces in PAGE-005 return 200 — from the current snapshot, or from the cached response under the `stale-if-error` directive of PAGE-007 when the origin itself cannot answer. They return 503 only when no snapshot has ever been written. A response that could not be built from current data states the instant its content was generated and is labeled as the last known state; no failed read ever produces the all-clear of PAGE-004. `/health` still reports 503 per BASE-OPS-001; the public page's availability does not depend on it.
+When the database, the queue, or object storage is unreachable, the three surfaces in PAGE-005 return 200 — from the current snapshot, or from the cached response under the `stale-if-error` directive of PAGE-007 when the origin itself cannot answer. They return 503 only when no snapshot has ever been written. A response that could not be built from current data states the instant its content was generated and is labeled as the last known state; no failed read ever produces the all-clear of PAGE-004. `/health` still reports 503 when the database is unreachable and `/health/deep` when storage or the queue is (BASE-OPS-001, as DIVERGENCE.md records); the public page's availability does not depend on either.
 
 ## PAGE-007 — Publish latency and caching
 

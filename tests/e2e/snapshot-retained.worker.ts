@@ -2,6 +2,7 @@ import { createHostDispatch } from "../../src/core/app/host-dispatch";
 import { exerciseRebuild } from "./snapshot-rebuild";
 import { createHealthService } from "../../src/core/features/health/service";
 import { registerHealthRoutes } from "../../src/core/features/health/routes";
+import { createDependencyProber } from "../../src/core/platform/health";
 import { Hono } from "hono";
 import { createPublicSnapshotService } from "../../src/core/features/public-snapshot/service";
 import { registerPublicSnapshotRoutes } from "../../src/core/features/public-snapshot/routes";
@@ -62,7 +63,7 @@ export default {
     const app = new Hono();
     const down = async (): Promise<never> => { throw new Error("D1 unavailable"); };
     registerPublicSnapshotRoutes(app, service);
-    registerHealthRoutes(app, createHealthService({ key: env, checkDatabase: down, lastGood: down, recordGood: down, forgetGood: down }, {}));
+    registerHealthRoutes(app, createHealthService({ key: env, checkDatabase: down }, createDependencyProber(env.SNAPSHOTS, env.JOBS)));
     if (url.searchParams.get("cacheWrites") !== "down") return app.fetch(request, env, ctx);
     // Cache API is another network/storage edge. Failing its writes must not
     // prevent serving a verified generation from R2.

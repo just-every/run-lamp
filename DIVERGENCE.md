@@ -1943,3 +1943,18 @@ authorize an email change. Action-bound proofs are a Base follow-up.
 Lamp limits Base's self-service `/auth/email` and `/auth/display-name` to the
 signed-in Owner's own account. Admins, communicators, editors and viewers
 receive `owner_required` when they POST to either route.
+
+## Cheap /health, deep check on its own address — Run Edit Run fleet, 25 November 2026
+
+BASE-OPS-001 asks `/health` to answer within 1 second and to fail when the database,
+storage or queues are unreachable. Lamp's `/health` used to prove storage and the
+queue by writing, reading and deleting an R2 object and putting a Queue message on
+every refresh. Cold isolates and stale results ran that round trip inside the request,
+so ChargeDesk's status-page monitor passed Uptime's 2-second limit one probe in three,
+and a rarely probed installation failed the platform's 2-second health check on every
+probe. `/health` now checks that D1 answers and the R2 and Queue bindings are present,
+and makes no storage write or Queue message. `/health/deep` (app host) runs the full
+round trip and names the failed dependency; the cron heartbeat runs the same check
+live, so a storage or Queue outage still stops the heartbeat and shows on the deep
+address. A monitor that must follow storage or Queue reachability points at
+`/health/deep`.
