@@ -496,7 +496,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "b0c9b027151073cc269fc5fade63c220599876057cca9d8bdf8be6959d9831c9",
+      "sha256": "ef7e20bc70b0edccf50cdacfebc6e851fd7aca507c48e81535e353daa2f56bf0",
       "executable": false
     },
     "CLAUDE.md": {
@@ -548,7 +548,7 @@
       "executable": false
     },
     "docs/accessibility/vpat.md": {
-      "sha256": "30841795f980eb46a4fbcf986cda12275cf613928531e43fa6091f2bff2a02e0",
+      "sha256": "2b56d1fff343995a4741583c8ec376c19a7f2460189a4d4a8dd4980547c785b8",
       "executable": false
     },
     "docs/ai-assistance.md": {
@@ -2672,7 +2672,7 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "f0913004c07be08ed62749fd2d6540129d38032219c7cf217cb200cb07faa27c",
+      "sha256": "797b8e1a778c32dd32d5c8dd971a361a4c74dbe402e8a2512af73efb81d28e4c",
       "executable": false
     },
     "patches/@runeditrun__rer@0.2.133.patch": {
@@ -3128,7 +3128,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "2841cd06349f8cb455add5572fb2fff3f061619df835370f7da92979eeb4ca85",
+      "sha256": "c0055a2fcc0c73f34f5a970058d6a1e2e4032f6ca9bfe6ea0b357c7c2d764cf0",
       "executable": false
     },
     "rer-packaging.json": {
@@ -4272,7 +4272,7 @@
       "executable": false
     },
     "seed.json": {
-      "sha256": "ac08c73fad2d7f013506b48516ff5321ef4b514258de8e1388db5124a924cbe9",
+      "sha256": "067209876b28b8c71062a22e82882bc470943c2bbf017de91650d931a0c8eaf8",
       "executable": false
     },
     "src/base/actor.ts": {
