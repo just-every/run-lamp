@@ -140,7 +140,8 @@ before(async () => {
   // The add-subscriber door prepares a confirmation. Use the shipped silent
   // local transport, while the real operator session remains the authority.
   await startAiProvider();
-  fixtureConfig = isolatedWranglerConfig(configWithAiProvider);
+  // The report journey waits for the same Queue-driven snapshot as a reader.
+  fixtureConfig = isolatedWranglerConfig(configWithAiProvider, { ...process.env, LAMP_TEST_QUEUE_CONSUMERS: "1" });
   configPath = fixtureConfig.path;
   execFileSync("pnpm", ["exec", "wrangler", "d1", "migrations", "apply", "DB", "--local", "--config", defaultConfigPath, "--persist-to", statePath], { cwd: process.cwd(), maxBuffer: 8 * 1024 * 1024, stdio: "pipe" });
   const visualSource = resolve('src/editor/visual-edits.json');
