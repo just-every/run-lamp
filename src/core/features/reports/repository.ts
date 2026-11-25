@@ -2,6 +2,7 @@ import { ensureScheduledWork } from "../scheduled-work/repository";
 import { incidentReportEndStatements } from "../subscribers/incident-lifecycle.repository";
 import { reportReminderEligibleSql } from "./reminder-eligibility";
 import { createUlid } from "../../shared/ids";
+import { publicIncident } from "../public-snapshot/archive.repository";
 
 export interface IncidentReportRow {
   id: string;
@@ -18,6 +19,7 @@ export interface IncidentReportRow {
 
 export interface ReportRepository {
   find(incidentId: string): Promise<IncidentReportRow | null>;
+  publicationTargets(incidentId: string): Promise<{ reference: string; publishedAt: string; paths: string[] } | null>;
   createDraft(input: IncidentReportRow): Promise<boolean>;
   upsert(input: IncidentReportRow): Promise<void>;
   publish(incidentId: string, report: IncidentReportRow, publishedAt: string, operatorId: string, notificationStatements: D1PreparedStatement[]): Promise<boolean>;
@@ -43,6 +45,20 @@ export function createReportRepository(binding: D1Database): ReportRepository {
   return {
     async find(incidentId) {
       return row(await binding.prepare(`SELECT id, incident_id AS incidentId, summary, timeline, cause, remediation, published_at AS publishedAt, author_operator_id AS authorOperatorId, created_at AS createdAt, updated_at AS updatedAt FROM incident_reports WHERE incident_id = ?`).bind(incidentId).first());
+    },
+    async publicationTargets(incidentId) {
+      const { results } = await binding.prepare(`SELECT i.reference, r.published_at AS publishedAt, p.page_path AS path,
+        (${publicIncident}) AS publicVisible
+        FROM incident_reports r JOIN incidents i ON i.id=r.incident_id
+        LEFT JOIN incident_status_pages p ON p.incident_id=i.id
+          AND EXISTS(SELECT 1 FROM incident_updates u WHERE u.incident_id=i.id)
+        WHERE r.incident_id=? AND r.published_at IS NOT NULL AND i.deleted_at IS NULL`)
+        .bind(incidentId).all<{ reference: string; publishedAt: string; publicVisible: number; path: string | null }>();
+      const first = results[0];
+      if (!first) return null;
+      const paths = results.flatMap(row => row.path === null ? [] : [row.path]);
+      if (first.publicVisible) paths.unshift("public");
+      return { reference: first.reference, publishedAt: first.publishedAt, paths };
     },
     async createDraft(input) {
       const result = await binding.prepare(`INSERT INTO incident_reports (id, incident_id, summary, timeline, cause, remediation, published_at, author_operator_id, created_at, updated_at)

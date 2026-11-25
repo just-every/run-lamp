@@ -25,7 +25,7 @@ const RETRY_LEASE_MS = 2 * 60_000;
 const SNAPSHOT_REFRESH_MS = 5 * 60_000;
 const PUBLICATION_SURFACES = ["page.html", "feed.atom", "feed.rss", "widget.js", "embed/script.js"];
 const LOGO_CONTENT_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
-export const PUBLIC_SNAPSHOT_RENDERER_VERSION = "lamp-public-snapshot-v26";
+export const PUBLIC_SNAPSHOT_RENDERER_VERSION = "lamp-public-snapshot-v27";
 
 interface SnapshotPointer {
   version: string;
@@ -70,6 +70,7 @@ export interface PublicSnapshotService {
   includesRevision(revision: number): Promise<boolean>;
   selectedGeneration(): Promise<number>;
   observeIncidentPublication(key: string, observation: PublicationObservation): Promise<{ bytes: ArrayBuffer; version: string } | null>;
+  hasPublishedReport(reference: string, publishedAt: string): Promise<boolean>;
   hasCurrentSnapshot(): Promise<boolean>;
   readArtifact(key: string): Promise<{ bytes: ArrayBuffer; contentType: string; version: string; generatedAt: string; stale: boolean; retainedReady?: boolean; prelaunch: boolean } | null>;
   /** Whether the page customers see now is a pre-launch page. Reads only the snapshot store, never D1. */
@@ -397,6 +398,19 @@ export function createPublicSnapshotService(
     includesRevision,
     async selectedGeneration() { return (await readPointer())?.generation ?? 0; },
     observeIncidentPublication,
+    async hasPublishedReport(reference, publishedAt) {
+      const pointer = await readPointer();
+      // An older selector can hydrate a cold archive permalink from D1. The
+      // report must also be present under a generation built after publication.
+      if (!pointer || Date.parse(pointer.generatedAt) < Date.parse(publishedAt)) return false;
+      const object = await selectedArtifact(pointer, `incidents/${encodeURIComponent(reference)}.html`);
+      if (!object) return false;
+      let visible = false;
+      await new HTMLRewriter().on("section.report", {
+        element() { visible = true; },
+      }).transform(new Response(object.bytes)).arrayBuffer();
+      return visible;
+    },
     async confirmPublication() {
       const { requestedRevision } = await repository.currentWork();
       await enqueueRebuild();

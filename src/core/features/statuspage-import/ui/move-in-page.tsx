@@ -16,7 +16,7 @@ type SavedFile = { name: string; text: string };
 type Preview = { report: MoveInReport; jobId?: string; files?: SavedFile[]; planId: string; fingerprint: string };
 /** A door import carries its plan; an import from before the door has none. */
 type DoorPlan = { planId?: string | null; fingerprint?: string | null; namespace?: string };
-type Job = DoorPlan & { approvalCaption?: string; id: string; state: string; checkpoint: number; total: number };
+type Job = DoorPlan & { approvalCaption?: string; canResume?: boolean; id: string; state: string; checkpoint: number; total: number };
 type Result = { job: Job; door: DoorPlan | null; report: MoveInReport; invites: { sent: number; remaining: number }; undo?: { dispositions: Array<{ disposition: string; targetKind?: string; reason?: string }>; expiredSubscribers: number } };
 
 const kindLabels: Record<string, string> = { group: "Component groups", component: "Components", incident: "Incidents", maintenance: "Maintenance", subscriber: "Subscribers", postmortem: "Postmortems", template: "Incident templates" };
@@ -200,7 +200,7 @@ export function MoveInPage() {
       {result.job.state === "undoing" && <Button type="button" disabled={busy} onClick={() => act({ id: result.job.id, ...result.door }, "undo")}>Continue undo</Button>}
     </section>}
     <section className="data-card" id="import-history" aria-labelledby="move-in-history"><h2 id="move-in-history">Your imports</h2>
-      {jobs.data?.jobs.length ? <ul className="move-in-jobs">{jobs.data.jobs.map((job) => <li key={job.id}><a href={`/app/cutover?job=${encodeURIComponent(job.id)}`}>Cutover</a><span>{({ statuspage: "Statuspage", betterstack: "Better Stack", instatus: "Instatus", sorry: "Sorry" } as Record<string, string>)[job.namespace ?? "statuspage"]} · {job.id.slice(0, 12)} · {publishing && result?.job.id === job.id ? "publishing" : job.state} · {job.checkpoint}/{job.total}{job.approvalCaption && <small style={{display:"block",overflowWrap:"anywhere"}}>{job.approvalCaption}</small>}</span>{job.state === "completed" && <Button type="button" variant="secondary" disabled={busy} onClick={() => act(job, "undo")}>Undo</Button>}{job.state === "applying" && <Button type="button" variant="secondary" disabled={busy} onClick={() => act(job, "resume")}>Continue</Button>}{job.state === "undoing" && <Button type="button" variant="secondary" disabled={busy} onClick={() => act(job, "undo")}>Continue undo</Button>}</li>)}</ul> : <EmptyState>No imports yet.</EmptyState>}
+      {jobs.data?.jobs.length ? <ul className="move-in-jobs">{jobs.data.jobs.map((job) => <li key={job.id}><a href={`/app/cutover?job=${encodeURIComponent(job.id)}`}>Cutover</a><span>{({ statuspage: "Statuspage", betterstack: "Better Stack", instatus: "Instatus", sorry: "Sorry" } as Record<string, string>)[job.namespace ?? "statuspage"]} · {job.id.slice(0, 12)} · {publishing && result?.job.id === job.id ? "publishing" : job.state} · {job.checkpoint}/{job.total}{job.approvalCaption && <small style={{display:"block",overflowWrap:"anywhere"}}>{job.approvalCaption}</small>}</span>{job.state === "completed" && <Button type="button" variant="secondary" disabled={busy} onClick={() => act(job, "undo")}>Undo</Button>}{job.canResume && <Button type="button" variant="secondary" disabled={busy} onClick={() => act(job, "resume")}>Continue</Button>}{job.state === "undoing" && <Button type="button" variant="secondary" disabled={busy} onClick={() => act(job, "undo")}>Continue undo</Button>}</li>)}</ul> : <EmptyState>No imports yet.</EmptyState>}
     </section>
   </div>;
 }

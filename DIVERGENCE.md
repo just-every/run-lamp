@@ -28,6 +28,9 @@ and confirming it on each selected status page. The reader check uses each
 page's current generation for its landing, Atom and RSS feeds and widgets.
 A permalink can load an update from history while its landing still shows an
 older generation, so that early record alone cannot confirm publication.
+Publishing a post-incident report queues the rebuild of its requested source
+revision. The report editor confirms publication when the selected reader
+generations serve the report at the incident permalink.
 
 ## Deliberately disabled hosted email — 15 November 2026
 
@@ -129,6 +132,8 @@ layouts and incident permalinks use the same sender and SMS configuration to
 offer subscriptions visitors can confirm. Incident webhook signup requires
 confirmation email and a configured webhook sender. The incident's report
 choice accompanies each available incident channel.
+When local mail is suppressed, the public page and incident permalink hide
+email signup using the same sender availability shown in Settings.
 
 ## Notification provider guidance — 12 November 2026
 
@@ -1871,8 +1876,8 @@ The stored public page records the running release that built it (`RER_RELEASE_D
 
 The local owner can confirm a pending email subscription in Subscribers → Delivery
 log while development mail is suppressed. It uses the ordinary signed confirmation
-and event path and keeps the original three-day expiry. Local public forms and
-subscription/notification records say that no email was sent; local operator
+and event path and keeps the original three-day expiry. Local subscription and
+notification records say that no email was sent. Local operator
 invitations use the API's suppressed result. The owner action is absent in
 production and demos. Hosted subscriber consent and mail sending remain unchanged.
 

@@ -12,6 +12,7 @@ export interface ReportsNotificationStatements { forIncidentReport(input: { even
 export interface ReportsService {
   draft(incidentId: string, operatorId: string): Promise<{ report: IncidentReportRow; review: ReportReview }>;
   get(incidentId: string): Promise<IncidentReportRow | null>;
+  publicationTargets(incidentId: string): ReturnType<ReportRepository["publicationTargets"]>;
   save(incidentId: string, input: ReportInput, operatorId: string): Promise<IncidentReportRow>;
   publish(incidentId: string, operatorId: string, channels: Array<"email" | "webhook" | "sms">, expectedReport?: ReportInput): Promise<IncidentReportRow | null>;
   owing(now?: string): Promise<string[]>;
@@ -31,7 +32,7 @@ function assertReport(input: ReportInput, complete = false) {
   }
 }
 
-export function createReportsService(repository: ReportRepository, onPublicDataChanged: () => Promise<void>, duePolicy: PostmortemDuePolicy = defaultPostmortemDuePolicy, notificationStatements: ReportsNotificationStatements | null = null, briefs: BriefService | null = null, remind: ((input: { incidentId: string; reference: string; title: string; week: number }) => Promise<void>) | null = null): ReportsService {
+export function createReportsService(repository: ReportRepository, duePolicy: PostmortemDuePolicy = defaultPostmortemDuePolicy, notificationStatements: ReportsNotificationStatements | null = null, briefs: BriefService | null = null, remind: ((input: { incidentId: string; reference: string; title: string; week: number }) => Promise<void>) | null = null): ReportsService {
   return {
     async draft(incidentId, operatorId) {
       if (!briefs) throw new Error("Post-incident report drafting requires incident brief wiring.");
@@ -63,6 +64,7 @@ export function createReportsService(repository: ReportRepository, onPublicDataC
       return sent;
     },
     get: (incidentId) => repository.find(incidentId),
+    publicationTargets: (incidentId) => repository.publicationTargets(incidentId),
     async save(incidentId, input, operatorId) {
       assertReport(input);
       const existing = await repository.find(incidentId);
@@ -85,7 +87,6 @@ export function createReportsService(repository: ReportRepository, onPublicDataC
         ? await notificationStatements.forIncidentReport({ eventId: report.id, incidentId, componentIds: await repository.listComponentIds(incidentId), channels, queuedAt: timestamp })
         : [];
       if (!(await repository.publish(incidentId, report, timestamp, operatorId, notifications))) return null;
-      await onPublicDataChanged();
       return repository.find(incidentId);
     },
     async owing(now = nowIso()) {

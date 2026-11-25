@@ -3,6 +3,7 @@
 .availability-charts { display: grid; gap: 16px; min-width: 0; }
 .component-group { min-width: 0; border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); box-shadow: var(--shadow-card); padding: 0 24px; }
 .component-group > h3 { margin: 0 -24px; border-bottom: 1px solid var(--line); border-radius: var(--radius) var(--radius) 0 0; background: var(--card-tint); padding: 12px 24px; color: var(--ink-2); font-size: 13px; line-height: 1.4; letter-spacing: .01em; }
+.component-group > h3, .component-group > summary, .theme-component-group > summary, .calm-group { overflow-wrap: anywhere; }
 .component { display: grid; gap: 14px; min-width: 0; padding: 20px 0; }
 .component + .component { border-top: 1px solid var(--line); }
 .component-name { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 16px; min-width: 0; }
@@ -32,8 +33,8 @@
 .availability-method[open] summary { margin-left: 0; }
 .availability-method p { max-width: 72ch; margin: 8px 0 0; }
 
-.component-description { flex-basis: 100%; color: var(--ink-2); font-size: 14px; }
+.component-description { flex-basis: 100%; min-width: 0; color: var(--ink-2); font-size: 14px; overflow-wrap: anywhere; }
 .component-description summary { cursor: pointer; }
-.component-description p { margin: 8px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.component-description p { margin: 8px 0 0; white-space: pre-wrap; }
 
 .availability-since { margin: 8px 0 0; color: var(--ink-3); font-size: 13px; }

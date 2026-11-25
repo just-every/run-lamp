@@ -64,9 +64,10 @@ export function createAppServices(bindings: AppBindings, blobs: BlobStore, execu
   const { sender: mail, local } = createAppMailTransport(bindings, extensions.adapters["mail.sender.v1"], execution);
   // Report the composed sender's availability, including local suppression,
   // rather than treating a provider name in the environment as a working sender.
+  const localMailSuppressed = local && bindings.RER_DEMO !== "1";
   const mailConfiguration = {
-    local: local && bindings.RER_DEMO !== '1',
-    primaryProvider: mail.configured && !(local && bindings.RER_DEMO !== '1')
+    local: localMailSuppressed,
+    primaryProvider: mail.configured && !localMailSuppressed
       ? extensions.adapters["mail.sender.v1"] ? 'custom' : bindings.MAIL_PROVIDER || 'resend'
       : null,
   };
@@ -79,7 +80,7 @@ export function createAppServices(bindings: AppBindings, blobs: BlobStore, execu
   };
   const webhookSecrets = bindings.WEBHOOK_SIGNING_SECRET?.split(",").map(secret => secret.trim()).filter(Boolean);
   const primarySnapshot = createPublicSnapshotService(createSnapshotRepository(bindings.DB, snapshotOrigin, {
-    email: mail.configured && Boolean(bindings.SUBSCRIBER_TOKEN_SECRET),
+    email: mailConfiguration.primaryProvider !== null && Boolean(bindings.SUBSCRIBER_TOKEN_SECRET),
     mailFromAddress: bindings.MAIL_FROM_ADDRESS,
     sms: smsSubscriberConfigured(smsConfiguration),
     webhook: Boolean(webhookSecrets?.length) && bindings.EFFECTS_PAUSED !== "1",
@@ -256,7 +257,7 @@ export function createAppServices(bindings: AppBindings, blobs: BlobStore, execu
   });
   const availabilityReports = createAvailabilityReportService(createAvailabilityReportRepository(bindings.DB), extensions.publicSnapshotPolicies);
   const communicationPerformance = createCommunicationPerformanceService(createCommunicationPerformanceRepository(bindings.DB), extensions.postmortemDuePolicy);
-  const reports = createReportsService(createReportRepository(bindings.DB), publicSnapshots.rebuild, extensions.postmortemDuePolicy, {
+  const reports = createReportsService(createReportRepository(bindings.DB), extensions.postmortemDuePolicy, {
     forIncidentReport: async (input) => [
       ...notificationPublicationStatements(bindings.DB, { eventId: input.eventId, eventType: "incident-report", incidentReportId: input.eventId, componentIds: input.componentIds, channels: input.channels.filter((channel):channel is "email"|"webhook"=>channel!=="sms"), followChannels: [...allowedIncidentChannels], queuedAt: input.queuedAt }),
       ...sms.publicationStatements({eventId:input.eventId,kind:"incident-report",incidentReportId:input.eventId,componentIds:input.componentIds,queuedAt:input.queuedAt,ordinaryEnabled:input.channels.includes("sms")}),

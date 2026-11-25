@@ -380,10 +380,27 @@ export function createStatuspageImportService(db: D1Database, hooks: MoveInHooks
     async list(actor: MoveInActor) {
       const context = importContext(db, actor);
       await assertAuthority(context);
-      const rows = (await db.prepare(`SELECT j.id,coalesce(d.namespace,j.namespace) AS namespace,j.state,j.checkpoint,j.total,d.id AS planId,d.fingerprint,a.plan_id AS approved,a.owner,a.approved_at,a.approval_id,a.reviewer,f.reason_code AS failure FROM ik_jobs j LEFT JOIN ik_door_plans d ON d.job_id=j.id LEFT JOIN ik_door_approvals a ON a.plan_id=d.id LEFT JOIN ik_door_apply_failures f ON f.plan_id=d.id WHERE j.destination=? AND ((d.id IS NULL AND j.principal_id=? AND j.namespace IN ${SOURCES}) OR d.namespace IN ${SOURCES}) ORDER BY j.rowid DESC LIMIT 30`).bind(DESTINATION, actor.operator.id).all<Record<string, unknown>>()).results;
+      // A queued job can exist before the door records its job ID. Its operation
+      // key and fingerprint still identify the reviewed plan for the next apply.
+      const rows = (await db.prepare(`SELECT j.id,coalesce(d.namespace,j.namespace) AS namespace,
+        j.state,j.checkpoint,j.total,d.id AS planId,d.fingerprint,a.plan_id AS approved,
+        a.owner,a.approved_at,a.approval_id,a.reviewer,f.reason_code AS failure
+        FROM ik_jobs j
+        LEFT JOIN ik_door_plans d ON substr(j.operation_key,1,5)='door:' AND d.id=substr(j.operation_key,6)
+          AND (d.job_id=j.id OR (j.state='queued' AND d.job_id IS NULL AND j.fingerprint=d.fingerprint))
+        LEFT JOIN ik_door_approvals a ON a.plan_id=d.id AND a.fingerprint=d.fingerprint
+        LEFT JOIN ik_door_apply_failures f ON f.plan_id=d.id
+        WHERE j.destination=? AND ((d.id IS NULL AND j.principal_id=? AND j.namespace IN ${SOURCES}) OR d.namespace IN ${SOURCES})
+        ORDER BY j.rowid DESC LIMIT 30`).bind(DESTINATION, actor.operator.id).all<Record<string, unknown>>()).results;
       await assertAuthority(context);
       // An owner's approval reads "approved by …", Business's "approved via Business by …", and a failed apply says so.
-      return rows.map(({ approved, owner, approved_at, approval_id, reviewer, failure, ...job }) => ({ ...job, approver: owner ?? null, approvedAt: approved_at ?? null, approvalCaption: approved === null ? null : approvalCaption({ owner, approved_at, approval_id, reviewer }, job.fingerprint, failure) }));
+      return rows.map(({ approved, owner, approved_at, approval_id, reviewer, failure, ...job }) => ({
+        ...job,
+        canResume: job.state === "applying" || (job.state === "queued" && approved !== null && failure === null),
+        approver: owner ?? null,
+        approvedAt: approved_at ?? null,
+        approvalCaption: approved === null ? null : approvalCaption({ owner, approved_at, approval_id, reviewer }, job.fingerprint, failure),
+      }));
     },
   };
 }

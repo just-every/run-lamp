@@ -961,7 +961,7 @@ test('INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UP
   };
   for (const [field, value] of Object.entries(firstReport)) await report.getByRole('textbox', { name: field, exact: true }).fill(value);
   await report.getByRole('button', { name: 'Publish report', exact: true }).click();
-  await report.locator('.report-editor > p').filter({ hasText: /^Published / }).waitFor();
+  await report.locator('[role="status"][data-publication-state="confirmed"]').waitFor();
   await waitForPublicIncident(minor.reference, firstReport.Summary);
   await page.goto(`${appUrl}/app/incidents/${id}#post-incident-report`); await operatorHydrated(page);
   const drafting = page.waitForResponse(response => response.url().endsWith(`${reportPath}/draft`) && response.request().method() === 'POST');
@@ -1004,7 +1004,7 @@ test('INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UP
   const publishedReport = (await api(reportPath)).report;
   for (const [field, value] of Object.entries(completedReport)) assert.equal(publishedReport[field], value);
   assert.ok(publishedReport.publishedAt);
-  await report.locator('.report-editor > p').filter({ hasText: /^Published / }).waitFor();
+  await report.locator('[role="status"][data-publication-state="confirmed"]').waitFor();
   assert.equal(await report.getByRole('textbox').count(), 0, 'published text has no editing controls');
   assert.equal(await report.getByRole('button', { name: 'Save report', exact: true }).count(), 0);
   await previewScreens(page, 'report-published-operator');

@@ -22,8 +22,15 @@ function publicReport(html) {
  * Optional screen capture observes the same successfully published permalink. */
 export async function reportPublicationFlow({ capture } = {}) {
   const requests = [];
-  const f = await openSubscriberManagementFixture({ pageHost: 'localhost', workerEntry: 'tests/e2e/helpers/status-journey.worker.ts', providerEdge: async request => {
-    if (new URL(request.url).origin === 'https://receiver.example.test') requests.push({ destination: request.url, body: await request.clone().json() });
+  let holdBuild, releaseBuild;
+  const queueEdge = 'https://report-queue.example.test';
+  const f = await openSubscriberManagementFixture({ pageHost: 'localhost', workerEntry: 'tests/e2e/helpers/status-journey.worker.ts', extraBindings: { LAMP_TEST_IMPORT_WORK: queueEdge }, providerEdge: async request => {
+    const url = new URL(request.url);
+    if (url.origin === 'https://receiver.example.test') requests.push({ destination: request.url, body: await request.clone().json() });
+    if (url.origin === queueEdge) {
+      if (url.pathname === '/rebuild') await holdBuild;
+      return new Response(null, { status: 204 });
+    }
   } });
   const json = async (path, method = 'GET', body, status = 200) => {
     const response = await f.api(path, { method, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
@@ -78,11 +85,20 @@ export async function reportPublicationFlow({ capture } = {}) {
       for (const value of Object.values(fields)) assert.ok(!beforeHtml.includes(value), 'saved report wording stays private');
 
       const mailBefore = f.messages.length, webhookBefore = f.webhookRequests.length, receiptsBefore = f.mailReceipts.length, requestsBefore = requests.length;
+      if (!channels.length) holdBuild = new Promise(resolve => { releaseBuild = resolve; });
       const { report: published } = await json(`${reportPath}/publish`, 'POST', { channels });
       const acknowledged = performance.now();
       assert.equal(published.id, firstSave.id);
       assert.equal(published.incidentId, incident.id);
       assert.ok(Number.isFinite(Date.parse(published.publishedAt)));
+      if (!channels.length) {
+        try {
+          assert.equal((await json(`${reportPath}/publication`, 'GET', undefined, 202)).state, 'pending');
+          const retained = await f.raw(permalink);
+          assert.equal(retained.headers.get('x-lamp-snapshot-version'), beforePage.headers.get('x-lamp-snapshot-version'));
+          assert.ok(!(await retained.text()).includes(fields.summary));
+        } finally { releaseBuild(); }
+      }
       // All fields must appear together on the actual public route under one
       // monotonic deadline, measured from successful publication acknowledgement.
       let html, publicFields;
@@ -97,6 +113,7 @@ export async function reportPublicationFlow({ capture } = {}) {
       const elapsedMs = performance.now() - acknowledged;
       assert.deepEqual(publicFields, fields, 'the public incident report retains every exact saved field');
       assert.ok(elapsedMs <= 10_000, `public report took ${elapsedMs} ms after successful publication`);
+      assert.equal((await json(`${reportPath}/publication`)).state, 'confirmed');
 
       const expected = subscribers.filter(row => channels.includes(row.channel));
       const deliveries = async () => (await json('/api/app/deliveries?limit=100')).deliveries.filter(row => row.incidentReportId === published.id);
@@ -137,5 +154,8 @@ export async function reportPublicationFlow({ capture } = {}) {
       if (capture && !channels.length) await capture({ fixture: f, permalink, html, fields });
       console.log(`PROBE HIST-002 ${name}: native saved-field readback, public permalink in ${elapsedMs.toFixed(1)} ms, committed=${committed.length}, email=${mail.length}, webhook=${webhooks.length}`);
     }
-  } finally { await f.close(); }
+  } finally {
+    releaseBuild?.();
+    await f.close();
+  }
 }

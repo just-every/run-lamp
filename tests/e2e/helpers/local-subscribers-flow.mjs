@@ -61,23 +61,25 @@ export async function localSubscribersFlow({ browser, context, origin }) {
     const { component: orders } = await api('/api/app/components', { groupId: null, name: 'Synthetic Lamp local orders', description: '', internal: false, displayOrder: 2, note: '' });
     await page.goto(publicOrigin + '/');
     const form = page.locator('form[action="/subscribe"]');
-    await form.locator('input[name="email"]').fill(pageEmail);
-    await form.locator('summary').first().click();
-    await form.getByLabel(component.name, { exact: true }).check();
-    await form.locator('button[type="submit"]').click();
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('Local subscription');
-    await expect(page.locator('main')).toContainText(/No email was sent on this computer/);
-    await expect(page.locator('main')).not.toContainText(/We sent|Check your inbox|SendGrid/);
-    await screens('local-page-subscription');
+    await expect(form).toHaveCount(0);
+    await page.getByText('Feeds and badges', { exact: true }).click();
+    await expect(page.getByRole('link', { name: 'Atom feed', exact: true }).first()).toBeVisible();
+    await screens('local-page-mail-off');
+    const addedLocally = await api('/api/app/subscribers', { channel: 'email', email: pageEmail, componentIds: [component.id] });
+    assert.equal(addedLocally.mailSuppressed, true);
     const { incident } = await api('/api/app/incidents', { title: 'Synthetic Lamp local payment delays', components: [{ componentId: component.id, state: 'Partially unavailable', relationship: 'Primary' }] });
     await publish(incident, 'Payment requests are delayed.', []);
     await expect.poll(async () => { const response = await context.request.get(`${publicOrigin}/incidents/${incident.reference}`); return response.ok() && (await response.text()).includes('Payment requests are delayed.'); }, { timeout: 30000 }).toBe(true);
     await page.goto(`${publicOrigin}/incidents/${incident.reference}`);
     const follow = page.locator('form[action="/subscribe/incident"]').filter({ has: page.locator('input[name="email"]') });
-    await follow.locator('input[name="email"]').fill(incidentEmail);
-    await follow.locator('button[type="submit"]').click();
-    await expect(page.locator('main')).toContainText(/No email was sent on this computer/);
-    await screens('local-incident-subscription');
+    await expect(follow).toHaveCount(0);
+    await screens('local-incident-mail-off');
+    // Preserve the native local-confirmation test for an incident follower.
+    const followedLocally = await context.request.post(publicOrigin + '/subscribe/incident', {
+      form: { incidentId: incident.id, channel: 'email', email: incidentEmail },
+    });
+    assert.equal(followedLocally.status(), 202);
+    assert.match(await followedLocally.text(), /No email was sent on this computer/);
     const subscribers = (await api('/api/app/subscribers')).subscribers.filter(row => [pageEmail, incidentEmail].includes(row.destination));
     assert.equal(subscribers.length, 2);
     assert.ok(subscribers.every(row => row.state === 'pending'));
