@@ -6203,6 +6203,14 @@
       "sha256": "4f21e8728b240f41eeaf994cb07d92ff7f544ae81f0612ce8e00d7332cef941f",
       "executable": false
     },
+    "src/core/features/public-snapshot/reliability-markup.ts": {
+      "sha256": "3428a4e83867f00ca8dffa43c80d5798e4d8beb6a9148998ecb9668887af86d5",
+      "executable": false
+    },
+    "src/core/features/public-snapshot/reliability.ts": {
+      "sha256": "960682195a7a1ce7cf3b4cdc9da9473ab6722e3145ce39b42d4d49d7c466c43c",
+      "executable": false
+    },
     "src/core/features/public-snapshot/renderer.ts": {
       "sha256": "f3154c01e16799f15d797544211e30cfffd45fa96cc7d28ba8e1ee923a26f4f1",
       "executable": false
