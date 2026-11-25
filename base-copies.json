@@ -278,7 +278,16 @@
       },
       "originFiles": [
         "modules/import-kit/src/d1/apply.ts"
-      ]
+      ],
+      "adapted": {
+        "modules/import-kit/src/d1/apply.ts": "3637852064bf6ddadd15418518964d99d615cc46"
+      },
+      "acknowledged": {
+        "modules/import-kit/src/d1/apply.ts": {
+          "sha256": "f8a7edd19afe800c3616ad1fb3ed466f41cc8971e40e43d72bdb52d84c04603c",
+          "mode": "100644"
+        }
+      }
     },
     {
       "path": "modules/import-kit/src/d1/budget.ts",
@@ -320,7 +329,16 @@
       },
       "originFiles": [
         "modules/import-kit/src/d1/creation.ts"
-      ]
+      ],
+      "adapted": {
+        "modules/import-kit/src/d1/creation.ts": "3637852064bf6ddadd15418518964d99d615cc46"
+      },
+      "acknowledged": {
+        "modules/import-kit/src/d1/creation.ts": {
+          "sha256": "2735aa8de57df8ed15ae7c34ce6513a053b1de1f5d7e9b3d4d7825150a53bb33",
+          "mode": "100644"
+        }
+      }
     },
     {
       "path": "modules/import-kit/src/d1/custody-fence.ts",
@@ -838,7 +856,16 @@
       },
       "originFiles": [
         "modules/import-kit/src/d1/jobs.ts"
-      ]
+      ],
+      "adapted": {
+        "modules/import-kit/src/d1/jobs.ts": "3637852064bf6ddadd15418518964d99d615cc46"
+      },
+      "acknowledged": {
+        "modules/import-kit/src/d1/jobs.ts": {
+          "sha256": "b3fd17dfd5e6b521a10d51c3cbc61b891d98fbd7ce1de935cf44d4820a7d6ea0",
+          "mode": "100644"
+        }
+      }
     },
     {
       "path": "modules/import-kit/src/d1/native-set.ts",
@@ -1048,7 +1075,16 @@
       },
       "originFiles": [
         "modules/import-kit/src/d1/plans.ts"
-      ]
+      ],
+      "adapted": {
+        "modules/import-kit/src/d1/plans.ts": "3637852064bf6ddadd15418518964d99d615cc46"
+      },
+      "acknowledged": {
+        "modules/import-kit/src/d1/plans.ts": {
+          "sha256": "64e54ce803f4a55b2d448af4d9dcdbe1226dd0690e875209682b8061c8b501c8",
+          "mode": "100644"
+        }
+      }
     },
     {
       "path": "modules/import-kit/src/d1/preparation-fingerprint.ts",
@@ -2120,7 +2156,31 @@
         "modules/import-kit/src/door/store.ts",
         "modules/import-kit/src/door/types.ts",
         "modules/import-kit/src/door/uploads.ts"
-      ]
+      ],
+      "adapted": {
+        "modules/import-kit/src/door/authority.ts": "3637852064bf6ddadd15418518964d99d615cc46",
+        "modules/import-kit/src/door/jobs.ts": "3637852064bf6ddadd15418518964d99d615cc46",
+        "modules/import-kit/src/door/planning.ts": "3637852064bf6ddadd15418518964d99d615cc46",
+        "modules/import-kit/src/door/store.ts": "3637852064bf6ddadd15418518964d99d615cc46"
+      },
+      "acknowledged": {
+        "modules/import-kit/src/door/authority.ts": {
+          "sha256": "56f9e934f183183c7315ddddb501a832905b299b4c123e3abda1a7ecb23eb5b6",
+          "mode": "100644"
+        },
+        "modules/import-kit/src/door/jobs.ts": {
+          "sha256": "5a953fc483a3d5457d81585e4b4c14e9e0b77fc83a17c60c077eda3b55f045ae",
+          "mode": "100644"
+        },
+        "modules/import-kit/src/door/planning.ts": {
+          "sha256": "7a7e2bae56b972d4244d568464b096674f950006612d4c3c06d564cfe5c47e50",
+          "mode": "100644"
+        },
+        "modules/import-kit/src/door/store.ts": {
+          "sha256": "8fe43de6ee74f6cc893168b10411faf0cfa61359e93e10cfde3cc2730ba2d539",
+          "mode": "100644"
+        }
+      }
     },
     {
       "path": "modules/import-kit/src/engine",
@@ -2235,7 +2295,26 @@
         "modules/import-kit/src/provenance/numeric-credentials.ts",
         "modules/import-kit/src/provenance/resumable-sha256.ts",
         "modules/import-kit/src/provenance/validate-json.ts"
-      ]
+      ],
+      "adapted": {
+        "modules/import-kit/src/provenance/canonical-hash.ts": "3637852064bf6ddadd15418518964d99d615cc46",
+        "modules/import-kit/src/provenance/credential-names.ts": "3637852064bf6ddadd15418518964d99d615cc46",
+        "modules/import-kit/src/provenance/credentials.ts": "3637852064bf6ddadd15418518964d99d615cc46"
+      },
+      "acknowledged": {
+        "modules/import-kit/src/provenance/canonical-hash.ts": {
+          "sha256": "2b8cc5111ad4abec3ff3e1d9bd9e82b3e21b2728e9fd4c94ae054d94e4c16fe0",
+          "mode": "100644"
+        },
+        "modules/import-kit/src/provenance/credential-names.ts": {
+          "sha256": "a30e62acccf377c70fb2771d21e171140ce29607f5f143daf0e4ba2db73bae04",
+          "mode": "100644"
+        },
+        "modules/import-kit/src/provenance/credentials.ts": {
+          "sha256": "ffca7838e206b72d3c06d1699cadedd5347ecc31f8b858b0643f7d3c4d96064d",
+          "mode": "100644"
+        }
+      }
     },
     {
       "path": "modules/import-kit/src/readers",
@@ -4603,7 +4682,16 @@
       },
       "originFiles": [
         "modules/import-kit/src/d1/verified-plan.ts"
-      ]
+      ],
+      "adapted": {
+        "modules/import-kit/src/d1/verified-plan.ts": "3637852064bf6ddadd15418518964d99d615cc46"
+      },
+      "acknowledged": {
+        "modules/import-kit/src/d1/verified-plan.ts": {
+          "sha256": "f382200dada61e0721bdeb66c50b5e659935639df21f92fd8c5671352cd52115",
+          "mode": "100644"
+        }
+      }
     },
     {
       "path": "modules/import-kit/src/d1/staged-creation.ts",
