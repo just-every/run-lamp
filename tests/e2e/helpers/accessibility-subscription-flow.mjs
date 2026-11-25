@@ -55,7 +55,7 @@ export async function footerAccessibilityResourcesFlow({ page, appUrl, pageUrl, 
   await page.goto(`${pageUrl}/`);
 }
 
-async function auditDesktopSurfaces({ page, appUrl, pageUrl, incident, maintenance, diagnostic }) {
+export async function auditDesktopSurfaces({ page, appUrl, pageUrl, incident, maintenance, diagnostic }) {
   for (const [host, path, label, selector] of [
     [pageUrl, "/", "public status page", "main.root-page"],
     [pageUrl, "/history", "public history", "main.page"],
@@ -85,10 +85,9 @@ async function captureKeyboardFocus(page, width, screen) {
   await page.screenshot({ path: `${directory}/${width}-keyboard-${screen}.png` });
 }
 
-/** Real public HTML forms, driven only with Tab, text keys, Space and Enter.
- * The fixture reconstructs only its own issued links using the isolated Worker's synthetic key. */
+/** Real mail-enabled public forms, driven with Tab, text keys, Space and Enter. */
 export async function accessibilitySubscriptionFlow({
-  browser, appUrl, pageUrl, incident, maintenance, components, tokenSecret, tokenRows, diagnostic = () => {},
+  browser, pageUrl, components, messages, tokenSecret, tokenRows, diagnostic = () => {},
 }) {
   const [excluded, selected] = components;
   const token = row => `v1.${row.scope}.${row.id}.${createHmac("sha256", tokenSecret).update(`lamp-subscriber-token.v1.${row.scope}.${row.id}`).digest("base64url")}`;
@@ -102,12 +101,8 @@ export async function accessibilitySubscriptionFlow({
       };
       page.on("console", message => observeHydration(message.text()));
       page.on("pageerror", error => observeHydration(error.message));
-      if (width === 1440) {
-        await auditDesktopSurfaces({ page, appUrl, pageUrl, incident, maintenance, diagnostic });
-      } else {
-        const publicPage = await page.goto(`${pageUrl}/`);
-        assert.equal(publicPage.status(), 200);
-      }
+      const publicPage = await page.goto(`${pageUrl}/`);
+      assert.equal(publicPage.status(), 200);
 
       const form = page.locator('form[action="/subscribe"]').first();
       const email = form.getByRole("textbox", { name: "Email address", exact: true });
@@ -122,17 +117,18 @@ export async function accessibilitySubscriptionFlow({
       const submitted = page.waitForResponse(response => response.url() === `${pageUrl}/subscribe` && response.request().method() === "POST");
       await page.keyboard.press("Enter");
       assert.equal((await submitted).status(), 202);
-      await page.getByRole("heading", { name: "Local subscription", exact: true }).waitFor();
-      await expect(page.locator("main")).toContainText("No email was sent on this computer");
+      await expect(page.locator("main .subscriber-email")).toHaveText(address);
       await audit(page, `${width}px subscription result`);
 
       const issued = await tokenRows(address);
       const confirm = issued.find(row => row.scope === "confirm"), manage = issued.find(row => row.scope === "manage");
       assert.ok(confirm && manage, "the real subscription issued confirmation and management links");
+      const confirmUrl = `${pageUrl}/confirm-subscription/${token(confirm)}`;
+      assert.ok(messages.some(message => message.to.includes(address) && message.text.includes(confirmUrl)), "the reader receives the real confirmation link");
       const manageUrl = `${pageUrl}/manage/${token(manage)}`;
       const pending = await context.request.get(manageUrl);
       assert.equal(pending.status(), 404, "management is unavailable before the subscriber consents");
-      const confirmed = await page.goto(`${pageUrl}/confirm-subscription/${token(confirm)}`);
+      const confirmed = await page.goto(confirmUrl);
       assert.equal(confirmed.status(), 200);
       await page.getByRole("heading", { name: "Subscription confirmed", exact: true }).waitFor();
       await audit(page, `${width}px subscription confirmation`);

@@ -18,6 +18,7 @@ import { withDraftVersion } from '../draft-version-helper.mjs';
 import { operatorHydrated } from './operator-hydrated.mjs';
 import { providerSettingsGuideFlow } from './provider-settings-guide-flow.mjs';
 import { migrate,executeSql } from '../../reference-storage/runtime.mjs';
+import { accessibilitySubscriptionFlow } from './accessibility-subscription-flow.mjs';
 
 const require=createRequire(import.meta.url),wranglerRequire=createRequire(require.resolve('wrangler'));
 const {Miniflare,convertV4MiniflareOptions}=wranglerRequire('miniflare');
@@ -113,7 +114,7 @@ export async function mailSettingsBrowserFlow(t){
       const disabled=page.waitForResponse(response=>response.url()===`${origin}/api/app/mail-settings`&&response.request().method()==='PATCH');
       await select.selectOption('');assert.equal((await disabled).status(),200);await expect(select).toBeEnabled();assert.equal((await api('/api/app/mail-settings')).body.secondaryProvider,null);
     }
-    const componentResponse=await post('/api/app/components',{groupId:null,name:'Synthetic Lamp UI API',description:'',internal:false,displayOrder:0,note:''});assert.equal(componentResponse.status,201,componentResponse.text);
+    const componentResponse=await post('/api/app/components',{groupId:null,name:'Synthetic Lamp UI API',description:'',internal:false,displayOrder:1,note:''});assert.equal(componentResponse.status,201,componentResponse.text);
     const component = componentResponse.body.component;
     const address = ['synthetic-lamp-ui-1', 'example.test'].join('@');
     const subscribed=await runtime.dispatchFetch(`${pageOrigin}/subscribe`,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({email:address,componentId:component.id})});assert.equal(subscribed.status,202,await subscribed.text());
@@ -143,6 +144,17 @@ export async function mailSettingsBrowserFlow(t){
       assert.deepEqual(errors,[],`${width}px mail Settings and Deliveries have no hydration or page errors`);
       t.diagnostic(`NOTIFY-013 ${width}px default-off owner choice persists; real Resend acceptance names its provider in Deliveries`);
     }
+    const catalogue = await api('/api/app/components');
+    assert.equal(catalogue.status, 200, catalogue.text);
+    const other = catalogue.body.components.find(row => row.id !== component.id);
+    assert.ok(other);
+    await accessibilitySubscriptionFlow({
+      browser, pageUrl: pageOrigin, components: [other, component], messages,
+      tokenSecret: bindings.SUBSCRIBER_TOKEN_SECRET,
+      tokenRows: async address => (await env.DB.prepare(`SELECT t.id,t.scope FROM subscriber_tokens t
+        JOIN subscribers s ON s.id=t.subscriber_id WHERE s.destination=? AND t.revoked_at IS NULL`).bind(address).all()).results,
+      diagnostic: text => t.diagnostic(text),
+    });
     await context.close();
   }finally{await browser?.close();await runtime?.dispose();}
 }

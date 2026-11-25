@@ -1,7 +1,7 @@
 import { localSubscribersFlow } from "./helpers/local-subscribers-flow.mjs";
 import {appHost, appOrigin, pageOrigin} from './helpers/hosts.mjs';
 import { devKey } from '../helpers/dev-key.mjs';
-import { accessibilitySubscriptionFlow } from './helpers/accessibility-subscription-flow.mjs';
+import { auditDesktopSurfaces } from './helpers/accessibility-subscription-flow.mjs';
 import assert from "node:assert/strict";
 import { execFileSync, spawn } from "node:child_process";
 import { mkdtemp, rm, mkdir } from "node:fs/promises";
@@ -61,7 +61,7 @@ async function api(path, method = "GET", body) {
   return response.json();
 }
 
-test("MAINT-009 PAGE-020 — operator schedules, reschedules and publishes maintenance in its configured zone, then a customer subscribes by keyboard", { timeout: 360_000 }, async t => {
+test("MAINT-009 PAGE-020 — operator schedules, reschedules and publishes maintenance in its configured zone, and public pages remain accessible", { timeout: 360_000 }, async t => {
   context = await browser.newContext({ timezoneId: "America/Los_Angeles", viewport: { width: 1440, height: 1000 } });
   await context.addCookies([{ name: sessionCookieName(origin), value: sessionId, url: origin }]);
   page = await context.newPage();
@@ -226,15 +226,11 @@ test("MAINT-009 PAGE-020 — operator schedules, reschedules and publishes maint
     await page.locator('.page-stack > [role="alert"]:has(+ .maintenance-workspace)').waitFor();
     assert.equal(await create.getByRole("alert").isVisible(), true);
     assert.equal((await api("/api/app/maintenance")).maintenance.find(item => item.id === window.id).startsAt, window.startsAt);
-    const { component: otherComponent } = await api("/api/app/components", "POST", { groupId: null, name: "synthetic-lamp-020-other", description: "Second keyboard selection choice.", internal: false, displayOrder: 201, note: "" });
-    await accessibilitySubscriptionFlow({ browser, appUrl: origin, pageUrl: pageOrigin(new URL(origin).port), incident: historicalIncident, maintenance: window,
-      components: [component, otherComponent], tokenSecret: subscriberTokenSecret,
-      tokenRows: async address => {
-        const sql = `SELECT t.id,t.scope FROM subscriber_tokens t JOIN subscribers s ON s.id=t.subscriber_id WHERE s.destination='${address.replaceAll("'", "''")}' AND t.revoked_at IS NULL`;
-        const result = execFileSync("pnpm", ["exec", "wrangler", "d1", "execute", "DB", "--local", "--config", process.env.LAMP_WRANGLER_CONFIG, "--persist-to", statePath, "--json", "--command", sql], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
-        return JSON.parse(result)[0].results;
-      }, diagnostic: text => t.diagnostic(text),
-    });
+    const reader = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+    try {
+      await auditDesktopSurfaces({ page: reader, appUrl: origin, pageUrl: pageOrigin(new URL(origin).port),
+        incident: historicalIncident, maintenance: window, diagnostic: text => t.diagnostic(text) });
+    } finally { await reader.close(); }
   } finally { await context.close(); }
 });
 

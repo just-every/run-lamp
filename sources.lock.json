@@ -8412,7 +8412,7 @@
       "executable": false
     },
     "tests/e2e/helpers/accessibility-subscription-flow.mjs": {
-      "sha256": "971a672ba6b00b4f80c1b142cf7486e2ddefd2914559dc83e2c3e0b38271f78a",
+      "sha256": "d5fa282cdeb373a6120917fead92b5d8c99bdfc6b2f2558bd4969c61401e9b61",
       "executable": false
     },
     "tests/e2e/helpers/another-tool-setup-journey.mjs": {
@@ -8668,7 +8668,7 @@
       "executable": false
     },
     "tests/e2e/helpers/mail-settings-browser-flow.mjs": {
-      "sha256": "e510bbe1a695df38d2d441878350f53b7982dab5fe49e41cfaa3ed5cce919228",
+      "sha256": "91a6014fb26a6c83b53eda99c84d89e809789d22318cd95cf1b701645412de0d",
       "executable": false
     },
     "tests/e2e/helpers/maintenance-browser-flow.mjs": {
@@ -9056,7 +9056,7 @@
       "executable": false
     },
     "tests/e2e/maintenance-timezone.test.mjs": {
-      "sha256": "8dfd114dcf3144c7670cb677216b97993f27a3d65d33b86039dfcf97a0056a58",
+      "sha256": "92ad47e1ad44a5faeeab7411299d1682d6467a3ab734039dc3697c71f3c9e57b",
       "executable": false
     },
     "tests/e2e/owned-process-group.mjs": {
