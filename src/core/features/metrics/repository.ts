@@ -6,10 +6,11 @@ export interface StoredMetric extends MetricDefinition { sealedCredentials: stri
 const columns = `id,component_id AS componentId,source_id AS sourceId,name,unit,provider,query,endpoint,account_id AS accountId,region,CASE WHEN sealed_credentials IS NOT NULL THEN 1 ELSE 0 END AS connected,last_reported_at AS lastReportedAt,error,sealed_credentials AS sealedCredentials,version`;
 export function createMetricsRepository(db: D1Database) {
   // A series row missing after the upgrade or a restore is built once from the
-  // stored minutes; once it exists the constant NOT EXISTS skips the scan.
-  const seedSeries = (id: string) => db.prepare(`INSERT INTO public_metric_series(metric_id,points_json)
-    SELECT ?,json_group_object(CAST(bucket AS TEXT),value_sum/samples) FROM metric_points
-    WHERE metric_id=? AND resolution=60 AND NOT EXISTS(SELECT 1 FROM public_metric_series WHERE metric_id=?) HAVING count(*)>0`).bind(id,id,id);
+  // stored minutes. Joining from the missing-row CTE reads three rows when the
+  // series exists; the minute scan runs only when it does not.
+  const seedSeries = (id: string) => db.prepare(`WITH missing AS (SELECT m.id FROM public_metrics m WHERE m.id=? AND NOT EXISTS(SELECT 1 FROM public_metric_series s WHERE s.metric_id=m.id))
+    INSERT INTO public_metric_series(metric_id,points_json)
+    SELECT p.metric_id,json_group_object(CAST(p.bucket AS TEXT),p.value_sum/p.samples) FROM missing JOIN metric_points p ON p.metric_id=missing.id AND p.resolution=60 GROUP BY p.metric_id`).bind(id);
   const audit = (id: string, actor: string, action: string) => db.prepare(`INSERT INTO audit_entries(id,entity_type,entity_id,action,operator_id,payload_json,created_at,updated_at) SELECT ?,'metric',id,?,?,'{}',?,? FROM public_metrics WHERE id=?`).bind(createUlid(),action,actor,nowIso(),nowIso(),id);
   return {
     async isManager(actor: string) { return Boolean(await db.prepare("SELECT 1 FROM oa_operators WHERE id=? AND role IN ('owner','admin') AND status='active'").bind(actor).first()); },
