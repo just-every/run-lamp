@@ -1864,7 +1864,7 @@
       "executable": false
     },
     "modules/import-kit/src/door/planning.ts": {
-      "sha256": "f781077d3fffe326fda0c2b640615940409f3fb4518f5ed5b2d7d78c9db13952",
+      "sha256": "7a7e2bae56b972d4244d568464b096674f950006612d4c3c06d564cfe5c47e50",
       "executable": false
     },
     "modules/import-kit/src/door/protocol.ts": {

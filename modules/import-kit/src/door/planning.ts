@@ -64,7 +64,14 @@ async function planUpload(request: DoorRequest, input: Record<string, unknown>, 
     .bind(catchup?1:0,request.access.installationId,request.access.namespace,request.access.installationId,request.access.namespace,upload.bundle_sha256).first<DoorPlanRow>();
   if (existing) {
     if (!existing.complete && input.stepped !== true) throw new DoorError('plan_staging_interrupted_cancel_and_replan',409,{planId:existing.id});
-    const snapshot = await loadSnapshot(request,existing);
+    const snapshot = await loadSnapshot(request,existing).catch(error => {
+      // An older writer may have stopped between chunk writes. A complete
+      // private draft can resume, while a torn one still names its undo door.
+      if (!existing.complete && error instanceof DoorError && error.code === 'plan_custody_mismatch') {
+        throw new DoorError('plan_staging_interrupted_cancel_and_replan',409,{planId:existing.id});
+      }
+      throw error;
+    });
     if (canonicalJson(snapshot.plan.source.intake ?? null) !== canonicalJson(intakeState(upload.intake_json)?.custody ?? null)) throw new DoorError('plan_intake_changed_use_new_namespace',409);
     if (snapshot.sourceCount > request.access.maxRecords) throw new DoorError('plan_exceeds_grant_quota');
     if (snapshot.plan.mappingVersion !== request.options.mapping.version) throw new DoorError('snapshot_mapping_changed_use_new_namespace',409);
