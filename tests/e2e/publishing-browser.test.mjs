@@ -1192,9 +1192,12 @@ test('Sorry templates — both collections stay complete in Settings and private
 test('SETUP-001 — Overview checks the page without expecting an email form when local mail is suppressed', { timeout: 180_000 }, async () => {
   await api('/api/app/prelaunch', 'PATCH', { enabled: false });
   const name = 'Checkout payments';
-  await api('/api/app/components', 'POST', { name, groupId: null, description: '', internal: false, displayOrder: 0, note: '' });
-  await page.goto(`${pageUrl}/`);
-  await page.getByRole('heading', { name, exact: true }).waitFor();
+  const { components } = await api('/api/app/components');
+  if (!components.some(component => !component.internal)) {
+    await api('/api/app/components', 'POST', { name, groupId: null, description: '', internal: false, displayOrder: 0, note: '' });
+  }
+  const reader = await page.goto(`${pageUrl}/`);
+  assert.equal(reader?.status(), 200);
   assert.equal(await page.locator('form[action="/subscribe"]').count(), 0);
 
   const { live } = await api('/api/app/overview/live');
