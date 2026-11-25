@@ -157,7 +157,7 @@ export function moveInDoor(send) {
       assert.fail(`public page did not reach import revision ${revision}`);
     },
     /** The dry run: the door's plan with Move in's report, and the fetched responses. */
-    async preview({ onPreparing, source = 'statuspage', files, pageId = '', apiKey, publicUrl, publicAccessAcknowledged = false, components }) {
+    async preview({ onPreparing, stepped = true, source = 'statuspage', files, pageId = '', apiKey, publicUrl, publicAccessAcknowledged = false, components }) {
       let fetched;
       if (!files?.length) {
         const response = await send('/api/app/statuspage-import/fetch', { source, publicAccessAcknowledged, pageId, ...(source === 'sorry' && publicUrl ? { publicUrl } : {}), apiKey });
@@ -178,7 +178,7 @@ export function moveInDoor(send) {
           if (uploaded.status !== 200) return uploaded;
           uploadId = uploaded.body.uploadId;
         }
-        const request = { uploadId, stepped: true, catchup: false };
+        const request = stepped ? { uploadId, stepped: true, catchup: false } : { uploadId };
         let planned;
         for (let round = 0; round < 1000; round++) {
           planned = await door(source, 'plan', request);

@@ -184,7 +184,7 @@ export async function populate(mf, source, mail) {
   const version = JSON.parse(
     await readFile(join(source, "RELEASE.json"), "utf8"),
   ).version;
-  const [major, minor] = version.split(".").map(Number);
+  const [major, minor, patch] = version.split(".").map(Number);
   const maintenance = (
     await c.api("/api/app/maintenance", {
       title: "Retained maintenance",
@@ -238,7 +238,12 @@ export async function populate(mf, source, mail) {
       const text = await response.text();
       return { status: response.status, body: text ? JSON.parse(text) : null };
     });
-    const reviewed = await moveIn.preview({ source: "statuspage", files });
+    // The Worker built from the previous tag rejects unknown plan fields.
+    // Stepped planning first shipped in 1.11.39.
+    const stepped =
+      major > 1 ||
+      (major === 1 && (minor > 11 || (minor === 11 && patch >= 39)));
+    const reviewed = await moveIn.preview({ source: "statuspage", files, stepped });
     assert.equal(reviewed.status, 200, JSON.stringify(reviewed.body));
     const applied = await moveIn.apply(reviewed.body);
     assert.equal(applied.status, 200, JSON.stringify(applied.body));
