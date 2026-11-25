@@ -407,3 +407,36 @@ test('MAINT-015 — Sorry maintenance labels use authored source states and keep
     t.diagnostic('PROBE MAINT-015: Sorry scheduled/underway/complete labels and a neutral state-less management message survive silent import and both public history doors');
   } finally { await runtime.close(); }
 });
+
+test('UPTIME-012 MOVE-001 — a Sorry history moved in counts toward each component and group all-history reliability, an open incident up to now', { timeout: 120_000 }, async () => {
+  const runtime = await openStatusJourney();
+  try {
+    const api = async (path, body, headers, method = body === undefined ? 'GET' : 'POST') => {
+      const response = await runtime.request(path, { method, ...(body === undefined ? {} : { body: JSON.stringify(body) }), headers });
+      return { status: response.status, body: response.status === 204 ? null : await response.json() };
+    };
+    const files = fixture('sorry', 'authenticated');
+    // Billing API's only incident is still open: it began when the component was created and is degraded since.
+    const detail = files.find(file => file.name === 'sorry-notice-100.json');
+    const notice = JSON.parse(detail.text).response;
+    Object.assign(notice, { state: 'investigating', timeline_state: 'present', ended_at: null, updates: notice.updates.filter(update => update.state !== 'resolved') });
+    detail.text = JSON.stringify({ response: notice });
+    const list = files.find(file => file.name === 'sorry-notices.json');
+    list.text = JSON.stringify({ ...JSON.parse(list.text), response: JSON.parse(list.text).response.map(row => row.id === notice.id ? notice : row) });
+    const moveIn = moveInDoor(api);
+    const review = await moveIn.preview({ source: 'sorry', files, pageId: 'synthpage01', publicAccessAcknowledged: true });
+    assert.equal(review.status, 200, JSON.stringify(review.body));
+    assert.equal((await moveIn.apply(review.body)).status, 200);
+    const html = await runtime.visible('/', 'All time');
+    const bar = subject => html.match(new RegExp(`<div class="reliability[^"]*"><p class="reliability-number">([\\s\\S]*?)</p><div class="reliability-marks" role="list" aria-label="All-history reliability by month for ${subject}">([\\s\\S]*?)</div>`, 'u'));
+    for (const subject of ['Billing API', 'the Customer services group']) {
+      const [, figure, marks] = bar(subject) ?? assert.fail(`${subject} shows its all-history reliability`);
+      // Degraded performance counts half a downtime minute per minute, from the start of the record to now.
+      assert.match(figure, /50\.00%/u, `${subject}: the open incident has counted since it began`);
+      assert.match(figure, /since Apr 2025/u);
+      const labels = [...marks.matchAll(/aria-label="([^"]+)"/gu)].map(match => match[1]);
+      assert.match(labels[0], /^Apr 2025: 50\.00%, downtime [\d.]+ minutes/u);
+      assert.ok(labels.length > 1 && labels.every(label => label.includes('downtime')), `${subject}: every month since the incident began carries its downtime`);
+    }
+  } finally { await runtime.close(); }
+});

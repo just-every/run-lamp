@@ -8,10 +8,10 @@ The primary journey: An operator sets up the page and components, accepts eviden
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 66 | 123 | 51 | 240 |
+| Core | 66 | 124 | 51 | 241 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 66 | 123 | 56 | 245 |
+| Full target | 66 | 124 | 56 | 246 |
 
 Judged from the code and tests at commit `d116690d2db42e82ef085086429887f2a1c28839` (30 October 2026). Field proof register: 19 rows; 0 passed, 0 failed, 19 not run.
 
@@ -2028,6 +2028,22 @@ Core · target · **partial** · From UPTIME-009
 
 **Evidence.** `src/core/features/availability-reports/`, `src/core/features/public-snapshot/uptime.ts`, `tests/e2e/publishing-contract.test.mjs`, `tests/e2e/public-contract.test.mjs`, `tests/e2e/publishing-contract.test.mjs`
 **Gap.** The original evidence does not assert this part’s complete outcome; unasserted: The selected audience receives the report on its private page; The shared numbers equal the component page’s figures.
+
+#### UPTIME-012 — All-history reliability
+
+Core · target · **partial**
+
+**Requirement.** Each public component and group shows its reliability over the whole stored incident history, beside the trailing-window figure.
+
+**Acceptance.**
+1. Every public incident counts from its start to its resolution, or to now while open, on each component it affected, at the downtime weight of its impact; overlapping incidents count the most severe once.
+2. A component's record starts at its uptime start date, or else at the earlier of its creation and its first incident; a group combines its components' downtime over their tracked time.
+3. A compact bar marks each month of the record with its weighted downtime, and months before the record begins say No data.
+4. Moved-in history counts like native history, including an incident still open.
+5. The figures are computed when the stored page is built, so a page view reads no incident rows.
+
+**Evidence.** `src/core/features/public-snapshot/reliability.ts`, `src/core/features/public-snapshot/reliability-markup.ts`, `tests/e2e/sorry-import.test.mjs`
+**Gap.** A Sorry history moved in with its incident still open shows, on the default page, the component and its group at the exact half-weighted all-history figure, starting at the component's creation, with every month since carrying downtime. Unasserted: overlapping incidents counting the most severe once; the uptime start date; months before a record begins saying No data; the Calm, Uptime and Regions layouts; a page view reading no incident rows.
 
 ### Incidents — target
 

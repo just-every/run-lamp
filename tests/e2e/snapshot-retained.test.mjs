@@ -281,16 +281,16 @@ test('AUD-001 THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published stat
     const publishedAt = new Date().toISOString();
     const source = {
       settings: { pageName: 'Known service status <synthetic-lamp> & $&', tagline: 'Current customer facts', accentColor: '#16794C', timezone: 'America/Los_Angeles', hostname: 'page.example', footerCreditEnabled: false, logoKey: null, logoContentType: null, widgetAllowedOrigins: '[]', feedId: 'synthetic-lamp-resilience' },
-      components: [{ id: 'customer-api', name: 'Customer API', groupName: null, groupOrder: null, displayOrder: 0, note: '' }],
+      components: [{ id: 'customer-api', name: 'Customer API', groupName: null, groupOrder: null, displayOrder: 0, note: '', createdAt: publishedAt }],
       claims: [{ componentId: 'customer-api', state: 'Major outage' }], history: [], corrections: [],
       incidents: [{ id: 'incident', reference: 'INC-1', title: 'Known API outage', lifecycle: 'Identified', openedAt: publishedAt, resolvedAt: null }],
       incidentComponents: [{ incidentId: 'incident', componentId: 'customer-api', componentName: 'Customer API', state: 'Major outage', relationship: 'Primary', publishedAt }],
       updates: [{ id: 'outage-update', incidentId: 'incident', lifecycle: 'Identified', affectedAudience: 'API customers', customerImpact: 'Major outage affects customer requests.', whatStillWorks: 'Status information remains available.', details: 'The operator is restoring service.', nextUpdateAt: new Date(Date.parse(publishedAt) + 3600000).toISOString(), publishedAt }],
-      maintenance: [], maintenanceComponents: [], reports: [], maintenanceNotices: [],
+      maintenance: [], maintenanceComponents: [], reports: [], maintenanceNotices: [], reliability: [],
     };
     // Repeated component resources make the full footer travel through the
     // retained representation as well as each ordinary stored document.
-    for (let number = 2; number <= 6; number++) source.components.push({ id: `synthetic-lamp-retained-${number}`, name: `Synthetic retained service ${number}`, groupName: null, groupOrder: null, displayOrder: number, note: "" });
+    for (let number = 2; number <= 6; number++) source.components.push({ id: `synthetic-lamp-retained-${number}`, name: `Synthetic retained service ${number}`, groupName: null, groupOrder: null, displayOrder: number, note: "", createdAt: publishedAt });
     // Seed populated, nonconsecutive archive months before the real rebuild.
     // Public reads below use a repository that throws on any access.
     const archived = [

@@ -10,6 +10,7 @@ import type { PublicMetric } from "../metrics/types";
 import { readImportedNamespaces, readImportedPublicRecords } from "../statuspage-import/alias-repository";
 import type { ImportedPublicRecord } from "../statuspage-import/public-addresses";
 import { loadPublicApiIds } from "./api-identity-repository";
+import type { ReliabilityRow } from "./reliability";
 import { createWebsiteRepository } from "../website/repository";
 import { and, asc, desc, eq, getTableColumns, inArray, isNull, ne, or, sql } from "drizzle-orm";
 
@@ -95,6 +96,8 @@ export interface PublicSnapshotSource {
   reports: Array<{ incidentId: string; summary: string; timeline: string; cause: string; remediation: string; publishedAt: string }>;
   importedMaintenanceUpdates?: Array<{ id: string; maintenanceId: string; body: string; publishedAt: string; sourceStates?: string }>;
   maintenanceNotices: Array<{ id: string; maintenanceId: string; kind: string; body: string; publishedAt: string }>;
+  /** Every public incident attachment over the whole history, for the all-history reliability record. */
+  reliability: ReliabilityRow[];
 }
 
 export function createSnapshotRepository(
@@ -236,6 +239,11 @@ export function createSnapshotRepository(
         binding.prepare(`SELECT id,maintenance_id AS maintenanceId,body,published_at AS publishedAt,source_states AS sourceStates FROM import_maintenance_updates WHERE maintenance_id IN (${recentMaintenanceQuery}) ORDER BY published_at DESC,id`).all<{id: string; maintenanceId: string; body: string; publishedAt: string; sourceStates: string}>().then(result => result.results),
         scope ? {} : loadPublicApiIds(binding),
       ]);
+      // The all-history record reads one narrow row per public incident attachment, at build time only:
+      // page views serve the stored snapshot. The record is not bounded by the retained window.
+      const reliability = (await binding.prepare(`SELECT a.component_id AS componentId, i.opened_at AS openedAt, i.resolved_at AS resolvedAt, COALESCE(i.peak_impact, a.state) AS impact
+        FROM incident_components a JOIN incidents i ON i.id = a.incident_id
+        WHERE a.component_id IS NOT NULL AND a.published_at IS NOT NULL AND ${incidentVisibility}`).all<ReliabilityRow>()).results;
 
       const website = await createWebsiteRepository(binding).get();
       const vendorIds = new Set((await createDependencyRepository(binding).list()).map(row => row.componentId));
@@ -262,6 +270,7 @@ export function createSnapshotRepository(
         maintenanceComponents: attachedMaintenanceComponents,
         reports,
         maintenanceNotices, importedMaintenanceUpdates, metrics: await loadMetrics(),
+        reliability,
       };
     },
     loadMetrics,

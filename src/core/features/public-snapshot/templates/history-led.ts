@@ -6,6 +6,7 @@ import { publicComponentOrder } from "../../../shared/component-order";
 import { REPORTING_DAYS, dayKey, escapeHtml } from "../format";
 import { uptimeMarkLabel } from "../uptime";
 import { uptimeMethod } from "../uptime-method";
+import { reliabilityMarkup, reliabilityMethod } from "../reliability-markup";
 import { lineIcon, stateGlyph } from "./icons";
 import { maintenanceEntry, openIncidentEntry, resolvedEntry } from "./history";
 import { axisMarkup, axisStyles } from "./heatmap-axis";
@@ -135,7 +136,7 @@ function heatmapFrame(model: PublicSnapshotModel, titleId: string) {
   ].filter(([kind]) => kind === "ok" || seen.has(kind!));
   const legend = `<ul class="hm-legend" aria-label="Legend">${legendStates.map(([kind, name]) => `<li><i class="cell ${kind}"></i>${name}</li>`).join("")}</ul>`;
   const notes = components.filter((component) => component.note || component.description).map((component) => `<li><strong>${escapeHtml(component.name)}</strong>${componentNote(component)}</li>`).join("");
-  return `<div class="hm-frame"><div class="hm-head"><h2 id="${titleId}">Components</h2>${legend}</div><div class="hm-body"><ul class="hm-labels">${labels}</ul><div class="hm-scroll" role="group" aria-label="Daily history, last ${model.theme.historyDays} days"><div class="hm-track"><div class="hm-callouts">${callouts(model, components, days)}</div>${rows}${axisMarkup(days)}</div></div></div>${notes ? `<ul class="hm-notes">${notes}</ul>` : ""}<details class="hm-method"><summary>How these figures are calculated</summary><p>Each square is one calendar day in ${escapeHtml(timezone)}. A component's percentage covers the last ${model.theme.historyDays} days of observed time; the overall figure averages the components, weighted by observed time. ${escapeHtml(uptimeMethod(model.theme.historyDays, model.policies))}</p></details></div>`;
+  return `<div class="hm-frame"><div class="hm-head"><h2 id="${titleId}">Components</h2>${legend}</div><div class="hm-body"><ul class="hm-labels">${labels}</ul><div class="hm-scroll" role="group" aria-label="Daily history, last ${model.theme.historyDays} days"><div class="hm-track"><div class="hm-callouts">${callouts(model, components, days)}</div>${rows}${axisMarkup(days)}</div></div></div>${notes ? `<ul class="hm-notes">${notes}</ul>` : ""}<details class="hm-method"><summary>How these figures are calculated</summary><p>Each square is one calendar day in ${escapeHtml(timezone)}. A component's percentage covers the last ${model.theme.historyDays} days of observed time; the overall figure averages the components, weighted by observed time. ${escapeHtml(uptimeMethod(model.theme.historyDays, model.policies))} ${escapeHtml(reliabilityMethod)}</p></details></div>`;
 }
 
 function heatmap(model: PublicSnapshotModel, parts: TemplateParts) {
@@ -169,12 +170,13 @@ function componentList(model: PublicSnapshotModel) {
   if (!components.length) return "";
   const renderedRows = components.map((component) => {
     const tone = toneOf(component.state);
-    return `<details class="up-row"><summary><span class="up-dot tone-${tone}" aria-hidden="true"></span><span class="up-name">${escapeHtml(component.name)}</span><span class="up-state tone-${tone}">${escapeHtml(componentStateLabel(component.state))}</span><span class="up-pct">${escapeHtml(uptimeValue(component.uptime))}</span>${lineIcon("chevron", "up-chevron")}</summary><div class="up-detail"><p class="tpl-meta">${escapeHtml(uptimeCaption(component.uptime))}: ${escapeHtml(uptimeValue(component.uptime))}</p>${dayBar(component, "up-bar", false)}${componentNote(component)}</div></details>`;
+    return `<details class="up-row"><summary><span class="up-dot tone-${tone}" aria-hidden="true"></span><span class="up-name">${escapeHtml(component.name)}</span><span class="up-state tone-${tone}">${escapeHtml(componentStateLabel(component.state))}</span><span class="up-pct">${escapeHtml(uptimeValue(component.uptime))}</span>${lineIcon("chevron", "up-chevron")}</summary><div class="up-detail"><p class="tpl-meta">${escapeHtml(uptimeCaption(component.uptime))}: ${escapeHtml(uptimeValue(component.uptime))}</p>${dayBar(component, "up-bar", false)}${reliabilityMarkup(model.reliability.components.get(component.id), component.name, model.settings.timezone)}${componentNote(component)}</div></details>`;
   });
   const rows = renderedRows.join("");
   const content = model.theme.groupsCollapsed ? groupComponentsByHeading(components).map(([heading, members]) => {
     const memberIds = new Set(members.map(member => member.id));
-    return `<details class="theme-component-group"><summary>${escapeHtml(heading)}</summary>${components.flatMap((component, index) => memberIds.has(component.id) ? [renderedRows[index]] : []).join("")}</details>`;
+    const group = members[0]?.groupId ? reliabilityMarkup(model.reliability.groups.get(members[0].groupId), `the ${heading} group`, model.settings.timezone, "group-reliability") : "";
+    return `<details class="theme-component-group"><summary>${escapeHtml(heading)}</summary>${group}${components.flatMap((component, index) => memberIds.has(component.id) ? [renderedRows[index]] : []).join("")}</details>`;
   }).join("") : rows;
   return `<section class="up-components" aria-labelledby="list-title" data-live="list"><h2 id="list-title">Components</h2><div class="up-rows">${content}</div></section>`;
 }

@@ -104,3 +104,13 @@ body { background: var(--paper); }
 
 .update-correction { margin: 8px 0 0; color: var(--ink-2); font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; }
 .update-correction a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+
+/* All-history reliability (UPTIME-012) under a component's days and a group's heading, in the template's own tones. */
+.tpl .reliability { display: grid; gap: 4px; min-width: 0; margin: 8px 0 0; }
+.tpl .reliability-number { order: 2; margin: 0; color: var(--ink-3); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.tpl .reliability-value { color: var(--ink-2); font-weight: 500; }
+.tpl .reliability-marks { display: flex; gap: 1px; height: 6px; min-width: 0; overflow: hidden; border-radius: 2px; }
+.tpl .reliability-mark { flex: 1 1 0; min-width: 0; background: var(--cell-ok); }
+.tpl .reliability-mark.downtime { background: var(--amber); }
+.tpl .reliability-mark.downtime.major-outage { background: var(--down); }
+.tpl .reliability-mark.no-data { background: var(--no-data); }

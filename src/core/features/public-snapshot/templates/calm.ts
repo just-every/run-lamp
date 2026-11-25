@@ -3,24 +3,27 @@ import type { PublicSnapshotModel } from "../renderer";
 import { groupComponentsByHeading } from "../../../shared/component-order";
 import { escapeHtml } from "../format";
 import { uptimeMethod } from "../uptime-method";
+import { reliabilityMarkup, reliabilityMethod } from "../reliability-markup";
 import { componentIcon, stateGlyph } from "./icons";
 import { maintenanceEntry, openIncidentEntry, resolvedEntry } from "./history";
 import { brand, componentNote, dayBar, feedLinks, quietLine, records, sentenceSize, situation, subscribeForm, tagline, toneOf, updatedLine, uptimeCaption, uptimeValue, type Component, type TemplateParts } from "./parts";
 
 /** Calm headline: one quiet sentence answers the question; components and history sit underneath as type and
  *  hairlines, with no cards or boxes. */
-function componentRow(component: Component, heading: "h3" | "h4") {
-  return `<li class="calm-row">${componentIcon(component.name)}<div class="calm-name"><${heading}>${escapeHtml(component.name)}</${heading}>${componentNote(component)}</div><p class="calm-state tone-${toneOf(component.state)}">${stateGlyph(component.state)}<span>${escapeHtml(componentStateLabel(component.state))}</span></p><div class="calm-uptime"><p><span class="calm-caption">${escapeHtml(uptimeCaption(component.uptime))}</span><span class="calm-value">${escapeHtml(uptimeValue(component.uptime))}</span></p>${dayBar(component, "calm-bar")}</div></li>`;
+function componentRow(component: Component, heading: "h3" | "h4", model: PublicSnapshotModel) {
+  return `<li class="calm-row">${componentIcon(component.name)}<div class="calm-name"><${heading}>${escapeHtml(component.name)}</${heading}>${componentNote(component)}</div><p class="calm-state tone-${toneOf(component.state)}">${stateGlyph(component.state)}<span>${escapeHtml(componentStateLabel(component.state))}</span></p><div class="calm-uptime"><p><span class="calm-caption">${escapeHtml(uptimeCaption(component.uptime))}</span><span class="calm-value">${escapeHtml(uptimeValue(component.uptime))}</span></p>${dayBar(component, "calm-bar")}${reliabilityMarkup(model.reliability.components.get(component.id), component.name, model.settings.timezone)}</div></li>`;
 }
 
 function components(model: PublicSnapshotModel, parts: TemplateParts) {
   if (!model.visibleComponents.length) return "";
   const named = model.visibleComponents.some((component) => component.groupName !== null);
   const groups = groupComponentsByHeading(model.visibleComponents).map(([heading, list]) => {
-    const rows = `<ul class="calm-list">${list.map(component => componentRow(component, named ? "h4" : "h3")).join("")}</ul>`;
-    return model.theme.groupsCollapsed ? `<details class="theme-component-group"><summary>${escapeHtml(heading)}</summary>${rows}</details>` : `${named ? `<h3 class="calm-group">${escapeHtml(heading)}</h3>` : ""}${rows}`;
+    const rows = `<ul class="calm-list">${list.map(component => componentRow(component, named ? "h4" : "h3", model)).join("")}</ul>`;
+    const groupId = list[0]?.groupId ?? null;
+    const group = groupId ? reliabilityMarkup(model.reliability.groups.get(groupId), `the ${heading} group`, model.settings.timezone, "group-reliability") : "";
+    return model.theme.groupsCollapsed ? `<details class="theme-component-group"><summary>${escapeHtml(heading)}</summary>${group}${rows}</details>` : `${named ? `<h3 class="calm-group">${escapeHtml(heading)}</h3>${group}` : ""}${rows}`;
   }).join("");
-  const method = `<details class="tpl-about"><summary>How these figures are calculated</summary><p>Availability days use ${escapeHtml(model.settings.timezone)}. ${escapeHtml(uptimeMethod(model.theme.historyDays, model.policies))}</p></details>`;
+  const method = `<details class="tpl-about"><summary>How these figures are calculated</summary><p>Availability days use ${escapeHtml(model.settings.timezone)}. ${escapeHtml(uptimeMethod(model.theme.historyDays, model.policies))} ${escapeHtml(reliabilityMethod)}</p></details>`;
   return `<section class="calm-components" aria-labelledby="components-title" data-live="components"><h2 id="components-title" class="tpl-kicker">Components</h2>${groups}${method}<div class="component-extension">${parts.slot("status-page.components.after.v1")}</div></section>`;
 }
 

@@ -39,6 +39,18 @@ component. It counts Major outage and Partially unavailable as full downtime,
 Degraded performance as half downtime, and Under maintenance as no downtime.
 Lamp computes this from component state history, and the page states the method.
 
+Under the 90-day record, each component and each group also shows its **All time**
+reliability with a compact bar of one mark per month (longer histories fold
+several months into each mark, up to 36 marks). It counts every public incident,
+including history brought in through **Settings › Move in**, from its start to its
+resolution, or up to now while it is still open, on each component it affected. Each
+incident counts at the downtime weight of its impact, and when incidents overlap only
+the most severe one counts. A component's record starts at its uptime start date
+when one is set, otherwise at its creation or its first incident, whichever is
+earlier. A group combines the downtime of its components over their tracked time.
+Scheduled maintenance does not count. Lamp works these figures out when it builds
+the stored page, so a page view reads nothing from the database.
+
 The public page, feed and widget show published information. Internal components
 and incident notes are not included in those public surfaces.
 

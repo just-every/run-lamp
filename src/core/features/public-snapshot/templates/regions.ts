@@ -6,6 +6,7 @@ import { publicComponentOrder } from "../../../shared/component-order";
 import { regionKey } from "../../../shared/regions";
 import { escapeHtml } from "../format";
 import { uptimeMethod } from "../uptime-method";
+import { reliabilityMarkup, reliabilityMethod } from "../reliability-markup";
 import { componentIcon, lineIcon, pinIcon, stateGlyph } from "./icons";
 import { maintenanceEntry, openIncidentEntry, resolvedEntry } from "./history";
 import { mapPlan, planStyles, type MapMarker } from "./map-layout";
@@ -84,11 +85,11 @@ function filters(groups: RegionGroup[]) {
   return `<nav class="rg-filters" aria-label="Filter components by region"><a href="#components-title" data-region-choice="all" aria-current="true">All regions</a>${groups.map((group) => `<a href="#components-title" data-region-choice="${group.key}">${escapeHtml(group.name)}</a>`).join("")}</nav>`;
 }
 
-function componentRow(component: Component, groups: RegionGroup[]) {
+function componentRow(component: Component, groups: RegionGroup[], model: PublicSnapshotModel) {
   const key = regionKey(component.region);
   const region = groups.find((group) => group.key === key);
   const tone = toneOf(component.state);
-  return `<details class="rg-row" data-region="${key}"><summary>${componentIcon(component.name)}<span class="rg-name"><span class="rg-name-text">${escapeHtml(component.name)}</span>${region ? "" : '<span class="rg-everywhere">All regions</span>'}</span><span class="rg-status tone-${tone}">${stateGlyph(component.state)}<span>${escapeHtml(componentStateLabel(component.state))}</span></span><span class="rg-uptime"><span>${escapeHtml(uptimeValue(component.uptime))}</span><span class="rg-uptime-caption">${escapeHtml(uptimeCaption(component.uptime))}</span></span>${lineIcon("chevron", "rg-chevron")}</summary><div class="rg-detail">${region ? `<p class="tpl-meta">Region: ${escapeHtml(region.name)}</p>` : ""}<p class="tpl-meta">${escapeHtml(uptimeCaption(component.uptime))}: ${escapeHtml(uptimeValue(component.uptime))}</p>${dayBar(component, "rg-bar")}${componentNote(component)}</div></details>`;
+  return `<details class="rg-row" data-region="${key}"><summary>${componentIcon(component.name)}<span class="rg-name"><span class="rg-name-text">${escapeHtml(component.name)}</span>${region ? "" : '<span class="rg-everywhere">All regions</span>'}</span><span class="rg-status tone-${tone}">${stateGlyph(component.state)}<span>${escapeHtml(componentStateLabel(component.state))}</span></span><span class="rg-uptime"><span>${escapeHtml(uptimeValue(component.uptime))}</span><span class="rg-uptime-caption">${escapeHtml(uptimeCaption(component.uptime))}</span></span>${lineIcon("chevron", "rg-chevron")}</summary><div class="rg-detail">${region ? `<p class="tpl-meta">Region: ${escapeHtml(region.name)}</p>` : ""}<p class="tpl-meta">${escapeHtml(uptimeCaption(component.uptime))}: ${escapeHtml(uptimeValue(component.uptime))}</p>${dayBar(component, "rg-bar")}${reliabilityMarkup(model.reliability.components.get(component.id), component.name, model.settings.timezone)}${componentNote(component)}</div></details>`;
 }
 
 export function regionsPage(model: PublicSnapshotModel, parts: TemplateParts) {
@@ -101,8 +102,8 @@ export function regionsPage(model: PublicSnapshotModel, parts: TemplateParts) {
   const map = `<section class="rg-regions wrap" aria-labelledby="regions-title" data-live="map"><h2 id="regions-title" class="sr-only">Regions</h2>${regionsMap(model)}${filters(groups)}</section>`;
   const current = [...history.open.map((incident) => openIncidentEntry(incident, model, parts)), ...history.maintenance.map((item) => maintenanceEntry(item, model))].join("");
   const past = history.resolved.map((incident) => resolvedEntry(incident, model)).join("");
-  const rows = model.theme.groupsCollapsed ? groupComponentsByHeading(components).map(([heading, members]) => `<details class="theme-component-group"><summary>${escapeHtml(heading)}</summary>${members.map(component => componentRow(component, groups)).join("")}</details>`).join("") : components.map(component => componentRow(component, groups)).join("");
-  const method = `<details class="tpl-about"><summary>How these figures are calculated</summary><p>Availability days use ${escapeHtml(model.settings.timezone)}. ${escapeHtml(uptimeMethod(model.theme.historyDays, model.policies))}</p></details>`;
+  const rows = model.theme.groupsCollapsed ? groupComponentsByHeading(components).map(([heading, members]) => `<details class="theme-component-group"><summary>${escapeHtml(heading)}</summary>${members[0]?.groupId ? reliabilityMarkup(model.reliability.groups.get(members[0].groupId), `the ${heading} group`, model.settings.timezone, "group-reliability") : ""}${members.map(component => componentRow(component, groups, model)).join("")}</details>`).join("") : components.map(component => componentRow(component, groups, model)).join("");
+  const method = `<details class="tpl-about"><summary>How these figures are calculated</summary><p>Availability days use ${escapeHtml(model.settings.timezone)}. ${escapeHtml(uptimeMethod(model.theme.historyDays, model.policies))} ${escapeHtml(reliabilityMethod)}</p></details>`;
   const table = `<section class="rg-components" aria-labelledby="components-title" data-live="components"><h2 id="components-title">Components</h2><p class="sr-only" data-region-count aria-live="polite">Showing all ${plural(components.length, "component")}</p><div class="rg-thead" aria-hidden="true"><span>Component</span><span>Status</span><span>${model.theme.historyDays}-day uptime</span></div><div class="rg-rows">${rows}</div>${method}<div class="component-extension">${parts.slot("status-page.components.after.v1")}</div></section>`;
   const lower = `<div class="rg-lower wrap"><section class="rg-current" aria-labelledby="history-title" data-live="current"><h2 id="history-title">History</h2>${current ? `<ol class="tl-list">${current}</ol>` : ""}</section>${table}<section class="rg-past" aria-labelledby="past-title" data-live="past"><h2 id="past-title" class="sr-only">Resolved incidents</h2>${past ? `<ol class="tl-list">${past}</ol>` : ""}${quietLine(history, "tpl-quiet")}</section></div>`;
   return `${head}${parts.slot("status-page.header.after.v1")}${status}${map}${lower}`;

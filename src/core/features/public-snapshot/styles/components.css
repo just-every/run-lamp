@@ -38,3 +38,17 @@
 .component-description p { margin: 8px 0 0; white-space: pre-wrap; }
 
 .availability-since { margin: 8px 0 0; color: var(--ink-3); font-size: 13px; }
+
+/* All-history reliability under each component's day record and in each group's heading. */
+.reliability { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 16px; min-width: 0; margin-top: 10px; }
+.reliability-number { grid-row: 2; grid-column: 2; margin: 0; color: var(--ink-3); font-size: 12.5px; text-align: right; font-variant-numeric: tabular-nums; }
+.reliability-value { color: var(--ink-2); font-weight: 500; }
+.reliability-marks { display: grid; grid-row: 1; grid-column: 1 / -1; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 2px; height: 10px; min-width: 0; }
+.reliability-mark { display: block; min-width: 0; border-radius: 2px; background: var(--ok-mark); }
+.reliability-mark.downtime { background: var(--degraded); }
+.reliability-mark.downtime.major-outage { background: var(--down); }
+.reliability-mark.no-data { background: var(--no-data); }
+.component-group > .group-head { margin: 0 -24px; border-bottom: 1px solid var(--line); border-radius: var(--radius) var(--radius) 0 0; background: var(--card-tint); padding: 12px 24px; }
+.group-head h3 { margin: 0; color: var(--ink-2); font-size: 13px; line-height: 1.4; letter-spacing: .01em; overflow-wrap: anywhere; }
+.group-head .reliability { margin-top: 8px; }
+details.component-group > .group-reliability { margin: 10px 0 0; }

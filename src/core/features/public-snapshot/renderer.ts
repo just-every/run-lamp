@@ -34,6 +34,8 @@ import { incidentMarkup, maintenanceMarkup, resolvedMarkup, statePill, type Publ
 import { DAY, REPORTING_DAYS, durationText, escapeHtml, stateClass, timestamp, timestampDetails, timezoneLabel } from "./format";
 import { computeUptime, type Uptime, uptimeMarkup } from "./uptime";
 import { uptimeMethod } from "./uptime-method";
+import { computeReliability } from "./reliability";
+import { reliabilityMarkup, reliabilityMethod } from "./reliability-markup";
 
 export interface SnapshotArtifact {
   key: string;
@@ -56,6 +58,7 @@ interface PublicComponent {
   uptimeStartDate?: string | null;
   note: string;
   hideUptime?: boolean;
+  groupId: string | null;
   groupName: string | null;
   groupOrder: number | null;
   displayOrder: number;
@@ -78,6 +81,7 @@ function toPublicModel(source: PublicSnapshotSource, generatedAt: string, polici
   }));
   if (theme.historyDays !== REPORTING_DAYS) for (const component of components) component.uptime.marks = component.uptime.marks.slice(-theme.historyDays);
   const visibleComponents = components.filter(isPublicComponentShown);
+  const reliability = computeReliability(source.reliability, source.components, now, source.settings.timezone, policies);
   const hiddenIds = new Set(components.filter(component => !isPublicComponentShown(component)).map(component => component.id));
   const attachedIncidentIds = new Set(source.incidentComponents.map(component => component.incidentId));
   const attachedMaintenanceIds = new Set(source.maintenanceComponents.map(component => component.maintenanceId));
@@ -100,7 +104,7 @@ function toPublicModel(source: PublicSnapshotSource, generatedAt: string, polici
   const maintenance = source.maintenance
     .map((item) => ({ ...item, components: attachedByMaintenance.get(item.id) ?? [], notices: noticesByMaintenance.get(item.id) ?? [], importedUpdates: (source.importedMaintenanceUpdates ?? []).filter(update => update.maintenanceId === item.id) }))
     .filter((item) => source.protectedPage || attachedMaintenanceIds.has(item.id)) satisfies PublicMaintenance[];
-  return { bounded: source.bounded, archive: source.archive, theme, prelaunch: source.prelaunch === true, subscriptionChannels: source.subscriptionChannels, incidentIncludeReport: source.incidentIncludeReport === true, metrics: source.metrics ?? [], websiteUrl: source.websiteUrl, origin: source.publicOrigin ?? `https://${source.settings.hostname}`, settings: source.settings, components, visibleComponents, incidents, maintenance, generatedAt, policies, overall: policies.pageStatusRollup([...components.map((component) => component.state), ...(source.dependencies ?? []).filter(row => row.mode === "rollup" && row.state !== null).map(row => row.state!)]) };
+  return { bounded: source.bounded, archive: source.archive, theme, prelaunch: source.prelaunch === true, subscriptionChannels: source.subscriptionChannels, incidentIncludeReport: source.incidentIncludeReport === true, metrics: source.metrics ?? [], websiteUrl: source.websiteUrl, origin: source.publicOrigin ?? `https://${source.settings.hostname}`, settings: source.settings, components, visibleComponents, reliability, incidents, maintenance, generatedAt, policies, overall: policies.pageStatusRollup([...components.map((component) => component.state), ...(source.dependencies ?? []).filter(row => row.mode === "rollup" && row.state !== null).map(row => row.state!)]) };
 }
 
 export type PublicSnapshotModel = ReturnType<typeof toPublicModel>;
@@ -141,27 +145,30 @@ function pageShell(title: string, body: string, model: ReturnType<typeof toPubli
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><meta name="description" content="${escapeHtml(settings.tagline)}"><meta property="og:title" content="${escapeHtml(`${settings.pageName}: ${componentStateLabel(overall)}`)}"><meta property="og:image" content="${escapeHtml(`${publicOrigin}/assets/og.svg`)}"><meta property="og:image:alt" content="${escapeHtml(`${settings.pageName}: ${componentStateLabel(overall)}`)}"><title>${escapeHtml(title)}</title><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/status-page.css"></head><body class="lamp-public"><main class="page${current === "root" ? " root-page" : ""}">${themeChrome(model.theme, "header")}${masthead}${slotMarkup(slots, "status-page.header.after.v1", model)}${body}${meta}<footer>${themeChrome(model.theme, "footer")}${slotMarkup(slots, "status-page.footer.before.v1", model)}${footerResources(model)}<a data-lamp-signin href="/signin">Sign in</a>${settings.footerCreditEnabled ? " · Powered by Lamp" : ""}</footer></main><script src="/assets/status-page.js" defer></script></body></html>`;
 }
 
-function componentMarkup(component: PublicComponent & { hideUptime?: boolean }, timezone: string, generatedAt: string) {
-  return `<article class="component"><div class="component-name"><h4>${escapeHtml(component.name)}</h4>${statePill(component.state, "component-state", componentStateLabel(component.state))}${component.description ? `<details class="component-description"><summary>About ${escapeHtml(component.name)}</summary><p>${escapeHtml(component.description)}</p></details>` : ""}${component.note ? `<p class="component-note">${escapeHtml(component.note)}</p>` : ""}</div><div class="component-status">${uptimeMarkup(component, timezone, generatedAt)}</div></article>`;
+function componentMarkup(component: PublicComponent & { hideUptime?: boolean }, model: PublicSnapshotModel) {
+  const { timezone } = model.settings;
+  return `<article class="component"><div class="component-name"><h4>${escapeHtml(component.name)}</h4>${statePill(component.state, "component-state", componentStateLabel(component.state))}${component.description ? `<details class="component-description"><summary>About ${escapeHtml(component.name)}</summary><p>${escapeHtml(component.description)}</p></details>` : ""}${component.note ? `<p class="component-note">${escapeHtml(component.note)}</p>` : ""}</div><div class="component-status">${uptimeMarkup(component, timezone, model.generatedAt)}${reliabilityMarkup(model.reliability.components.get(component.id), component.name, timezone)}</div></article>`;
 }
 
 function componentHealthMarkup(model: ReturnType<typeof toPublicModel>) {
-  const { visibleComponents: components, settings, generatedAt } = model;
+  const { visibleComponents: components, settings } = model;
   // One section per group in the shared component order. Ungrouped components
   // take the shared heading only beside named groups; a page without groups
   // lists its components with no invented heading.
   const named = components.some((component) => component.groupName !== null);
   const charts = groupComponentsByHeading(components).map(([heading, values]) => {
-    const rows = values.map((component) => componentMarkup(component, settings.timezone, generatedAt)).join("");
+    const rows = values.map((component) => componentMarkup(component, model)).join("");
+    const groupId = values[0]?.groupId ?? null;
+    const group = groupId ? reliabilityMarkup(model.reliability.groups.get(groupId), `the ${heading} group`, settings.timezone, "group-reliability") : "";
     return !named
       ? `<div class="component-group">${rows}</div>`
-      : model.theme.groupsCollapsed ? `<details class="component-group"><summary>${escapeHtml(heading)}</summary>${rows}</details>` : `<section class="component-group"><h3>${escapeHtml(heading)}</h3>${rows}</section>`;
+      : model.theme.groupsCollapsed ? `<details class="component-group"><summary>${escapeHtml(heading)}</summary>${group}${rows}</details>` : `<section class="component-group">${group ? `<div class="group-head"><h3>${escapeHtml(heading)}</h3>${group}</div>` : `<h3>${escapeHtml(heading)}</h3>`}${rows}</section>`;
   }).join("");
   // A page with no visible components has no components section at all.
   if (!charts) return "";
   const starts = components.flatMap(component => component.uptime.trackingSince ? [component.uptime.trackingSince] : []).sort();
   const since = starts[0] ? `<p class="availability-since">History since ${timestamp(starts[0], settings.timezone)}.</p>` : "";
-  const method = `<p>Availability days use ${escapeHtml(settings.timezone)}. ${escapeHtml(uptimeMethod(model.theme.historyDays, model.policies))}</p>`;
+  const method = `<p>Availability days use ${escapeHtml(settings.timezone)}. ${escapeHtml(uptimeMethod(model.theme.historyDays, model.policies))} ${escapeHtml(reliabilityMethod)}</p>`;
   return `<section class="component-health" aria-labelledby="components-title"><header class="section-heading"><h2 id="components-title">Components</h2><p>Uptime over the last ${model.theme.historyDays} days</p></header><div class="availability-charts">${charts}</div>${since}<div class="availability-foot"><aside class="availability-legend" aria-label="Availability legend"><span><i class="legend-good"></i>Available</span><span><i class="legend-degraded"></i>Degraded</span><span><i class="legend-downtime"></i>Downtime</span><span><i class="legend-no-data"></i>No data</span></aside><details class="availability-method"><summary>How availability is calculated</summary>${method}</details></div></section>`;
 }
 
