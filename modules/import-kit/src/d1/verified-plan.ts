@@ -26,14 +26,28 @@ export function planReadScope(database: D1Database, jobId: string, storedBody: s
 /** Codec callbacks may retain aliases. Own every container before protecting
  * the graph whose verified fingerprint will survive awaited database reads. */
 export function ownDecodedPlan(plan: ImportPlan): ImportPlan {
-  const result = cloneJson(plan);
+  return freezeOwnedPlan(cloneJson(plan));
+}
+
+/** A freshly JSON-parsed plan has no outside aliases to copy. Record a
+ * fingerprint receipt only after the owned tree is immutable. */
+export function verifyParsedPlan(plan: ImportPlan): string {
+  const fingerprint = planFingerprint(plan);
+  if (fingerprint === plan.fingerprint) {
+    freezeOwnedPlan(plan);
+    fingerprints.set(plan, fingerprint);
+  }
+  return fingerprint;
+}
+
+function freezeOwnedPlan(plan: ImportPlan): ImportPlan {
   const freeze = (value: unknown): void => {
     if (value === null || typeof value !== 'object' || Object.isFrozen(value)) return;
     for (const child of Object.values(value)) freeze(child);
     Object.freeze(value);
   };
-  freeze(result); owned.add(result);
-  return result;
+  freeze(plan); owned.add(plan);
+  return plan;
 }
 
 /** A fresh root keeps plans.ts custody snapshots independent even when their

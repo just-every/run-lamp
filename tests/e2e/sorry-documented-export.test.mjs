@@ -65,8 +65,16 @@ test('documented Sorry exports account for every field through preview, saved jo
         notifications: await notificationInventory(runtime),
       };
       console.log('Synthetic Sorry ' + mode + ': preview');
-      const preview = await move.preview(input);
+      let resumedDraft = false;
+      const preview = await move.preview({ ...input, onPreparing: async draft => {
+        assert.equal(draft.fingerprint, undefined, 'private preparation cannot be approved');
+        assert.deepEqual(await importedRecordInventory(runtime), before.native, 'private preparation writes no native record');
+        assert.deepEqual(await notificationInventory(runtime), before.notifications, 'preparation sends and queues nothing');
+        await runtime.restart();
+        resumedDraft = true;
+      } });
       assert.equal(preview.status, 200, JSON.stringify(preview.body));
+      if (mode === 'authenticated') assert.ok(resumedDraft, 'a large plan resumes after a Worker restart');
       const report = preview.body.report, fields = report.fieldLedger;
       assert.ok(fields?.length);
       const expectedPaths = Object.entries(expected.paths).filter(([name]) => name.startsWith(mode + '/'))
@@ -127,6 +135,19 @@ test('documented Sorry exports account for every field through preview, saved jo
         continue;
       }
       console.log('Synthetic Sorry ' + mode + ': apply');
+      if (mode === 'public') {
+        const review = { planId: preview.body.planId, reviewedFingerprint: preview.body.fingerprint };
+        const queued = await move.door('sorry', 'apply', review);
+        assert.equal(queued.status, 200, JSON.stringify(queued.body));
+        assert.equal(queued.body.job.state, 'queued');
+        assert.deepEqual(await importedRecordInventory(runtime), before.native, 'creating the approved job writes no native records');
+        const batch = await move.door('sorry', 'apply', review);
+        assert.equal(batch.status, 200, JSON.stringify(batch.body));
+        assert.equal(batch.body.job.id, queued.body.job.id);
+        assert.ok(batch.body.job.checkpoint > queued.body.job.checkpoint);
+        assert.ok(batch.body.job.checkpoint < batch.body.job.total);
+        await runtime.restart();
+      }
       const applied = await move.apply(preview.body);
       assert.equal(applied.status, 200, JSON.stringify(applied.body));
       assert.equal(applied.body.job.state, 'completed');

@@ -16,6 +16,7 @@ const actions: Record<DoorAction, ImportAction[]> = {
 /** Statements the door runs after a kit call returns (lineage recovery and the
  * final authority check), kept out of the kit's self-sized batches. */
 const DOOR_RETURN_STATEMENTS = 16;
+export const DOOR_BATCH_RECORDS = 20;
 export function kitContext(request: DoorRequest, snapshot: Pick<DoorSnapshot, 'kitNamespace'|'plan'|'id'>) {
   const {options, access: grant} = request;
   return reserveReturn({
@@ -23,7 +24,7 @@ export function kitContext(request: DoorRequest, snapshot: Pick<DoorSnapshot, 'k
     mappingVersion: snapshot.plan.mappingVersion,
     operationKey: 'door:' + snapshot.id,
     ...(grant.action === 'apply' ? {reviewedFingerprint: grant.fingerprint} : {}),
-    batchSize: 20, maxBatches: 1,
+    batchSize: DOOR_BATCH_RECORDS, maxBatches: 1,
     storage: {database: options.database, targets: options.targets},
     authorization: {
       principalId: options.ownerPrincipalId,

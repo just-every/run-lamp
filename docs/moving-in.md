@@ -723,6 +723,18 @@ grants, plan fingerprints, reconciliation and bounded undo follow the
 [Base door protocol](../modules/import-kit/src/door/README.md). Original bytes
 stay in this installation.
 
+For a large export, send `{ "uploadId": "...", "stepped": true }` to
+`POST /api/rer/import/plan`. While the response is `{ "state": "preparing" }`,
+repeat the same request with a fresh single-use plan grant. If the door returns
+`catchup_required`, add `"catchup": true` and keep it on subsequent requests.
+The finished response supplies the plan ID and fingerprint for approval.
+
+After approval, repeat the same apply body with a fresh apply grant for each
+request while the returned job is `queued` or `applying`. Keep the original
+approval record, approval time and reviewed fingerprint on each grant. The job
+keeps its committed row position across retries. When a multi-batch import
+completes, Lamp queues the public page and feed rebuild.
+
 Lamp's door accepts the four sources Move in offers, `statuspage`,
 `betterstack`, `instatus` and `sorry`, one namespace each, on one server-owned
 allow-list shared with the owner's Move in: a grant for any other answers 403

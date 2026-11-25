@@ -10,6 +10,7 @@ import { cloudflareEdge } from '../helpers/cloudflare-edge.mjs';
 import { reachBuiltWorkerOptions } from '../e2e/helpers/reach-built-worker.mjs';
 import { assertMigrationObservation, schemaProbeClock } from '../e2e/helpers/health-schema-proof.mjs';
 import { platformLedgerRows } from '../../scripts/platform-ledger.mjs';
+import { unstable_readConfig } from 'wrangler';
 
 const require = createRequire(import.meta.url);
 const { Miniflare, convertV4MiniflareOptions } = createRequire(require.resolve('wrangler'))('miniflare');
@@ -68,7 +69,8 @@ test('Setup resumes migration apply, backfills the installed-health ledger and s
     assertMigrationObservation(observation, expected);
     return observation;
   };
-  const edge = await cloudflareEdge({ accountId: credentials.CLOUDFLARE_ACCOUNT_ID, token: credentials.CLOUDFLARE_API_TOKEN, subdomain: 'synthetic-owner', d1: { prepare: (...args) => db.prepare(...args), batch: (...args) => db.batch(...args) }, workerHost: { host: 'app.example.test', name: 'lamp-setup-migrations' }, app: () => new Response('Lamp') });
+  const workersSettings = { free_tier: true };
+  const edge = await cloudflareEdge({ accountId: credentials.CLOUDFLARE_ACCOUNT_ID, token: credentials.CLOUDFLARE_API_TOKEN, subdomain: 'synthetic-owner', workersSettings, d1: { prepare: (...args) => db.prepare(...args), batch: (...args) => db.batch(...args) }, workerHost: { host: 'app.example.test', name: 'lamp-setup-migrations' }, app: () => new Response('Lamp') });
   try {
     await writeFile(join(directory, 'package.json'), JSON.stringify({ private: true, scripts: { 'setup:cloudflare': `${JSON.stringify(process.execPath)} ${JSON.stringify(join(root, 'scripts/setup.mjs'))}` } }));
     await mkdir(join(directory, 'node_modules/wrangler/bin'), { recursive: true });
@@ -79,6 +81,8 @@ test('Setup resumes migration apply, backfills the installed-health ledger and s
     const cut = Math.ceil(shipped.length * 0.7);
     const complete = await setup(directory, edge, credentials, cut);
     assert.equal(complete.code, 0, complete.output);
+    const generatedConfig = { config: join(directory, 'wrangler.toml') };
+    assert.equal(unstable_readConfig(generatedConfig).limits?.cpu_ms, undefined);
     assert.match(complete.output, /setup is continuing with pass/);
     assert.match(complete.output, /Provisioned lamp-setup-migrations; migrations and page settings are initialized\./);
     assert.deepEqual(complete.ledger.applied, shipped);
@@ -92,8 +96,13 @@ test('Setup resumes migration apply, backfills the installed-health ledger and s
     assert.deepEqual(columns.map(({ name, type, pk, notnull }) => ({ name, type, pk, notnull })), [
       { name: 'name', type: 'TEXT', pk: 1, notnull: 0 }, { name: 'sha256', type: 'TEXT', pk: 0, notnull: 1 },
     ], 'the native ledger has exactly the columns the observer reads');
+    workersSettings.free_tier = false;
     const repeated = await setup(directory, edge, credentials);
     assert.equal(repeated.code, 0, repeated.output);
+    const paid = unstable_readConfig(generatedConfig);
+    const source = unstable_readConfig({ config: join(root, 'wrangler.jsonc') });
+    assert.ok(paid.limits?.cpu_ms > 0);
+    assert.equal(paid.limits.cpu_ms, source.limits?.cpu_ms);
     assert.deepEqual(await rows(), completeRows, 're-deploy/setup is idempotent');
     assert.equal((await observe()).inventorySha256, first.inventorySha256);
     for (const sql of ['DROP TABLE rer_migrations', 'DELETE FROM rer_migrations', 'DELETE FROM rer_migrations WHERE name IN (SELECT name FROM rer_migrations LIMIT 3)']) {

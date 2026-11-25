@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { canonicalJson, sha256, type ImportPlan } from '../../../../modules/import-kit/src/d1/index';
 import type { ImportMapping, Json, ParsedRecord } from '../../../../modules/import-kit/src/types';
+import type { MoveInDraft } from './planning';
 import { importSources, sourceAdapter } from './adapters';
 import { importLimits } from './source';
 
@@ -37,12 +38,14 @@ export function moveInPlan(plan: ImportPlan): ImportPlan {
  * responses against the page as it stood, so an apply can tell the page changed.
  * A Business import holds its subscribers until the owner's cutover release;
  * the owner's own Move in keeps each source's subscriber policy. */
-export function doorMapping(plan: ImportPlan, business: boolean): { records: ParsedRecord[]; mapping: ImportMapping; page: string; shape: string } {
+type MappingInput = Pick<MoveInDraft, 'namespace' | 'entries' | 'source'> & { fingerprint: string };
+
+export function doorMapping(plan: MappingInput, business: boolean, pageState: string): { records: ParsedRecord[]; mapping: ImportMapping; page: string; shape(): string } {
   const effects = new Map(plan.entries.map(entry=>[`${entry.source.kind}:${entry.source.sourceId}`,entry]));
   const records = plan.source.records.map((record): ParsedRecord => {
     if (record.kind!=='metadata') return {kind:record.kind,sourceId:record.sourceId,payload:record.payload};
     const value = record.payload as {raw:Record<string,never>};
-    return {kind:record.kind,sourceId:plan.namespace,payload:{...value,raw:{...value.raw,importSource:plan.namespace,...(business ? {subscribersAfterCutover:true} : {}),bundle:record.sourceId,page:plan.fingerprint}}};
+    return {kind:record.kind,sourceId:plan.namespace,payload:{...value,raw:{...value.raw,importSource:plan.namespace,...(business ? {subscribersAfterCutover:true} : {}),bundle:record.sourceId,page:plan.fingerprint,pageState}}};
   });
   const mapping: ImportMapping = {version:'1',map(record) {
     if (record.kind==='metadata') {
@@ -58,13 +61,13 @@ export function doorMapping(plan: ImportPlan, business: boolean): { records: Par
       return {...effect,value:{...value,tables:{...value.tables,subscribers:value.tables.subscribers.map(row=>({...row,state:'deactivated',deactivation_reason:'held for Business cutover'}))}}};
     }),unmapped:entry.unmapped,...(entry.rejection ? {rejection:entry.rejection} : {})};
   }};
-  return {records,mapping,page:plan.fingerprint,shape:timeless(plan)};
+  return {records,mapping,page:plan.fingerprint,shape:() => timeless(plan)};
 }
 
 /** What a preparation imports apart from its review instant: two dry runs of the
  * same bytes have the same shape only when the clock between them changed nothing
  * they import (a maintenance window that ended, say), not just the instant itself. */
-function timeless(plan: ImportPlan) {
+function timeless(plan: MappingInput) {
   const asOf = (plan.entries.find(entry=>entry.source.kind==='metadata')?.source.payload as {raw?:{asOf?:string}} | undefined)?.raw?.asOf;
   const entries = plan.entries.map(entry=>({kind:entry.source.kind,sourceId:entry.source.sourceId,payload:entry.source.payload,effects:entry.effects,unmapped:entry.unmapped,rejection:entry.rejection ?? null}));
   const text = canonicalJson(JSON.parse(JSON.stringify(entries)) as Json);
@@ -72,9 +75,9 @@ function timeless(plan: ImportPlan) {
 }
 
 /** The review instant and page fingerprint a saved door plan was prepared with. */
-export function reviewedPage(plan: ImportPlan): { asOf?: string; page?: string; overSubscriberLimit?:boolean } {
-  const raw = (plan.entries.find(entry=>entry.source.kind==='metadata')?.source.payload as {raw?:{asOf?:string;page?:string;subscriberCapacity?:{overLimit:boolean}}} | undefined)?.raw;
-  return {asOf:raw?.asOf,page:raw?.page,overSubscriberLimit:raw?.subscriberCapacity?.overLimit ?? false};
+export function reviewedPage(plan: ImportPlan): { asOf?: string; page?: string; pageState?: string; overSubscriberLimit?:boolean } {
+  const raw = (plan.entries.find(entry=>entry.source.kind==='metadata')?.source.payload as {raw?:{asOf?:string;page?:string;pageState?:string;subscriberCapacity?:{overLimit:boolean}}} | undefined)?.raw;
+  return {asOf:raw?.asOf,page:raw?.page,pageState:raw?.pageState,overSubscriberLimit:raw?.subscriberCapacity?.overLimit ?? false};
 }
 
 export async function readDoorExport(bytes: Uint8Array) {

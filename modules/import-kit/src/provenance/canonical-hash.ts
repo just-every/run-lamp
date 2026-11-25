@@ -1,12 +1,10 @@
 import { createHash } from 'node:crypto';
-import { Buffer } from 'node:buffer';
 import { jsonStringParts } from './identity.ts';
 import { ResumableSha256, type Sha256State } from './resumable-sha256.ts';
 
 const encoder = new TextEncoder();
-let availableBuffer: Uint8Array | undefined;
-type StringCache = { strings: Map<string, Uint8Array>; retainedBytes: number };
-const stringCache = (): StringCache => ({ strings: new Map(), retainedBytes: 0 });
+const stringCache = () => new Map<string, string>();
+type StringCache = ReturnType<typeof stringCache>;
 
 /** Reuse only immutable string encodings during one caller-owned operation.
  * Clear in its finally block; no source containers or digests are cached. */
@@ -15,14 +13,13 @@ export function createCanonicalHasher() {
   return {
     hash: (value: unknown) => hashCanonical(value, cache),
     clear() {
-      for (const bytes of cache.strings.values()) bytes.fill(0);
-      cache.strings.clear(); cache.retainedBytes = 0;
+      cache.clear();
     },
   };
 }
 
-/** Hash exact canonical UTF-8 with a fixed output buffer. Repeated immutable
- * strings share encoded bytes only within this call; object contents are
+/** Hash exact canonical UTF-8 in bounded chunks. Repeated immutable
+ * strings share quoted text only within this call; object contents are
  * always traversed afresh, including reads from normalized page views. */
 export function canonicalHash(value: unknown): string {
   return hashCanonical(value, stringCache());
@@ -46,8 +43,7 @@ export function createCanonicalStreamHash() {
     clear() {
       if (closed) return;
       closed = true; writer.release();
-      for (const bytes of cache.strings.values()) bytes.fill(0);
-      cache.strings.clear(); cache.retainedBytes = 0;
+      cache.clear();
     },
   };
 }
@@ -56,75 +52,62 @@ export function createCanonicalStreamHash() {
  * `checkpoint()` returns it, and `resume` continues from a saved one. Callers
  * keep the saved state server-side; it fences nothing by itself. */
 export function createResumableCanonicalHash(resume?: Sha256State) {
-  const cache = stringCache(), hash = resume ? ResumableSha256.from(resume) : new ResumableSha256(), writer = canonicalWriter(cache, hash);
+  const cache = stringCache(), hash = resume ? ResumableSha256.from(resume) : new ResumableSha256();
+  const writer = canonicalWriter(cache, { update: text => hash.update(encoder.encode(text)), digest: encoding => hash.digest(encoding) });
   return {
     value(value: unknown) { writer.value(value); },
     token(value: '[' | ']' | '{' | '}' | ':' | ',') { writer.token(value); },
     checkpoint(): Sha256State { writer.flush(); return hash.state(); },
     digest() { return writer.digest(); },
-    clear() { writer.release(); for (const bytes of cache.strings.values()) bytes.fill(0); cache.strings.clear(); cache.retainedBytes = 0; },
+    clear() { writer.release(); cache.clear(); },
   };
 }
 
-function canonicalWriter(cache: StringCache, hash: { update(bytes: Uint8Array): unknown; digest(encoding: 'hex'): string } = createHash('sha256')) {
-  // Hashing many small records must not allocate a new 64 KiB backing store
-  // for each record. A nested getter acquires its own buffer; returned scratch
-  // is wiped even when validation fails and retains no source bytes.
-  const buffer = availableBuffer ?? new Uint8Array(64 * 1024), { strings } = cache;
-  availableBuffer = undefined;
-  const cacheEntries = 4096, cacheBytes = 1024 * 1024;
-  let offset = 0;
-  const flush = () => { if (offset) hash.update(buffer.subarray(0, offset)); offset = 0; };
-  const byte = (value: number) => { if (offset === buffer.length) flush(); buffer[offset++] = value; };
-  const ascii = (text: string) => { for (let index = 0; index < text.length; index++) byte(text.charCodeAt(index)); };
-  const encoded = (bytes: Uint8Array) => {
-    if (offset + bytes.length > buffer.length) flush();
-    if (bytes.length >= buffer.length) hash.update(bytes);
-    else { buffer.set(bytes, offset); offset += bytes.length; }
+function canonicalWriter(cache: StringCache, hash: { update(text: string): unknown; digest(encoding: 'hex'): string } = createHash('sha256')) {
+  // Encode one bounded string at a time instead of crossing the native UTF-8
+  // boundary at every key or value. Quoted string slices keep code points intact.
+  let parts: string[] = [], length = 0;
+  const flush = () => {
+    if (length) hash.update(parts.join(''));
+    parts = []; length = 0;
+  };
+  const write = (part: string) => {
+    const limit = 64 * 1024;
+    if (length + part.length > limit) flush();
+    if (part.length >= limit) hash.update(part);
+    else { parts.push(part); length += part.length; }
   };
   const text = (value: string) => {
-    const previous = strings.get(value);
-    if (previous !== undefined) { encoded(previous); return; }
-    if (value.length > 1024 * 1024) { for (const part of jsonStringParts(value)) writeQuoted(part); return; }
+    const previous = cache.get(value);
+    if (previous !== undefined) { write(previous); return; }
+    if (value.length > 1024 * 1024) { for (const part of jsonStringParts(value)) write(part); return; }
     const quoted = JSON.stringify(value);
-    if (strings.size < cacheEntries && Buffer.byteLength(quoted) <= cacheBytes - cache.retainedBytes) {
-      const bytes = encoder.encode(quoted);
-      strings.set(value, bytes); cache.retainedBytes += bytes.length; encoded(bytes); return;
-    }
-    // Large or distinct literals never grow the cache or create a second
-    // whole-literal byte array. encodeInto preserves complete code points.
-    writeQuoted(quoted);
-  };
-  const writeQuoted = (quoted: string) => {
-    for (let consumed = 0; consumed < quoted.length;) {
-      const { read, written } = encoder.encodeInto(quoted.slice(consumed), buffer.subarray(offset));
-      offset += written; consumed += read;
-      if (!read || offset === buffer.length) flush();
-    }
+    if (quoted.length < 128 && cache.size < 4096) cache.set(value, quoted);
+    write(quoted);
   };
   const visit = (item: unknown): void => {
-    if (item === null) { ascii('null'); return; }
+    if (item === null) { write('null'); return; }
     if (typeof item === 'string') { text(item); return; }
-    if (typeof item === 'boolean') { ascii(item ? 'true' : 'false'); return; }
-    if (typeof item === 'number' && Number.isFinite(item)) { ascii(JSON.stringify(item)); return; }
+    if (typeof item === 'boolean') { write(item ? 'true' : 'false'); return; }
+    if (typeof item === 'number' && Number.isFinite(item)) { write(JSON.stringify(item)); return; }
     if (Array.isArray(item)) {
-      byte(91);
+      write('[');
       const length = item.length;
-      for (let index = 0; index < length; index++) { if (index) byte(44); visit(item[index]); }
-      byte(93); return;
+      for (let index = 0; index < length; index++) { if (index) write(','); visit(item[index]); }
+      write(']'); return;
     }
     if (item && typeof item === 'object' && (Object.getPrototypeOf(item) === Object.prototype || Object.getPrototypeOf(item) === null)) {
-      byte(123); let first = true;
-      for (const key of Object.keys(item).sort()) { if (!first) byte(44); first = false; text(key); byte(58); visit((item as Record<string, unknown>)[key]); }
-      byte(125); return;
+      write('{'); let first = true;
+      for (const key of Object.keys(item).sort()) { if (!first) write(','); first = false; text(key); write(':'); visit((item as Record<string, unknown>)[key]); }
+      write('}'); return;
     }
     throw new Error('INVALID_JSON: durable values must be finite JSON');
   };
   return {
     value: visit,
-    token(value: string) { if (!/^[\[\]{}:,]$/.test(value)) throw new Error('INVALID_CANONICAL_TOKEN'); byte(value.charCodeAt(0)); },
+    token(value: string) { if (!/^[\[\]{}:,]$/.test(value)) throw new Error('INVALID_CANONICAL_TOKEN'); write(value); },
     flush,
     digest() { flush(); return hash.digest('hex'); },
-    release() { buffer.fill(0); availableBuffer ??= buffer; },
+    release() { parts = []; length = 0; },
   };
 }

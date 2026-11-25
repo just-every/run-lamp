@@ -17,7 +17,7 @@ import { readOriginals } from './originals.ts';
 import { changed, putRow, updateRows } from './expected-state.ts';
 import { applyReads, readEnd, targetReadKey, type ApplyReads } from './apply-reads.ts';
 
-export async function applyD1ImportBatches(jobOrId: ImportJob | string, context: D1ImportContext): Promise<ImportJob> {
+export async function applyD1ImportBatches(jobOrId: ImportJob | string, context: D1ImportContext, observeBatch?: (job: ImportJob) => void): Promise<ImportJob> {
   context = requestContext(context);
   const id = typeof jobOrId === 'string' ? jobOrId : jobOrId.id, { batchSize, maxBatches } = limits(context);
   await authorize(context, 'apply');
@@ -27,6 +27,7 @@ export async function applyD1ImportBatches(jobOrId: ImportJob | string, context:
   try {
     for (let count = 0; count < maxBatches; count++) {
       const { job, plan } = current;
+      observeBatch?.(job);
       if (typeof jobOrId !== 'string' && jobOrId.fingerprint !== job.fingerprint) throw new Error('JOB_FINGERPRINT_MISMATCH');
       await readOriginals(plan, id, context);
       if (job.state === 'completed') { await atomic(context, 'apply', [...boundary(job, plan, 'apply'), ...custodyGuards(plan, id), ...await inventoryGuards(job, plan, context)], 0, nativeStagingScope(job, plan)); return job; }
@@ -91,6 +92,12 @@ export async function applyD1ImportBatches(jobOrId: ImportJob | string, context:
       if (undoEffects && preparing !== context.storage.targets.preparePreservedUndo) throw new Error('IMPORT_PRESERVED_UNDO_ADAPTER_REQUIRED');
       const request = publication(job, entries.length, statements, scope), done = job.checkpoint + entries.length === job.total;
       await atomic(context, 'apply', request.statements, returnReads, request.scope);
+      // Publication's transaction asserts this exact checkpoint, state and
+      // fence. A one-batch request can return its committed position without
+      // decoding the entire plan again just to read those same fields.
+      if (maxBatches === 1) return {
+        ...job, checkpoint: job.checkpoint + entries.length, state: done ? 'completed' : 'applying', fence: job.fence + 1, error: null,
+      };
       current = await stored(id, context, 'apply'); published = current.job;
       // Preserving admission spends a variable number of reads; let the exact
       // next-batch budget check decide whether more work fits.

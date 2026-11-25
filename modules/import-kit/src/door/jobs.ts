@@ -3,6 +3,7 @@ import { applyD1ImportBatches } from '../d1/apply.ts';
 import { rollbackD1Import, undoD1Import } from '../d1/reverse.ts';
 import { loadPlans } from '../d1/plans.ts';
 import type { DoorPlanRow, DoorRequest, DoorSnapshot } from './types.ts';
+import type { ImportJob } from '../types.ts';
 import { kitContext, reserveApply } from './authority.ts';
 import { inspectRecords } from './inventory.ts';
 import { DoorError } from './protocol.ts';
@@ -11,6 +12,7 @@ import { text } from './uploads.ts';
 import { approvalCaption, failedPlan, recordApplyFailure, requireNewPlan } from './failures.ts';
 import { sizeLimitError } from './limits.ts';
 import { D1RequestLimitError } from '../d1/budget.ts';
+import { limits } from '../d1/database.ts';
 
 /** Whether this kit job holds the plan the owner reviewed. A person's erasure
  * re-fingerprints the job's plan and keeps the reviewed fingerprint inside it. */
@@ -58,26 +60,34 @@ export async function apply(request: DoorRequest, input: Record<string,unknown>)
     await reserveApply(request,snapshot);
     // Only creation selects the policy; a resume, even after a remount with
     // another policy, continues with the job's durable one.
-    const policy = row.job_id ? undefined : request.options.reversalPolicy
-      ?? (typeof request.options.targets.preparePreservedUndo === 'function' ? 'preserve-conflicts' : 'strict');
-    const job = await createD1ImportJob(snapshot.plan,policy ? {...context,reversalPolicy:policy} : context);
-    await transact(request.options.database,request.authority,[
-      sql('UPDATE ik_door_plans SET job_id=? WHERE id=? AND (job_id IS NULL OR job_id=?)',job.id,row.id,job.id),
-      assertion(sql('EXISTS(SELECT 1 FROM ik_door_plans WHERE id=? AND job_id=?)',row.id,job.id)),
-    ]);
+    let jobId = row.job_id;
+    let before: ImportJob | undefined;
+    if (!jobId) {
+      const policy = request.options.reversalPolicy
+        ?? (typeof request.options.targets.preparePreservedUndo === 'function' ? 'preserve-conflicts' : 'strict');
+      const job = await createD1ImportJob(snapshot.plan,{...context,reversalPolicy:policy});
+      jobId = job.id;
+      await transact(request.options.database,request.authority,[
+        sql('UPDATE ik_door_plans SET job_id=? WHERE id=? AND (job_id IS NULL OR job_id=?)',job.id,row.id,job.id),
+        assertion(sql('EXISTS(SELECT 1 FROM ik_door_plans WHERE id=? AND job_id=?)',row.id,job.id)),
+      ]);
+      // Large imports spend this invocation creating the reviewed custody.
+      // The next apply advances the first native batch from its durable cursor.
+      if (job.total > limits(context).batchSize) return job;
+    }
     // A failure is recorded only while no erasure overtook the request and the
     // snapshot is held; otherwise the record batch is refused and the erasure's
     // 410 (snapshot_withdrawn or erased_during_request) answers instead.
-    try { return await applyD1ImportBatches(job.id,context); }
+    try { return await applyD1ImportBatches(jobId,context, job => { before = job; }); }
     catch (error) {
       // A large job created in this request can leave too little of its budget
       // for a first batch: that batch refused before writing, so the queued job
       // answers and the next apply continues it.
-      if (!row.job_id && error instanceof D1RequestLimitError) return job;
+      if (!row.job_id && before && error instanceof D1RequestLimitError) return before;
       // A kit size or request limit refuses before its batch writes anything: it
       // answers the named 413 and is not an apply failure.
-      if (sizeLimitError(error)) throw error;
-      return recordApplyFailure(request,snapshot,job,error);
+      if (!before || sizeLimitError(error)) throw error;
+      return recordApplyFailure(request,snapshot,before,error);
     }
   });
   await lineage(request);

@@ -146,6 +146,9 @@ function memberKey(key: string): ReturnType<typeof credentialKey> {
 function parseUrl(text: string): URL | undefined {
   try { return new URL(text, 'https://credential-check.invalid'); } catch { return undefined; }
 }
+// A plain same-origin path (including ledger JSON pointers) has no
+// username, query, fragment, encoded escape or authority to inspect.
+const plainPath = /^\/(?!\/)[A-Za-z0-9_./~-]*$/;
 const looksLikeUrl = (value: string) => /^(?:https?:\/\/|\/|\?)/i.test(decodedCredentialText(value));
 
 export function assertNoCredentials(value: unknown, policy?: PaginationCursorPolicy): void {
@@ -170,7 +173,7 @@ export function assertNoCredentials(value: unknown, policy?: PaginationCursorPol
       }
     } else if (typeof item === 'string') {
       // Relative pagination links receive the same check as absolute links.
-      if (!looksLikeUrl(item)) return;
+      if (plainPath.test(item) || !looksLikeUrl(item)) return;
       // Free text that merely starts like a URL (`http:// see below`) does not parse: it is prose,
       // with no user name to find. Its raw text still goes through the query-key scans below.
       const url = parseUrl(item);
@@ -250,7 +253,7 @@ export function removeCredentials(value: Json, policy?: PaginationCursorPolicy):
     return kept.join('&');
   };
   const url = (text: string, path: string): string => {
-    if (!removableUrl(text)) return text;
+    if (plainPath.test(text) || !removableUrl(text)) return text;
     let result = text;
     const userinfo = AUTHORITY.exec(result);
     if (userinfo) {

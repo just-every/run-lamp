@@ -45,16 +45,27 @@ export async function stored(id: string, context: D1ImportContext, action: Impor
 export function boundary(job: ImportJob, plan: ImportPlan, action: ImportAction = 'read'): D1Sql[] {
   return [...waveBoundary(job, action), ...jobLayoutGuards(job), ...streamBoundary(job.id, action), ...planGuards(plan, job.id), ...reversalGuards(job.id, reversalState(job)), guard(sql('EXISTS(SELECT 1 FROM ik_jobs WHERE id=? AND fence=? AND checkpoint=? AND state=? AND fingerprint=? AND plan_json=? AND principal_id=? AND destination=? AND namespace=? AND mapping_version=? AND total=? AND error IS ?)', job.id, job.fence, job.checkpoint, job.state, job.fingerprint, planBody(plan), job.principalId, job.destination, job.namespace, job.mappingVersion, job.total, job.error))];
 }
-export async function planD1Import(source: SourceBundle, mapping: ImportMapping, context: D1ImportContext): Promise<ImportPlan> {
+/** Build the authorized draft. A door may transform that draft before sizing
+ * the actual creation it will later approve. */
+export async function draftD1Import(source: SourceBundle, mapping: ImportMapping, context: D1ImportContext): Promise<ImportPlan> {
   context = requestContext(context);
   await authorize(context, 'plan');
   const plan = buildImportPlan(source, mapping, context);
+  await authorize(context, 'plan');
+  return plan;
+}
+export async function planD1Import(source: SourceBundle, mapping: ImportMapping, context: D1ImportContext): Promise<ImportPlan> {
+  context = requestContext(context);
+  const plan = await draftD1Import(source, mapping, context);
+  admitD1Import(plan, context);
+  await authorize(context, 'plan');
+  return plan;
+}
+export function admitD1Import(plan: ImportPlan, context: D1ImportContext) {
   // Admission measures calls, not current create authority. Planning still
   // evaluates only the plan grant; creation checks its own live predicate.
   const { storage, ...admission } = context;
   preflightD1ImportJob(plan, { ...admission, planCodec: storage.targets.planCodec, reviewedFingerprint: plan.fingerprint, authorization: { principalId: context.authorization.principalId, predicate: () => sql('1') } });
-  await authorize(context, 'plan');
-  return plan;
 }
 export async function createD1ImportJob(plan: ImportPlan, context: D1ImportContext): Promise<ImportJob> {
   context = requestContext(context);
