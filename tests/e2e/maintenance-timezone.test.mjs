@@ -226,9 +226,9 @@ test("MAINT-009 PAGE-020 — operator schedules, reschedules and publishes maint
     await page.locator('.page-stack > [role="alert"]:has(+ .maintenance-workspace)').waitFor();
     assert.equal(await create.getByRole("alert").isVisible(), true);
     assert.equal((await api("/api/app/maintenance")).maintenance.find(item => item.id === window.id).startsAt, window.startsAt);
-    const reader = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+    const reader = await browser.newContext({ timezoneId: "America/Los_Angeles", viewport: { width: 1440, height: 1000 } });
     try {
-      await auditDesktopSurfaces({ page: reader, appUrl: origin, pageUrl: pageOrigin(new URL(origin).port),
+      await auditDesktopSurfaces({ page: await reader.newPage(), appUrl: origin, pageUrl: pageOrigin(new URL(origin).port),
         incident: historicalIncident, maintenance: window, diagnostic: text => t.diagnostic(text) });
     } finally { await reader.close(); }
   } finally { await context.close(); }
