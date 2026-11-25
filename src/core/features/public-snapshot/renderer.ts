@@ -31,7 +31,7 @@ import { renderBadges } from "./badges";
 import { renderPublicApi } from "./public-api";
 import { publicComponentResources } from "./component-address";
 import { incidentMarkup, maintenanceMarkup, resolvedMarkup, statePill, type PublicIncident, type PublicMaintenance } from "./record-markup";
-import { DAY, REPORTING_DAYS, durationText, escapeHtml, stateClass, timestamp, timestampDetails, timezoneLabel } from "./format";
+import { DAY, REPORTING_DAYS, dayKey, durationText, escapeHtml, stateClass, timestamp, timestampDetails, timezoneLabel } from "./format";
 import { computeUptime, reportingDays, type Uptime, uptimeMarkup } from "./uptime";
 import { uptimeMethod } from "./uptime-method";
 import { computeReliability } from "./reliability";
@@ -109,7 +109,7 @@ function toPublicModel(source: PublicSnapshotSource, generatedAt: string, polici
   const maintenance = source.maintenance
     .map((item) => ({ ...item, components: attachedByMaintenance.get(item.id) ?? [], notices: noticesByMaintenance.get(item.id) ?? [], importedUpdates: (source.importedMaintenanceUpdates ?? []).filter(update => update.maintenanceId === item.id) }))
     .filter((item) => source.protectedPage || attachedMaintenanceIds.has(item.id)) satisfies PublicMaintenance[];
-  return { bounded: source.bounded, archive: source.archive, theme, prelaunch: source.prelaunch === true, subscriptionChannels: source.subscriptionChannels, incidentIncludeReport: source.incidentIncludeReport === true, metrics: source.metrics ?? [], websiteUrl: source.websiteUrl, origin: source.publicOrigin ?? `https://${source.settings.hostname}`, settings: source.settings, components, visibleComponents, reliability, incidents, maintenance, generatedAt, policies, overall: policies.pageStatusRollup([...components.map((component) => component.state), ...(source.dependencies ?? []).filter(row => row.mode === "rollup" && row.state !== null).map(row => row.state!)]) };
+  return { bounded: source.bounded, archive: source.archive, theme, prelaunch: source.prelaunch === true, subscriptionChannels: source.subscriptionChannels, incidentIncludeReport: source.incidentIncludeReport === true, metrics: source.metrics ?? [], websiteUrl: source.websiteUrl, origin: source.publicOrigin ?? `https://${source.settings.hostname}`, settings: source.settings, components, visibleComponents, reliability, incidents, maintenance, oldestRecordAt: source.oldestRecordAt, generatedAt, policies, overall: policies.pageStatusRollup([...components.map((component) => component.state), ...(source.dependencies ?? []).filter(row => row.mode === "rollup" && row.state !== null).map(row => row.state!)]) };
 }
 
 export type PublicSnapshotModel = ReturnType<typeof toPublicModel>;
@@ -155,6 +155,19 @@ function componentMarkup(component: PublicComponent & { hideUptime?: boolean }, 
   return `<article class="component"><div class="component-name"><h4>${escapeHtml(component.name)}</h4>${statePill(component.state, "component-state", componentStateLabel(component.state))}${component.description ? `<details class="component-description"><summary>About ${escapeHtml(component.name)}</summary><p>${escapeHtml(component.description)}</p></details>` : ""}${component.note ? `<p class="component-note">${escapeHtml(component.note)}</p>` : ""}</div><div class="component-status">${uptimeMarkup(component, timezone, model.generatedAt)}${reliabilityMarkup(model.reliability.components.get(component.id), component.name, timezone)}</div></article>`;
 }
 
+// Each date names what it is: availability counts from the earliest component's first stored state (its
+// creation, here or on the page it moved from, or its uptime start date), which can precede every incident
+// and maintenance record the page holds.
+function availabilitySince(model: ReturnType<typeof toPublicModel>) {
+  const { settings, oldestRecordAt } = model;
+  const counted = model.visibleComponents.flatMap(component => component.uptime.trackingSince ? [component.uptime.trackingSince] : []).sort()[0];
+  if (!counted) return "";
+  const day = (instant: string) => dayKey(Date.parse(instant), settings.timezone);
+  const records = !oldestRecordAt ? " No incident or maintenance records yet."
+    : day(oldestRecordAt) > day(counted) ? ` Incident and maintenance records since ${timestamp(oldestRecordAt, settings.timezone)}.` : "";
+  return `<p class="availability-since">Availability counted since ${timestamp(counted, settings.timezone)}, the first component's recorded start.${records}</p>`;
+}
+
 function componentHealthMarkup(model: ReturnType<typeof toPublicModel>) {
   const { visibleComponents: components, settings } = model;
   // One section per group in the shared component order. Ungrouped components
@@ -171,8 +184,7 @@ function componentHealthMarkup(model: ReturnType<typeof toPublicModel>) {
   }).join("");
   // A page with no visible components has no components section at all.
   if (!charts) return "";
-  const starts = components.flatMap(component => component.uptime.trackingSince ? [component.uptime.trackingSince] : []).sort();
-  const since = starts[0] ? `<p class="availability-since">History since ${timestamp(starts[0], settings.timezone)}.</p>` : "";
+  const since = availabilitySince(model);
   const method = `<p>Availability days use ${escapeHtml(settings.timezone)}. ${escapeHtml(uptimeMethod(model.theme.historyDays, model.policies))} ${escapeHtml(reliabilityMethod)}</p>`;
   return `<section class="component-health" aria-labelledby="components-title"><header class="section-heading"><h2 id="components-title">Components</h2><p>Uptime over the last ${model.theme.historyDays} days</p></header><div class="availability-charts">${charts}</div>${since}<div class="availability-foot"><aside class="availability-legend" aria-label="Availability legend"><span><i class="legend-good"></i>Available</span><span><i class="legend-degraded"></i>Degraded</span><span><i class="legend-downtime"></i>Downtime</span><span><i class="legend-no-data"></i>No data</span></aside><details class="availability-method"><summary>How availability is calculated</summary>${method}</details></div></section>`;
 }

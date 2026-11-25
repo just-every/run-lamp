@@ -38,6 +38,11 @@ The public page shows a 90-day uptime window for each visible
 component. It counts Major outage and Partially unavailable as full downtime,
 Degraded performance as half downtime, and Under maintenance as no downtime.
 Lamp computes this from component state history, and the page states the method.
+Under the components the page names two dates for what they are: availability is
+counted since the earliest visible component's recorded start (its creation, here or
+on the page it moved from, or its uptime start date), and, when they begin later,
+incident and maintenance records since the oldest public incident or maintenance
+window Lamp stores.
 
 Under the 90-day record, each component and each group also shows its **All time**
 reliability with a compact bar of one mark per month (longer histories fold

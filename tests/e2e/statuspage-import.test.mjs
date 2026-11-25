@@ -688,6 +688,12 @@ test('MAINT-015 — imported maintenance messages retain their own source lifecy
         assert.ok(html.includes(messages[index].body), path + ' keeps source message');
       }
     }
+    const compatible = await eventually(async () => (await (await runtime.publicResponse('/api/v2/scheduled-maintenances.json')).json()).scheduled_maintenances.find(row => row.name === window.name),
+      row => row?.incident_updates.length === messages.length, 'imported maintenance messages reach the Statuspage-compatible API');
+    assert.deepEqual(compatible.incident_updates.map(update => [update.status, update.body, update.created_at]), messages.map((message, index) => [message.status, message.body, times[index]]).reverse(), 'the compatible API lists the messages the public page shows');
+    assert.equal(compatible.updated_at, times[2]);
+    const front = await (await runtime.publicResponse('/')).text();
+    assert.match(front, /Availability counted since <time datetime="2026-01-01T00:00:00.000Z"[^>]*>[^<]*<\/time>, the first component's recorded start\. Incident and maintenance records since <time datetime="2026-01-11T09:00:00.000Z"/, 'the front page names what each history date is');
     await assertNoNewNotifications(runtime, quiet);
     const replay = await moveIn.preview(input);
     assert.equal(replay.status, 200, JSON.stringify(replay.body));

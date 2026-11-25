@@ -620,7 +620,7 @@
       "executable": false
     },
     "docs/contract/public-details.md": {
-      "sha256": "e2bb49ce67fe54a2cba3861f0e05ebc7bced5ca9fc150609b5f7f025f87e27da",
+      "sha256": "6c8a9c70cf23eb4fda888ac1ba7714e0f557a4e593f18485bc84a670aebf4328",
       "executable": false
     },
     "docs/contract/publishing-details.md": {
@@ -672,7 +672,7 @@
       "executable": false
     },
     "docs/public-page.md": {
-      "sha256": "0aaed5d0f77ffbba81208e3c4ca8808b50988705f0b4d16e866e7a8c338cef6f",
+      "sha256": "ce9acd64da2d7dcedb5aeac1777b28c1a7737a331677b97142f51dcad9e62113",
       "executable": false
     },
     "docs/public-resources.md": {
@@ -6232,7 +6232,7 @@
       "executable": false
     },
     "src/core/features/public-snapshot/renderer.ts": {
-      "sha256": "f0123050bbae0ddee6130b39cdd4965b2100fa5ec05b23f30eda6c4c3ca67ca7",
+      "sha256": "f0edd637eec8ad716006bf2dc0174fce65595c73ec052618b06f4245a6bbd403",
       "executable": false
     },
     "src/core/features/public-snapshot/report-markup.ts": {
@@ -6240,7 +6240,7 @@
       "executable": false
     },
     "src/core/features/public-snapshot/repository.ts": {
-      "sha256": "f9338a2610943310b08694e40ab753e176fd0cd7a4999c5b1c9607ab8d03fb1b",
+      "sha256": "11aa20b42299dbecbce39eb1960893388dcf9247cc1bd99612339681d40ecdd6",
       "executable": false
     },
     "src/core/features/public-snapshot/retention.ts": {
@@ -6256,7 +6256,7 @@
       "executable": false
     },
     "src/core/features/public-snapshot/service.ts": {
-      "sha256": "d3a29254eea172b856f3f930fedeca27014d54818b7321e159864b1acf9d37a0",
+      "sha256": "23890785fbbba7b83715c611d7ae24fa34a9599bad788149a66b04f339f6503f",
       "executable": false
     },
     "src/core/features/public-snapshot/state-colors.json": {
@@ -7524,7 +7524,7 @@
       "executable": false
     },
     "src/core/shared/statuspage-records.ts": {
-      "sha256": "a7e8942756aac85f46cf865d92d82edacf6cfd5baca2a8af6e29272a71554e71",
+      "sha256": "f6f2e11c8e4011a94637f1338a8dde1bf90904a2be1bbc51f9619204f12d99af",
       "executable": false
     },
     "src/core/shared/timezone-label.ts": {
@@ -9224,7 +9224,7 @@
       "executable": false
     },
     "tests/e2e/statuspage-import.test.mjs": {
-      "sha256": "7e9480b763732a774b31fb13cc90d1c418c8ee0be86a1443ef1ed3372cf8393c",
+      "sha256": "167cecb02749269b627581bac0963b452bbfeaecc95532bc3213ee2d37efb7d8",
       "executable": false
     },
     "tests/e2e/subscriber-audit-helper.mjs": {

@@ -100,6 +100,8 @@ export interface PublicSnapshotSource {
   maintenanceNotices: Array<{ id: string; maintenanceId: string; kind: string; body: string; publishedAt: string }>;
   /** The union of incident impacts per component over the whole public history. */
   reliabilityHistory?: ReliabilityHistory;
+  /** When the oldest public incident opened or the oldest public maintenance window starts, over all stored history. */
+  oldestRecordAt: string | null;
 }
 
 export function createSnapshotRepository(
@@ -242,14 +244,19 @@ export function createSnapshotRepository(
           FROM incident_components a JOIN incidents i ON i.id = a.incident_id
           WHERE a.component_id IS NOT NULL AND a.published_at IS NOT NULL AND ${incidentVisibility}
           AND a.component_id IN (${reliabilityComponents})`).bind(...(scope ? [componentIds] : [])),
+        // One indexed seek per kind: the front page names the oldest public record it holds, not only the retained window.
+        binding.prepare(`SELECT MIN(at) AS at FROM (
+          SELECT (SELECT i.opened_at FROM incidents i WHERE ${incidentVisibility} ORDER BY i.opened_at, i.id LIMIT 1) AS at
+          UNION ALL SELECT (SELECT m.starts_at FROM maintenance m WHERE ${maintenanceVisibility} ORDER BY m.starts_at, m.id LIMIT 1))`),
       ]) as Promise<[
         D1Result<PublicSnapshotSource["reports"][number]>,
         D1Result<PublicSnapshotSource["maintenanceNotices"][number]>,
         D1Result<NonNullable<PublicSnapshotSource["importedMaintenanceUpdates"]>[number]>,
         D1Result<ReliabilityRow>,
+        D1Result<{ at: string | null }>,
       ]>;
       const [[componentRows, standingClaims, incidentClaims, maintenanceClaims, history, corrections, attachedComponents, updates, maintenanceRows, attachedMaintenanceComponents],
-        [reports, maintenanceNotices, importedMaintenanceUpdates, reliability], website, incidentFollow, dependencies, importedPublicRecords, importedNamespaces, publicApiIds, metrics] = await Promise.all([
+        [reports, maintenanceNotices, importedMaintenanceUpdates, reliability, oldestRecord], website, incidentFollow, dependencies, importedPublicRecords, importedNamespaces, publicApiIds, metrics] = await Promise.all([
         sourceRows,
         supplementalRows,
         createWebsiteRepository(binding).get(),
@@ -282,7 +289,7 @@ export function createSnapshotRepository(
         maintenance: maintenanceRows,
         maintenanceComponents: attachedMaintenanceComponents,
         reports: reports.results,
-        maintenanceNotices: maintenanceNotices.results, importedMaintenanceUpdates: importedMaintenanceUpdates.results, metrics,
+        maintenanceNotices: maintenanceNotices.results, importedMaintenanceUpdates: importedMaintenanceUpdates.results, oldestRecordAt: oldestRecord.results[0]?.at ?? null, metrics,
         reliabilityHistory: prepareReliabilityHistory(reliability.results),
       };
     },
