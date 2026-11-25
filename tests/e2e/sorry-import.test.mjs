@@ -24,6 +24,48 @@ async function custodyHolds(runtime, value) {
   return false;
 }
 
+test('MOVE-001 — queued Sorry Move in offers Continue even after losing its plan index', { timeout: 600_000 }, async () => {
+  const runtime = await openStatusJourney();
+  try {
+    const moveIn = moveInDoor((path, body, headers) => runtime.api(path, body === undefined
+      ? { headers }
+      : { method: 'POST', body: JSON.stringify(body), headers }));
+    const reviewed = await moveIn.preview({
+      source: 'sorry', pageId: 'synthetic-lamp-1', publicAccessAcknowledged: true,
+      files: fixture('sorry', 'generated/authenticated'),
+    });
+    assert.equal(reviewed.status, 200, reviewed.text ?? JSON.stringify(reviewed.body));
+    const { planId, fingerprint } = reviewed.body;
+    const first = await moveIn.door('sorry', 'apply', { planId, reviewedFingerprint: fingerprint });
+    assert.equal(first.status, 200, first.text);
+    const { id, state, checkpoint, total } = first.body.job;
+    const { census } = JSON.parse(readFileSync('tests/fixtures/sorry/generated/expected-inventory.json', 'utf8'));
+    assert.equal(state, 'queued');
+    assert.equal(checkpoint, 0);
+    assert.equal(total, 1 + census.sourceComponentRows + census.sourceNotices + census.sourceSubscribers);
+
+    const listed = async () => {
+      const { jobs } = await runtime.json('/api/app/statuspage-import/jobs');
+      const row = jobs.find(job => job.id === id);
+      assert.ok(row, 'Move in lists the queued job');
+      const { namespace, state, checkpoint, total, planId, fingerprint, canResume } = row;
+      return { namespace, state, checkpoint, total, planId, fingerprint, canResume };
+    };
+    const resumable = { namespace: 'sorry', state, checkpoint, total, planId, fingerprint, canResume: true };
+    assert.deepEqual(await listed(), resumable, 'Move in offers Continue for the approved job');
+
+    // Recreate the interruption between durable job creation and indexing it on the plan.
+    const cleared = await runtime.db.prepare('UPDATE ik_door_plans SET job_id=NULL WHERE id=? AND job_id=?').bind(planId, id).run();
+    assert.equal(cleared.meta.changes, 1);
+    const recovered = await listed();
+    assert.deepEqual(recovered, resumable, 'Move in still offers Continue with the original approval');
+    const continued = await moveIn.door(recovered.namespace, 'apply', { planId: recovered.planId, reviewedFingerprint: recovered.fingerprint });
+    assert.equal(continued.status, 200, continued.text);
+    assert.equal(continued.body.job.id, id);
+    assert.ok(continued.body.job.checkpoint > checkpoint, 'Continue advances the same job');
+  } finally { await runtime.close(); }
+});
+
 test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 — Sorry move-in, Business approval, bounded catch-up, original archive, cutover and erasure remain one recoverable owner flow', { timeout: 600_000 }, async t => {
   const { privateKey, publicKey } = generateKeyPairSync('ec', { namedCurve: 'P-256' });
   const kid = 'synthetic-business', installationId = randomUUID(), issuer = 'https://business.example.test';

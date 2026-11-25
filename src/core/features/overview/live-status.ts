@@ -42,6 +42,8 @@ export function createLiveStatusService(repository: OverviewRepository, settings
   sender: SenderCheckOptions;
   fetcher?: typeof fetch;
 }): LiveStatusService {
+  const subscribeExpected = !options.sender.local && options.sender.provider !== 'none';
+
   async function runChecks() {
     // Nothing is published before first-run setup; there is nothing to check yet.
     if (!await options.publishedAt()) return;
@@ -52,12 +54,12 @@ export function createLiveStatusService(repository: OverviewRepository, settings
       // Fetch once without following, then require the canonical response itself.
       const response = await (options.fetcher ?? fetch)(`${origin}/`, { redirect: 'manual', signal: AbortSignal.timeout(8000), headers: { Accept: 'text/html' } });
       if (response.status !== 200 || !response.headers.get('Content-Type')?.includes('text/html')) { await response.body?.cancel(); page = NOT_ANSWERING; }
-      else {
+      else if (subscribeExpected && !await options.prelaunch()) {
         // Inspect the real rendered form; a route constant says nothing about
         // whether a visitor can reach its input and submit control.
         const forms = (await response.text()).match(/<form\b[^>]*>[\s\S]*?<\/form>/gi) ?? [];
-        if (options.sender.provider !== 'none' && !await options.prelaunch() && !forms.some(form => /\baction=["']\/subscribe["']/i.test(form) && /\bmethod=["']post["']/i.test(form) && /<input\b[^>]*\bname=["']email["']/i.test(form) && /<button\b/i.test(form))) subscribe = NO_FORM;
-      }
+        if (!forms.some(form => /\baction=["']\/subscribe["']/i.test(form) && /\bmethod=["']post["']/i.test(form) && /<input\b[^>]*\bname=["']email["']/i.test(form) && /<button\b/i.test(form))) subscribe = NO_FORM;
+      } else await response.body?.cancel();
     } catch { page = NOT_ANSWERING; }
     await repository.record(PAGE_STEP, JSON.stringify({ origin, page, subscribe: page ? NOT_ANSWERING : subscribe }));
   }
@@ -110,8 +112,8 @@ export function createLiveStatusService(repository: OverviewRepository, settings
       if (stale && publishedAt) { await runChecks(); stored = await storedPageChecks(origin); }
       await checkSenderIfDue();
       const check = (reason: string | null): LiveCheck | null => stored ? { ok: reason === null, checkedAt: stored.checkedAt, reason } : null;
-      const prelaunch = await options.prelaunch();
-      return { preview: options.preview === true, publicOrigin: origin, publishedAt, page: check(stored?.page ?? null), subscribe: prelaunch || options.sender.provider === 'none' ? null : check(stored?.subscribe ?? null), sender: await sender(),
+      const subscribe = subscribeExpected && !await options.prelaunch() ? check(stored?.subscribe ?? null) : null;
+      return { preview: options.preview === true, publicOrigin: origin, publishedAt, page: check(stored?.page ?? null), subscribe, sender: await sender(),
         senderVerificationManaged: !options.sender.local && options.sender.provider === 'rer' && options.sender.mail.configured };
     },
     runChecks,

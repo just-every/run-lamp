@@ -5,6 +5,7 @@ import type { AppEnv } from "../../app/types";
 import { ulidSchema } from "../../shared/ids";
 import { reportReview, ReportInputError, ReportDraftError } from "./draft";
 import type { PublicSnapshotService } from "../public-snapshot/service";
+import { publishes } from "../operators/permissions";
 import type { ReportsService } from "./service";
 
 const reportSchema = z.object({ summary: z.string().trim().max(10_000), timeline: z.string().trim().max(10_000), cause: z.string().trim().max(10_000), remediation: z.string().trim().max(10_000) }).strict();
@@ -12,13 +13,14 @@ const publishSchema = z.object({
   channels: z.array(z.enum(["email", "webhook", "sms"])).max(3).transform((channels) => [...new Set(channels)]),
   expectedReport: reportSchema.optional(),
 }).strict();
+const publicationPath = "/api/app/incidents/:incidentId/report/publication";
 
 export function registerReportRoutes(app: Hono<AppEnv>, service: ReportsService, snapshotFor: (path: string) => PublicSnapshotService) {
   app.get("/api/app/incidents/:incidentId/report", async (context) => {
     const incidentId = ulidSchema.safeParse(context.req.param("incidentId"));
     if (!incidentId.success) return context.json({ error: "Invalid incident identifier." }, 400);
     const [report, waiver, owing] = await Promise.all([service.get(incidentId.data), service.waiver(incidentId.data), service.owing()]);
-    return context.json({ waiver, report, review: report ? reportReview(report) : null, owed: owing.includes(incidentId.data) });
+    return context.json({ waiver, report, review: report ? reportReview(report) : null, owed: owing.includes(incidentId.data), canRetryPublication: publishes(context.get("operator").role) });
   });
   app.post("/api/app/incidents/:incidentId/report/waive", async context => {
     const id=ulidSchema.safeParse(context.req.param("incidentId"));
@@ -40,18 +42,37 @@ export function registerReportRoutes(app: Hono<AppEnv>, service: ReportsService,
     try { return context.json({ report: await service.save(incidentId.data, input.data, context.get("operator").id) }); }
     catch (cause) { return context.json({ error: cause instanceof Error ? cause.message : "The report could not be saved." }, cause instanceof ReportInputError ? 400 : 409); }
   });
-  app.get("/api/app/incidents/:incidentId/report/publication", async (context) => {
+  app.get(publicationPath, async (context) => {
     context.header("Cache-Control", "private, no-store");
     const incidentId = ulidSchema.safeParse(context.req.param("incidentId"));
     if (!incidentId.success) return context.json({ error: "Invalid incident identifier." }, 400);
     const target = await service.publicationTargets(incidentId.data);
     if (!target) return context.json({ error: "Published report not found." }, 404);
     if (!target.paths.length) return context.json({ state: "private" });
-    const visible = await Promise.all(target.paths.map(async path =>
-      snapshotFor(path).hasPublishedReport(target.reference, target.publishedAt).catch(() => false)));
-    return visible.every(Boolean)
-      ? context.json({ state: "confirmed" })
-      : context.json({ state: "pending" }, 202);
+    const observations = await Promise.all(target.paths.map(async path => {
+      const snapshot = snapshotFor(path);
+      if (await snapshot.hasPublishedReport(target.reference, target.publishedAt).catch(() => false)) return { visible: true };
+      const build = await snapshot.latestBuild();
+      const buildStartedAt = build?.status === "failed" && Date.parse(build.startedAt) >= Date.parse(target.publishedAt) ? build.startedAt : null;
+      return { visible: false, buildStartedAt };
+    }));
+    if (observations.every(result => result.visible)) return context.json({ state: "confirmed" });
+    const buildStartedAt = observations.flatMap(result => result.buildStartedAt ? [result.buildStartedAt] : []).sort().at(-1);
+    return buildStartedAt ? context.json({ state: "failed", buildStartedAt }) : context.json({ state: "pending" }, 202);
+  });
+  app.post(publicationPath, async (context) => {
+    const incidentId = ulidSchema.safeParse(context.req.param("incidentId"));
+    if (!incidentId.success) return context.json({ error: "Invalid incident identifier." }, 400);
+    const target = await service.publicationTargets(incidentId.data);
+    if (!target) return context.json({ error: "Published report not found." }, 404);
+    const queuedAt = new Date().toISOString();
+    try {
+      if (target.paths.length) await context.env.JOBS.send({ type: "public-snapshot-rebuild" });
+      return context.json({ queuedAt }, 202);
+    } catch (cause) {
+      console.error("Lamp could not queue a retry of the report snapshot.", cause);
+      return context.json({ error: "Lamp could not queue the page build. Try again in a moment." }, 503);
+    }
   });
   app.post("/api/app/incidents/:incidentId/report/publish", async (context) => {
     const incidentId = ulidSchema.safeParse(context.req.param("incidentId"));

@@ -18,7 +18,7 @@ export function allowsOperatorRequest(role: OperatorRole, method: string, pathna
   if (method === 'POST' && ['/incidents', '/incidents/preview'].includes(path)) return true;
   if (/^\/incidents\/[^/]+\/(?:draft|draft\/preview|draft\/correction|internal-notes|ai-suggestion|report\/draft|report|components\/preview|templates\/[^/]+\/apply)$/.test(path)) return ['POST', 'PUT'].includes(method);
   if (!publishes(role)) return false;
-  return (method === 'POST' && /^\/incidents\/[^/]+\/(?:publish|draft\/(?:schedule|review)|components|owner\/take-over|report\/(?:publish|waive))$/.test(path))
+  return (method === 'POST' && /^\/incidents\/[^/]+\/(?:publish|draft\/(?:schedule|review)|components|owner\/take-over|report\/(?:publish|publication|waive))$/.test(path))
     || (method === 'DELETE' && /^\/incidents\/[^/]+(?:\/components\/[^/]+)?$/.test(path))
     || (method === 'PUT' && /^\/incidents\/[^/]+\/(?:owner|impact)$/.test(path))
     || (method === 'POST' && (['/maintenance', '/maintenance/preview'].includes(path) || /^\/maintenance\/[^/]+\/(?:start|complete|cancel)$/.test(path)))

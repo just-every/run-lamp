@@ -544,7 +544,7 @@
       "executable": false
     },
     "DIVERGENCE.md": {
-      "sha256": "7cc15bfd2f36697cca55fb3ae47bb4b9c310d61b8fa0b195b38decd722d6997c",
+      "sha256": "6c7e901d65b1fa2bd23ff4de57bad15b0e523e3f92d0d96fa0df2ca576f0c566",
       "executable": false
     },
     "docs/accessibility/vpat.md": {
@@ -4620,7 +4620,7 @@
       "executable": false
     },
     "src/core/app/services.ts": {
-      "sha256": "2116512b47d9833c6544bd0d16f90ea5962e69f92313b89466b52de4c748706e",
+      "sha256": "7fefdf5cd44c60f698dd9a553e683e7b1bebffa7f1792accf8d32d51c32bc05e",
       "executable": false
     },
     "src/core/app/types.ts": {
@@ -5684,7 +5684,7 @@
       "executable": false
     },
     "src/core/features/operators/permissions.ts": {
-      "sha256": "66dc1c54474e43966b2112358a6e6d8a5a29ea8a1d58f3122154d0f93a78d1fe",
+      "sha256": "9d6ec5e18b92719ea6d8f11edfbb3575209c9b0e0e094b33b81504a37152b2a3",
       "executable": false
     },
     "src/core/features/operators/repository.ts": {
@@ -5772,7 +5772,7 @@
       "executable": false
     },
     "src/core/features/overview/live-status.ts": {
-      "sha256": "8b6fcf0469420b50fc08101f3e6faebc23792dd2318c152e6096a0013bc6d926",
+      "sha256": "c633780430635e894831d3b1e0e9e787947785382b88732211721d0e153c7598",
       "executable": false
     },
     "src/core/features/overview/repository.ts": {
@@ -5800,7 +5800,7 @@
       "executable": false
     },
     "src/core/features/overview/ui/live-strip.tsx": {
-      "sha256": "d279ec86f5cc95f74486e9f4d52bd1de192afe09fcbd018aba7ab92e27ac7df6",
+      "sha256": "ab170da0fead2ea24f6fafbd96d9c00333440091146b12378e6f95529daf6893",
       "executable": false
     },
     "src/core/features/overview/ui/overview-page.tsx": {
@@ -5808,7 +5808,7 @@
       "executable": false
     },
     "src/core/features/overview/ui/your-page.tsx": {
-      "sha256": "7b6410dbf7fdc932421d04952919bf87623dca6d6e667ed21d1c47e940215f6b",
+      "sha256": "0b7b28de65c70b9e117c27df3fd994744708d46092bd0a49a0325ae64449675f",
       "executable": false
     },
     "src/core/features/owner-claim/repository.ts": {
@@ -6368,7 +6368,7 @@
       "executable": false
     },
     "src/core/features/reports/routes.ts": {
-      "sha256": "e77901d21825f0e4aef8c1ee38900871fe19900f13caf6296f4cc8b767f30747",
+      "sha256": "d2b6b809a84309e2a2bd53b433a894207608576a8db492b4528c93d76d1c75ed",
       "executable": false
     },
     "src/core/features/reports/service.ts": {
@@ -6376,7 +6376,11 @@
       "executable": false
     },
     "src/core/features/reports/ui/report-editor.tsx": {
-      "sha256": "11677f82c5ced04a6f7a7c09d9f0c97a1533a09d7d96d979829fc7448d6131d3",
+      "sha256": "3c6f8b91b960d16d859ad92e7651ebcaeedc29b7b2dc4813d18ce2b369df6672",
+      "executable": false
+    },
+    "src/core/features/reports/ui/report-publication.ts": {
+      "sha256": "0a6612f2b162430410939af9188f1be37e6472655d2e85366fc87c64b33f8824",
       "executable": false
     },
     "src/core/features/reports/ui/report-waiver.tsx": {
@@ -8799,6 +8803,10 @@
       "sha256": "0c6484089d48d8e6c869547417f9bf4ae4d320b62e564f5a4c7257631a4f9c8b",
       "executable": false
     },
+    "tests/e2e/helpers/report-recovery-browser-flow.mjs": {
+      "sha256": "d54e241d1896382f0bca2e39290c36335ad87e7c545910c834b841a7b84a25bc",
+      "executable": false
+    },
     "tests/e2e/helpers/report-reminders-flow.mjs": {
       "sha256": "a170892a4a14479a2da0a6f3592184d7bbf6541f09694b6a8e5b92af86ab5340",
       "executable": false
@@ -9080,7 +9088,7 @@
       "executable": false
     },
     "tests/e2e/publishing-browser.test.mjs": {
-      "sha256": "77d0195667cddb4b65804485381815e3405f4d6481d46e038c8e5f3be84f688b",
+      "sha256": "ad9b203d82898f6736db7b0de59890e4cbe6eb07011082228c74274aa920dd2a",
       "executable": false
     },
     "tests/e2e/publishing-contract.test.mjs": {
@@ -9144,7 +9152,7 @@
       "executable": false
     },
     "tests/e2e/sorry-import.test.mjs": {
-      "sha256": "8371599e1fb93cc5833feeae53e4a2178d25d27ffdaf8ad4c49a6325f1594ba1",
+      "sha256": "4efe21a834575c7be5c89754003e74c84fc2facb947f30fb80a95a34c5cca24c",
       "executable": false
     },
     "tests/e2e/sorry-reconciliation.test.mjs": {

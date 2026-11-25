@@ -15,6 +15,7 @@ export function YourPageFacts({ live, pageName, accentColor, components }: { liv
   const relativeTime = useRelativeTime();
   const origin = live.publicOrigin;
   const host = new URL(origin).host;
+  const emailAvailable = live.sender.state !== "off" && live.sender.state !== "local";
   return <div className="your-page-grid">
     <div className="data-card your-page-preview">
       <PagePreview size="large" pageName={pageName} accentColor={accentColor} markSrc={`/api/app/page-settings/brand/mark?v=${encodeURIComponent(live.publishedAt ?? "")}`} components={components} address={host} />
@@ -25,7 +26,7 @@ export function YourPageFacts({ live, pageName, accentColor, components }: { liv
         <ul className="checked-list">
           <Fact ok={live.publishedAt ? true : null} label={live.preview ? "Preview published" : "Page published"} detail={live.publishedAt ? relativeTime(live.publishedAt) : "Publishing now"} />
           <Fact ok={live.page ? live.page.ok : null} label="Address answering" detail={live.page?.reason ?? host} />
-          {live.sender.state === "off" ? null : <Fact ok={live.subscribe ? live.subscribe.ok : null} label="Subscribe form working" detail={live.subscribe?.reason ?? (live.subscribe ? `checked ${relativeTime(live.subscribe.checkedAt)}` : "Checking soon")} />}
+          {emailAvailable ? <Fact ok={live.subscribe ? live.subscribe.ok : null} label="Subscribe form working" detail={live.subscribe?.reason ?? (live.subscribe ? `checked ${relativeTime(live.subscribe.checkedAt)}` : "Checking soon")} /> : null}
           {live.sender.state === "local" ? null : <Fact ok={live.sender.state === "off" || live.sender.state === "verified" ? true : live.sender.state === "failed" ? false : null} label="Mail sender" detail={live.sender.message ?? (live.sender.state === "verified" ? "Verified by your mail provider" : "Checking soon")} />}
         </ul>
         <p className="checked-note">Lamp checks these every minute and says so here if one stops working.</p>
@@ -33,7 +34,7 @@ export function YourPageFacts({ live, pageName, accentColor, components }: { liv
       <section className="data-card" aria-labelledby="try-title">
         <p className="card-kicker" id="try-title">Try it yourself</p>
         <ul className="try-list">
-          {live.sender.state === "off" ? null : <li><a className="text-link" href={`${origin}/#subscribe`} target="_blank" rel="noopener">Subscribe with your email <Icon name="external" width={15} height={15} /></a></li>}
+          {emailAvailable ? <li><a className="text-link" href={`${origin}/#subscribe`} target="_blank" rel="noopener">Subscribe with your email <Icon name="external" width={15} height={15} /></a></li> : null}
           <li><a className="text-link" href={`${origin}/history`} target="_blank" rel="noopener">View history <Icon name="external" width={15} height={15} /></a></li>
           <li><Link className="text-link" to="/app/settings" hash="embeds">Feeds, badge and embeds <Icon name="arrow" width={15} height={15} /></Link></li>
         </ul>

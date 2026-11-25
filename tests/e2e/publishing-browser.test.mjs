@@ -1188,3 +1188,49 @@ test('Owner incident communication — manual resolution, customer email and tim
 test('Sorry templates — both collections stay complete in Settings and private composers', { timeout: 600_000 }, async () => {
   await (await import('./helpers/sorry-template-browser-flow.mjs')).sorryTemplateBrowserFlow({ page, appUrl, appFetch, api, screens: previewScreens });
 });
+
+test('SETUP-001 — Overview checks the page without expecting an email form when local mail is suppressed', { timeout: 180_000 }, async () => {
+  await api('/api/app/prelaunch', 'PATCH', { enabled: false });
+  const name = 'Checkout payments';
+  await api('/api/app/components', 'POST', { name, groupId: null, description: '', internal: false, displayOrder: 0, note: '' });
+  await page.goto(`${pageUrl}/`);
+  await page.getByRole('heading', { name, exact: true }).waitFor();
+  assert.equal(await page.locator('form[action="/subscribe"]').count(), 0);
+
+  const { live } = await api('/api/app/overview/live');
+  assert.equal(live.sender.state, 'local');
+  assert.equal(live.page.ok, true);
+  assert.equal(live.subscribe, null, 'a suppressed form is not a failed check');
+  await page.goto(`${appUrl}/app`);
+  await operatorHydrated(page);
+  const strip = page.getByRole('region', { name: 'Your public page', exact: true });
+  await strip.getByRole('link', { name: 'Review page' }).waitFor();
+  assert.equal(await strip.locator('.is-failing').count(), 0);
+  await previewScreens(page, 'local-overview');
+  await strip.getByRole('link', { name: 'Review page' }).click();
+  const checks = page.getByRole('region', { name: 'What Lamp checked' });
+  await checks.waitFor();
+  assert.equal(await checks.getByText('Subscribe form working').count(), 0);
+  assert.equal(await page.getByRole('link', { name: 'Subscribe with your email' }).count(), 0);
+  await previewScreens(page, 'local-page-settings');
+
+  const { openStatusJourney } = await import('./helpers/status-journey.mjs');
+  const hosted = await openStatusJourney({ providerEdge(request) {
+    const url = new URL(request.url);
+    if (url.hostname === 'status.example.test') return new Response('<h1>Checkout status</h1>', { headers: { 'Content-Type': 'text/html' } });
+    if (url.hostname === 'api.resend.com' && url.pathname === '/domains') return Response.json({ data: [{ name: 'example.test', status: 'verified' }] });
+  } });
+  try {
+    await hosted.component(name);
+    const { live } = await hosted.json('/api/app/overview/live');
+    assert.equal(live.sender.state, 'verified');
+    assert.equal(live.page.ok, true);
+    assert.equal(live.subscribe.ok, false, 'a hosted page with working mail still warns when its form is missing');
+    assert.match(live.subscribe.reason, /subscribe form/i);
+  } finally { await hosted.close(); }
+});
+
+test('HIST-002 — a report awaiting the reader page stops polling and offers a page-build retry', { timeout: 180_000 }, async () => {
+  const { reportRecoveryBrowserFlow } = await import('./helpers/report-recovery-browser-flow.mjs');
+  await reportRecoveryBrowserFlow({ page, appUrl, pageUrl, api, screenshots: previewScreens });
+});

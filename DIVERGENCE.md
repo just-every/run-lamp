@@ -31,6 +31,9 @@ older generation, so that early record alone cannot confirm publication.
 Publishing a post-incident report queues the rebuild of its requested source
 revision. The report editor confirms publication when the selected reader
 generations serve the report at the incident permalink.
+The editor stops checking after five minutes or a reported build failure and
+offers a page-build retry. A retry uses the saved report and its original
+publication, so it does not repeat subscriber notifications.
 
 ## Deliberately disabled hosted email — 15 November 2026
 
@@ -1179,6 +1182,8 @@ Lamp runs the Base rer CLI (`scripts/base-cli/`, thin `scripts/rer.mjs`) with th
 - First-run setup at `/setup` reads the owner's website and confirms what it found (SETUP-002);
   it confirms the published snapshot before opening the workspace so a saved component cannot
   be mistaken for a published one. Overview shows one live line (SETUP-001).
+  A local installation with suppressed mail omits the email form and its readiness
+  check. The page address still gets checked, and hosted mail still requires the form.
 
 ## Slack and Teams channels on a Worker — 11 October 2026
 

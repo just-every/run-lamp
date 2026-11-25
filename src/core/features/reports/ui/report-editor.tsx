@@ -3,56 +3,55 @@ import { useEffect, useState } from "react";
 import { appApi, useAppData } from "../../../app/client/ui/api";
 import { Button } from "../../../app/client/ui/button";
 import { REPORT_PROMPTS, reportReview, type ReportReview } from "../draft";
+import { useReportPublication } from "./report-publication";
 
 type Report = { summary: string; timeline: string; cause: string; remediation: string; publishedAt: string | null };
-type ReportResource = { report: Report | null; review: ReportReview | null; waiver: { reason: string } | null; owed: boolean };
-type ReportPublicationState = "pending" | "confirmed" | "private";
+type ReportResource = { report: Report | null; review: ReportReview | null; waiver: { reason: string } | null; owed: boolean; canRetryPublication: boolean };
 const emptyReport: Report = { summary: "", timeline: "", cause: "", remediation: "", publishedAt: null };
 
 /** The incident's post-incident report as the server holds it; the panel row and the editor share one read. */
 export function useIncidentReport(incidentId: string) {
   const endpoint = `/api/app/incidents/${incidentId}/report`;
   const resource = useAppData<ReportResource>(endpoint);
-  const publicationPath = resource.data?.report?.publishedAt ? `${endpoint}/publication` : null;
-  const [observation, setObservation] = useState<{ path: string; state: ReportPublicationState } | null>(null);
-  const publication = observation?.path === publicationPath ? observation.state : "pending";
-  useEffect(() => {
-    if (!publicationPath) return;
-    const path = publicationPath;
-    const controller = new AbortController();
-    const started = Date.now();
-    let timer: ReturnType<typeof setTimeout>;
-    async function check() {
-      const status = await appApi<{ state: ReportPublicationState }>(path, { signal: controller.signal }).catch(() => null);
-      if (controller.signal.aborted) return;
-      if (status && status.state !== "pending") setObservation({ path, state: status.state });
-      else timer = setTimeout(check, Date.now() - started < 60_000 ? 2_000 : 15_000);
-    }
-    void check();
-    return () => { controller.abort(); clearTimeout(timer); };
-  }, [publicationPath]);
-  return { endpoint, ...resource, publication };
+  const [accepted, setAccepted] = useState<{ incidentId: string; at: string | null } | null>(null);
+  const publishedAt = resource.data?.report?.publishedAt ?? (accepted?.incidentId === incidentId ? accepted.at : null);
+  const publication = useReportPublication(publishedAt ? `${endpoint}/publication` : null);
+  return { endpoint, ...resource, ...publication, publishedAt, markPublished: (at: string | null) => setAccepted({ incidentId, at }) };
 }
 
 /** The report row's one line: what the server holds, and what is still owed. */
-export function reportSummary({ data, error, publication }: ReturnType<typeof useIncidentReport>, time: (iso: string | null) => string) {
+export function reportSummary({ data, error, publication, publishedAt }: ReturnType<typeof useIncidentReport>, time: (iso: string | null) => string) {
+  if (publishedAt) {
+    if (publication.state === "checking") return "Checking publication…";
+    if (publication.state === "pending") return "Publishing…";
+    if (publication.state === "failed") return "Publication needs attention";
+    return `Published ${time(publishedAt)}`;
+  }
   if (!data) return error ? "Could not be read" : "Reading the report…";
-  if (data.report?.publishedAt) return publication === "pending" ? "Publishing…" : `Published ${time(data.report.publishedAt)}`;
   if (data.waiver) return data.report ? "Draft saved · reminder waived" : "Reminder waived";
   if (data.report) return data.owed ? "Draft saved · report owed" : "Draft saved · optional report";
   return data.owed ? "Owed: draft it or waive the reminder" : "Optional report";
 }
 
 export function ReportEditor({ incidentId, resource }: { incidentId: string; resource: ReturnType<typeof useIncidentReport> }) {
-  const { endpoint, data, refresh, loading, error, publication } = resource;
+  const { endpoint, data, refresh, loading, error, publication, publishedAt, markPublished, retryPublication } = resource;
   const [report, setReport] = useState<Report>(emptyReport);
   const [dirty, setDirty] = useState(false);
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   useEffect(() => { if (data && !dirty) setReport(data.report ?? emptyReport); }, [data]);
-  if (report.publishedAt) return <div className="report-editor"><p role="status" data-publication-state={publication}>
-    {publication === "pending" ? "Publishing… Waiting for the incident page to update." : publication === "confirmed" ? "Readers can see this now." : "Published for operators."}
-  </p></div>;
+  if (publishedAt) {
+    const message = {
+      checking: "Checking the incident page…",
+      pending: "Publishing… Waiting for the incident page to update.",
+      confirmed: "Readers can see this now.",
+      private: "Published for operators.",
+    };
+    return <div className="report-editor">
+      <p role="status" data-publication-state={publication.state}>{publication.state === "failed" ? publication.message : message[publication.state]}</p>
+      {publication.state === "failed" && data?.canRetryPublication ? <Button type="button" variant="secondary" onClick={retryPublication}>Retry publication</Button> : null}
+    </div>;
+  }
   const review = reportReview(report);
   const busy = pending || loading || !data;
   const { summary, timeline, cause, remediation } = report;
@@ -85,7 +84,7 @@ export function ReportEditor({ incidentId, resource }: { incidentId: string; res
       const response = await appApi<{ report: Report }>(`${endpoint}/publish`, {
         method: "POST", body: JSON.stringify({ channels: ["email"], expectedReport: fields }),
       });
-      setReport(response.report);
+      markPublished(response.report.publishedAt);
     }
     catch (cause) { setMessage(cause instanceof Error ? cause.message : "Report could not be published."); }
     finally { refresh(); setPending(false); }
