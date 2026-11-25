@@ -1,0 +1,4 @@
+{
+  "cap": 200,
+  "reason": "Owner, 15 Oct 2026: a per-seed cap, default 200, raised only with a written reason. Raise this number only by editing this file with the reason."
+}

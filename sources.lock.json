@@ -460,7 +460,7 @@
       "executable": false
     },
     ".github/workflows/verify.yml": {
-      "sha256": "de578d9dbe8025beae5ace27b2b4ae89a114e6bfd40d1d433064e1da8f069eb8",
+      "sha256": "fef84d34e0f280234dc43f87a58d27949e7e0fb1a0e172b8f44c140f6213b6a1",
       "executable": false
     },
     ".gitignore": {
@@ -480,7 +480,7 @@
       "executable": false
     },
     "AGENTS.md": {
-      "sha256": "2539af04202f8dfd339bb2c1251ef67f011dae7262ea8b56c4946f6a093d0e13",
+      "sha256": "4a59f3fe31f9f851b99b1feaa442a11fae94e11ac2b443948febc20579ce98d7",
       "executable": false
     },
     "AUTHORING.md": {
@@ -2672,7 +2672,7 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "797b8e1a778c32dd32d5c8dd971a361a4c74dbe402e8a2512af73efb81d28e4c",
+      "sha256": "a0678e076536307f88ac97b9d2c2a9fe080a153da438030bdc980e49977bd169",
       "executable": false
     },
     "patches/@runeditrun__rer@0.2.133.patch": {
@@ -3240,7 +3240,7 @@
       "executable": false
     },
     "scripts/ci/verify-reuse.sh": {
-      "sha256": "b74a093228337ac4ac2c22dcdd99972377d0a52f25113a55ad94aad38a939798",
+      "sha256": "e1d9a13f6b76ac330fba1d21d1c09d9ad48d20874623dcac8c5dddbcf359f73b",
       "executable": false
     },
     "scripts/create-release-candidate.mjs": {
@@ -4256,7 +4256,7 @@
       "executable": false
     },
     "scripts/verification/plan.mjs": {
-      "sha256": "99104d6ee72b5cbe24f17313b77d96aebb161cc91b96cfa374679c64008ae17a",
+      "sha256": "4e0c4226ae26b6d88e5ffa8c7025b24302dba9e000c507113edb1ba0c4104b6d",
       "executable": false
     },
     "scripts/verification/run.mjs": {
@@ -8380,7 +8380,7 @@
       "executable": false
     },
     "tests/e2e/channels-and-presets.test.mjs": {
-      "sha256": "da20158c64ee4b254f0421595a6abc371f4aa5acf5348fe627ff60fec0d1e65c",
+      "sha256": "6764c0f9109c211af1ac60739a540e534e06449da01bc71c7aa496b10f8e56a2",
       "executable": false
     },
     "tests/e2e/cutover-browser.test.mjs": {

@@ -3,14 +3,13 @@ name: Verify
 on:
   push:
     branches: ['**']
-  pull_request:
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: verify-${{ github.workflow }}-${{ github.event_name }}-${{ github.ref == 'refs/heads/main' && github.run_id || github.event.pull_request.number || github.ref }}
+  group: verify-${{ github.workflow }}-${{ github.ref == 'refs/heads/main' && github.run_id || github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
@@ -29,13 +28,11 @@ jobs:
           fetch-depth: 2
           persist-credentials: false
       - id: reuse
-        name: Reuse only verified push evidence
+        name: Reuse green push evidence for an identical tree
         env:
           GH_TOKEN: ${{ github.token }}
           EVENT: ${{ github.event_name }}
           REF: ${{ github.ref }}
-          SAME_REPO: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
-          PR_HEAD: ${{ github.event.pull_request.head.sha }}
           WF_REF: ${{ github.workflow_ref }}
         run: bash scripts/ci/verify-reuse.sh
       - id: plan

@@ -24,9 +24,9 @@ branches onto its merged changes. On a fresh Ubuntu/Debian Linux agent with root
 passwordless sudo, put `/usr/local/bin` first on the calling shell PATH, then run
 `bash scripts/agent-bootstrap.sh && rer verify`. The bootstrap installs pinned
 Node 22.20.0 and pnpm 10.12.4, frozen dependencies, Chromium and system libraries,
-and probes the locked workerd runtime. PR verification runs the full verifier
-and every existing browser suite in `.github/workflows/verify.yml`. Pushes to `main` automatically run the same credential-free Verify workflow
-to record the default-branch result. It retains verifier and browser logs, including the
+and probes the locked workerd runtime. Every push runs the full verifier
+and every existing browser suite in `.github/workflows/verify.yml` (one trigger per commit; a push to `main` of an already-green commit reuses that result). The same credential-free Verify workflow
+records the default-branch result, and it fails when `test-budget.json`'s cap is exceeded. It retains verifier and browser logs, including the
 documented visual edit probes; failed checks remain failed.
 
 ## About this product

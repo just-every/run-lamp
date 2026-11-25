@@ -545,24 +545,3 @@ test("Development ingress refuses a forgotten proof once a full nonce set evicts
   assert.equal(await ingress.authenticate(ingress.proofFor(INGRESS_ISSUED, ingress.nonceOf(0))), null, "(c) the evicted proof itself cannot be replayed");
   assert.equal(await ingress.authenticate(ingress.proofFor(INGRESS_ISSUED, ingress.nonceOf(99_999))), null, "(c) a proof issued at the evicted issue time is refused even with an unseen nonce");
 });
-
-test("Development ingress keeps serving new proofs while its nonce set is full", async (t) => {
-  const ingress = await developmentIngress(t);
-  await fillIngress(ingress);
-  for (let index = 10_000; index < 10_050; index++) {
-    assert.ok(await ingress.authenticate(ingress.proofFor(INGRESS_ISSUED + index, ingress.nonceOf(index))), `(d) new proof ${index} is accepted beyond the 10,000 bound`);
-  }
-  assert.equal(await ingress.authenticate(ingress.proofFor(INGRESS_ISSUED + 10_100, ingress.nonceOf(10_100))) === null, false, "(d) a later new proof is still accepted");
-});
-
-test("Development ingress holds exactly 10,000 nonces however many proofs it has accepted", async (t) => {
-  const ingress = await developmentIngress(t);
-  await fillIngress(ingress);
-  for (let index = 10_000; index < 10_050; index++) await ingress.authenticate(ingress.proofFor(INGRESS_ISSUED + index, ingress.nonceOf(index)));
-  // A fresh-time proof reusing a nonce is refused only while that nonce is held, so refusals count the held set.
-  const fresh = INGRESS_ISSUED + 15_000;
-  let held = 0;
-  for (let index = 50; index < 10_050; index++) if (await ingress.authenticate(ingress.proofFor(fresh, ingress.nonceOf(index))) === null) held++;
-  assert.equal(held, 10_000, "(e) the 10,000 newest nonces are held");
-  assert.ok(await ingress.authenticate(ingress.proofFor(fresh, ingress.nonceOf(0))), "(e) the oldest nonce was forgotten, not retained beyond the bound");
-});

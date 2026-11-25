@@ -45,6 +45,7 @@
     "import:cloudflare": "node scripts/import.mjs",
     "verify:visual:source": "node --experimental-strip-types scripts/verify-visual-edit.mjs --source-only",
     "verify:plan": "node scripts/verification/check-plan.mjs",
+    "test:budget": "node scripts/verification/test-budget.mjs",
     "sorry:capture": "node --experimental-strip-types scripts/sorry-capture.mjs",
     "sorry:receipt": "node --experimental-strip-types scripts/sorry-receipt.mjs",
     "test:ownership": "node --test --test-concurrency=1 tests/e2e/auth-adoption-journey.test.mjs tests/e2e/owner-profile.test.mjs tests/auth-adoption/dependencies.test.mjs tests/auth-adoption/setup-migrations.test.mjs tests/auth-adoption/deploy-page-host.test.mjs tests/auth-adoption/sign-in-providers.test.mjs tests/auth-adoption/upgrade.test.mjs",
