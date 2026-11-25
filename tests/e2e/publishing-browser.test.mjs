@@ -1001,11 +1001,11 @@ test('INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UP
   assert.equal((await (await fetch(`${pageUrl}/incidents/${incident.reference}`)).text()).includes('Checkout delays have been resolved.'), false, 'a saved report stays private');
   const publishing = page.waitForResponse(response => response.url().endsWith(`/incidents/${id}/report/publish`) && response.request().method() === 'POST');
   await report.getByRole('button', { name: 'Publish report', exact: true }).click(); assert.equal((await publishing).status(), 200);
+  await report.locator('[role="status"][data-publication-state="confirmed"]').waitFor();
   await waitForPublicIncident(incident.reference, 'Checkout delays have been resolved.');
   const publishedReport = (await api(reportPath)).report;
   for (const [field, value] of Object.entries(completedReport)) assert.equal(publishedReport[field], value);
   assert.ok(publishedReport.publishedAt);
-  await report.locator('[role="status"][data-publication-state="confirmed"]').waitFor();
   assert.equal(await report.getByRole('textbox').count(), 0, 'published text has no editing controls');
   assert.equal(await report.getByRole('button', { name: 'Save report', exact: true }).count(), 0);
   await previewScreens(page, 'report-published-operator');

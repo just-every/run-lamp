@@ -9080,7 +9080,7 @@
       "executable": false
     },
     "tests/e2e/publishing-browser.test.mjs": {
-      "sha256": "99a09a030764c1294846affcc8886ba8e9786df2bd57e0bedbc6baa75486d6c5",
+      "sha256": "77d0195667cddb4b65804485381815e3405f4d6481d46e038c8e5f3be84f688b",
       "executable": false
     },
     "tests/e2e/publishing-contract.test.mjs": {
