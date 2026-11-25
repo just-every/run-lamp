@@ -6,6 +6,7 @@ import { planIndex } from './erasure-index.ts';
 import type { ImportPlan } from '../types.ts';
 import type { D1ImportContext, D1PlanCodec, D1Sql } from './types.ts';
 import { planFingerprint } from '../plan/index.ts';
+import { verifiedPlanFingerprint } from './verified-plan.ts';
 import { assertPlanSize } from '../plan/size.ts';
 import { assertPlanCredentials } from '../provenance/credentials.ts';
 import { atomicCount, preparedAtomic, guard, sql } from './database.ts';
@@ -37,8 +38,9 @@ export interface D1CreatePreflight {
  * fingerprint proves unchanged content, so the whole-plan scan is not repeated. */
 export function validateCreation(plan: ImportPlan, context: D1CreatePreflightContext, credentials = true): string {
   // Before any whole-plan encoding (fingerprint, retained body, chunks).
-  assertPlanSize(plan);
-  if (!context.reviewedFingerprint || context.reviewedFingerprint !== plan.fingerprint || planFingerprint(plan) !== plan.fingerprint) throw new Error('REVIEW_FINGERPRINT_MISMATCH');
+  const verified = verifiedPlanFingerprint(plan);
+  if (credentials || !verified) assertPlanSize(plan);
+  if (!context.reviewedFingerprint || context.reviewedFingerprint !== plan.fingerprint || (verified ?? planFingerprint(plan)) !== plan.fingerprint) throw new Error('REVIEW_FINGERPRINT_MISMATCH');
   if (plan.version !== 1 || plan.destination !== context.destination || plan.namespace !== context.namespace || plan.mappingVersion !== context.mappingVersion || plan.principalId !== context.authorization.principalId) throw new Error('PLAN_BINDING_MISMATCH');
   if (credentials) assertPlanCredentials(plan);
   policy(context);

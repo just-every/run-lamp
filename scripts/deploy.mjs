@@ -11,6 +11,7 @@ import { dryRunInputFailure, realDeployInputFailure, realDeployNotice } from "./
 import { readBuiltWorkerArtifact } from "./build-output.mjs";
 import { deployFingerprint, deploySource, identityVars, reportsIdentity } from "./deployment-identity.mjs";
 import { deploymentOwnership } from './deployment-ownership.mjs';
+import { configuredWorkerCpuLimit } from './deployment-cpu-limit.mjs';
 import { awaitPageHostSnapshot } from './page-host-readiness.mjs';
 
 function run(command, args, options = {}) {
@@ -26,7 +27,7 @@ async function buildGeneratedWorker(configPath, expected) {
   if (built.config.compatibility_date !== "2026-09-08" || !["nodejs_compat", "global_fetch_strictly_public"].every(flag => built.config.compatibility_flags?.includes(flag))) throw new Error("The compiled Worker configuration did not retain the required Start compatibility settings.");
   if (built.config.vars?.LAMP_PAGE_HOST !== expected.pageHost || built.config.vars?.LAMP_APP_HOST !== expected.appHost || built.config.vars?.MAIL_PROVIDER !== expected.mailProvider || built.config.vars?.MAIL_FROM_ADDRESS !== (expected.mailProvider === "none" ? undefined : expected.mailFromAddress)) throw new Error("The compiled Worker configuration did not retain the generated deployment bindings.");
   if (expected.mailProvider === "rer" && (built.config.vars?.MAIL_FROM !== expected.mailFromAddress || built.config.vars?.MAIL_RELAY_URL !== expected.mailRelayUrl)) throw new Error("The compiled Worker configuration did not retain managed mail bindings.");
-  return built.path;
+  return built;
 }
 
 async function main() {
@@ -52,9 +53,11 @@ async function main() {
   if (flags.get("dry-run")) {
     run("pnpm", ["run", "setup:cloudflare", "--", "--dry-run", "--environment", config.environment, ...restoreArgs]);
     const dryRunConfig = resolve("wrangler.dry-run.toml");
-    await writeGeneratedWrangler(dryRunConfig, config, { ...resourceNames(config.environment, config.resourcePrefix, config.pageWorker), databaseId: "00000000-0000-0000-0000-000000000000" });
+    const cpuLimitMs = await configuredWorkerCpuLimit();
+    await writeGeneratedWrangler(dryRunConfig, config, { ...names, databaseId: "00000000-0000-0000-0000-000000000000" }, { cpuLimitMs });
     try {
-      const builtConfig = await buildGeneratedWorker(dryRunConfig, config);
+      const { path: builtConfig, config: builtWorker } = await buildGeneratedWorker(dryRunConfig, config);
+      if (builtWorker.limits?.cpu_ms !== cpuLimitMs) throw new Error('The compiled Worker configuration did not retain the configured CPU limit.');
       const identity = identityVars({ source: deploySource(), fingerprint: await deployFingerprint() });
       run("pnpm", ["exec", "wrangler", "deploy", "--dry-run", "--config", builtConfig, ...identity]);
       if (config.hosting === "workers-dev") await withPublicWorkerConfig(builtConfig, names, path => run("pnpm", ["exec", "wrangler", "deploy", "--dry-run", "--config", path, ...identity]));
@@ -62,13 +65,14 @@ async function main() {
       await rm(dryRunConfig, { force: true });
     }
     console.log("Dry run compiled the generated Start Worker configuration and dist/client assets. No Cloudflare resource or deployment was changed.");
+    console.log(`Dry run checked the Workers Paid CPU limit (${cpuLimitMs} ms). Cloudflare's account plan is checked during deployment.`);
     const notice = realDeployNotice(process.env);
     if (notice) console.log(notice);
     return;
   }
   run("pnpm", ["run", "setup:cloudflare", "--", "--environment", config.environment, ...restoreArgs]);
   if (!existsSync("wrangler.toml")) throw new Error("pnpm setup must generate wrangler.toml before deployment.");
-  const builtConfig = await buildGeneratedWorker(resolve("wrangler.toml"), config);
+  const { path: builtConfig } = await buildGeneratedWorker(resolve("wrangler.toml"), config);
   const identity = { source: deploySource(), fingerprint: await deployFingerprint() };
   const ownership = deploymentOwnership(config);
   const replace = replacedSecrets();

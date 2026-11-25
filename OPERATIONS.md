@@ -53,6 +53,16 @@ Account Worker access alone can upload the artifact but cannot attach its hosts.
 For workers.dev hosting, custom-domain zone permissions are not needed; the token
 must be able to read the account's Workers subdomain.
 
+Native deploy reads the account's Workers plan with the deployment credential.
+On Workers Paid it sets the per-invocation CPU limit from `wrangler.jsonc`
+(`limits.cpu_ms`, 30 seconds). On Workers Free use `rer deploy`, which leaves
+the limit to Cloudflare.
+In workers.dev mode the emitted configuration applies the same limit to both
+the operator app Worker and the public page Worker. `rer deploy --dry-run`
+checks the Paid configuration locally. After a deployment, read `result.limits.cpu_ms`
+from Cloudflare's [Worker script and version settings](https://developers.cloudflare.com/api/resources/workers/subresources/scripts/subresources/script_and_version_settings/methods/get/)
+for the operator app Worker, and for the separate public page Worker if present.
+
 - **Free:** you run Lamp's open source yourself in your own Cloudflare account,
   with no Run Edit Run charge. The commands in this guide are this path.
 - **Assisted:** Run Edit Run installs and maintains Lamp for you, while it stays

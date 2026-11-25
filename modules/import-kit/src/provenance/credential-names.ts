@@ -1,3 +1,5 @@
+import { AsyncLocalStorage } from 'node:async_hooks';
+
 /** Whether a name (an object key, a header name, the name in a `[name, value]`
  * pair, a URL query or fragment key) names a credential, by its whole parts.
  *
@@ -66,14 +68,14 @@ export function credentialScheme(text: string): boolean {
 }
 /** Whether an object under this key holds HTTP headers by name (`headers`, `customHttpHeaders`, `header`). */
 export function headerContainer(key: string): boolean {
-  const last = nameParts(key).at(-1);
+  const last = partsOf(key).at(-1);
   return last === 'headers' || last === 'header';
 }
 /** Under `auth`, `X-Auth`, `credential` or `credentials`, a member holding the credential under a generic name: `value`
  * (Keycloak's `{type: 'password', value}`, `credential: {type: 'apiKey', value}`), `pass` and `pw` (nodemailer's
  * `{user, pass}`), or a name whose first part is `secret` (Keycloak's `secretData`). Its name's letters, or undefined. */
 export function credentialMember(name: string): string | undefined {
-  const parts = nameParts(name);
+  const parts = partsOf(name);
   return (parts.length === 1 && /^(?:value|pass|pw)$/.test(parts[0])) || parts[0] === 'secret' ? parts.join('') : undefined;
 }
 
@@ -83,15 +85,40 @@ export function nameParts(name: string): string[] {
   return (text.match(/\p{Lu}+(?!\p{Ll})|\p{Lu}?\p{Ll}+|\p{Lo}+/gu) ?? []).map(part => part.toLowerCase());
 }
 
+const names = new AsyncLocalStorage<{ parts: Map<string, string[]>; classes: Map<string, CredentialName | undefined> }>();
+
+/** Field names repeat across imported records. Keep their classification
+ * request-local and bounded, since the uploaded keys can themselves be private. */
+export const withCredentialNames = <T>(work: () => T): T => names.run({ parts:new Map(), classes:new Map() }, work);
+
+function partsOf(name: string): string[] {
+  const cache = names.getStore()?.parts;
+  const known = cache?.get(name);
+  if (known) return known;
+  const parts = nameParts(name);
+  if (cache && name.length <= 128 && cache.size < 1024) cache.set(name, parts);
+  return parts;
+}
+
 export function credentialName(name: string, mode: CredentialNameMode, place: CredentialNamePlace = 'field'): CredentialName | undefined {
-  const parts = nameParts(name), last = parts.at(-1), before = parts.at(-2);
+  const cache = names.getStore()?.classes;
+  if (!cache || name.length > 128) return classify(name, mode, place);
+  const key = mode + ':' + place + ':' + name;
+  if (cache.has(key)) return cache.get(key);
+  const result = classify(name, mode, place);
+  if (cache.size < 3072) cache.set(key, result);
+  return result;
+}
+
+function classify(name: string, mode: CredentialNameMode, place: CredentialNamePlace): CredentialName | undefined {
+  const parts = partsOf(name), last = parts.at(-1), before = parts.at(-2);
   if (last === undefined) return undefined;
-  const letters = name.normalize('NFKC').toLowerCase().replace(/[^a-z]/g, '').slice(-64);
+  const found = (plural: boolean, container = false) => ({ name: name.normalize('NFKC').toLowerCase().replace(/[^a-z]/g, '').slice(-64), plural, container });
   const compound = COMPOUND.exec(last);
-  if (compound) return { name: letters, plural: compound[1] === 's', container: false };
+  if (compound) return found(compound[1] === 's');
   // A header's leading `x-` (`x-api-key`, `X-Auth-Token`) is not part of the phrase; `refuse` mode takes the rest whole.
   const phrase = parts.length > 1 && parts[0] === 'x' ? parts.slice(1) : parts;
-  const found = (plural: boolean, container = false) => ({ name: letters, plural, container });
+
   const qualifier = (word: string | undefined) => word !== undefined && (KEY_QUALIFIERS.has(word) || (word.startsWith('x') && KEY_QUALIFIERS.has(word.slice(1))));
   const strict = mode === 'refuse';
   // A URL key or a header name: where `sig`, `signature` and `sessionId` are credentials.

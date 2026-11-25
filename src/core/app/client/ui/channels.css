@@ -28,6 +28,7 @@
 /* Keep report columns inside their scroll region so import actions stay reachable. */
 .move-in-page { grid-template-columns: minmax(0, 1fr); }
 .move-in-page > .data-card { min-width: 0; }
+.move-in-reconciliation { overflow-wrap: anywhere; }
 
 .cutover-page td, .cutover-page th { overflow-wrap: anywhere; vertical-align: top; }
 .cutover-page th small { display: block; font-weight: 400; margin-top: 8px; }

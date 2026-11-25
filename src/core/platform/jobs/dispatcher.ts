@@ -1,5 +1,6 @@
 export type LampJob =
   | { type: "health-probe"; requestedAt: string }
+  | { type: "public-snapshot-rebuild" }
   | { type: "delivery-dispatch"; eventId: string };
 
 export interface JobDispatcher {

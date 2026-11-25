@@ -22,7 +22,7 @@ export function edgeFetch({ edge, hosts, fetch: send = globalThis.fetch }) {
   };
 }
 
-export async function cloudflareEdge({ accountId, token, subdomain, d1, workerHost, app }) {
+export async function cloudflareEdge({ accountId, token, subdomain, workersSettings = { free_tier: true }, d1, workerHost, app }) {
   const workers = new Map(), databases = new Map(), buckets = new Map(), queues = new Map();
   const live = name => {
     const worker = workers.get(name), id = worker?.deployments[0].versions[0].version_id;
@@ -46,6 +46,7 @@ export async function cloudflareEdge({ accountId, token, subdomain, d1, workerHo
     if (request.headers.get('authorization') !== `Bearer ${token}`) return fail(403, 'Authentication error');
     const method = request.method;
     let match;
+    if (method === 'GET' && path === '/workers/settings') return ok(workersSettings);
     if (method === 'GET' && path === '/workers/subdomain') return ok({ subdomain });
     if ((match = /^\/workers\/scripts\/([a-z0-9-]+)(\/.*)?$/.exec(path))) {
       const [, name, rest = ''] = match, worker = workers.get(name), current = live(name);

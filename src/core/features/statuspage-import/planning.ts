@@ -2,8 +2,9 @@ import type { SorryRead } from "./sorry/read";
 import type { SorryField } from "./sorry/schema";
 import { cutoverFromPlan, type CutoverPreview } from "./cutover";
 import { resolvePublicAddresses, sourcePublicAddresses } from "./public-addresses";
-import { canonicalJson, planD1Import, sha256, type D1ImportContext, type ImportPlan, type SourceRecord, type TargetEffect } from "../../../../modules/import-kit/src/d1/index.ts";
-import type { Json } from "../../../../modules/import-kit/src/types.ts";
+import { canonicalJson, sha256, type ImportPlan, type SourceRecord, type TargetEffect } from "../../../../modules/import-kit/src/d1/index.ts";
+import { sourceIdentity } from "../../../../modules/import-kit/src/provenance/identity.ts";
+import type { ImportMapping, Json, PlanEntry, SourceBundle } from "../../../../modules/import-kit/src/types.ts";
 import { mapSource, type Accounting, type EntityKind, type Snapshot } from "./rows";
 import { entityTables } from "./rows";
 import { moveInPlan } from './door-plan';
@@ -17,7 +18,14 @@ const wellFormed = <T>(value: T): T => typeof value === "string" ? value.toWellF
   : Array.isArray(value) ? value.map(wellFormed) as T
   : value && typeof value === "object" ? Object.fromEntries(Object.entries(value).map(([key, item]) => [key, wellFormed(item)])) as T : value;
 
-export async function planMoveIn(read: ReadSource, snapshot: Snapshot, context: D1ImportContext, operatorId: string, asOf: string): Promise<ImportPlan> {
+export interface MoveInDraft {
+  namespace: string;
+  source: SourceBundle;
+  entries: PlanEntry[];
+  mapping: ImportMapping;
+}
+
+export function draftMoveIn(read: ReadSource, snapshot: Snapshot, operatorId: string, asOf: string): MoveInDraft {
   const namespace = read.namespace ?? "statuspage";
   const addresses = new Map<string, string>();
   for (const record of read.records.filter((record) => record.kind === "incident" || record.kind === "maintenance")) {
@@ -29,21 +37,27 @@ export async function planMoveIn(read: ReadSource, snapshot: Snapshot, context: 
     }
   }
   const mapped = mapSource(wellFormed(read.data), snapshot, operatorId, asOf, namespace);
+  const byKey = new Map(mapped.map(entry => [`${entry.kind}:${entry.sourceId}`, entry]));
   for (const item of read.accounting ?? []) {
-    const entry = mapped.find(row => row.kind === item.kind && row.sourceId === item.sourceId);
+    const key = `${item.kind}:${item.sourceId}`;
+    const entry = byKey.get(key);
     if (entry) {
       if (entry.accounting.some(row => row.outcome === "rejected" || row.outcome === "skipped")) continue;
       // A source-specific order change supersedes the generic component order claim.
       const reason = namespace === "sorry" && item.kind === "component" && entry.accounting.every(row => row.outcome === "imported")
         ? item.reason : [...entry.accounting.map(row => row.reason), item.reason].join(" ");
       entry.accounting = [{ ...item, reason }];
-    } else mapped.push({ kind: item.kind as EntityKind, sourceId: item.sourceId, accounting: [item] });
+    } else {
+      const unhandled = { kind: item.kind as EntityKind, sourceId: item.sourceId, accounting: [item] };
+      mapped.push(unhandled);
+      byKey.set(key, unhandled);
+    }
   }
   const sorry = namespace === "sorry" ? read as SorryRead : undefined;
   const fields = new Map<string, SorryField[]>();
   for (const original of sorry?.fieldLedger ?? []) {
     const field = { ...original };
-    const owner = mapped.find(entry => entry.kind === field.kind && entry.sourceId === field.sourceId);
+    const owner = byKey.get(`${field.kind}:${field.sourceId}`);
     // A row skipped by consent, preferences, validation or native capacity
     // cannot claim that any of its fields were carried into native data.
     if (owner && !owner.value && field.outcome !== "deleted") {
@@ -60,7 +74,9 @@ export async function planMoveIn(read: ReadSource, snapshot: Snapshot, context: 
       }
     }
     const key = owner ? field.kind + ":" + field.sourceId : "metadata";
-    fields.set(key, [...(fields.get(key) ?? []), field]);
+    const ledger = fields.get(key);
+    if (ledger) ledger.push(field);
+    else fields.set(key, [field]);
   }
   // Intern repeated explanations once. A thousand subscriber rows must not
   // duplicate a full paragraph for every path throughout retained plan chunks.
@@ -92,7 +108,7 @@ export async function planMoveIn(read: ReadSource, snapshot: Snapshot, context: 
   const identity = sha256(canonicalJson(read.artifacts.map((artifact) => ({ name: artifact.name, sha256: artifact.sha256 })).sort((a, b) => a.name.localeCompare(b.name))));
   const metadata = json({ ...(sorry ? { fieldLedger: packFields(fields.get("metadata"), true), fieldLedgerDictionary: { files: fieldFiles, rules: fieldRules }, fieldMetadata: sorry.fieldMetadata } : {}), raw: { asOf, subscriberCapacity:{overLimit:mapped.some(row=>row.subscriberCapacity?.overLimit),summaries:mapped.flatMap(row=>row.subscriberCapacity?.summaries ?? [])}, ...(read.sourceInfo ? { sourceInfo: read.sourceInfo } : {}) }, accounting: [] });
   records.push({ namespace, kind: "metadata", sourceId: identity, payload: metadata, payloadHash: sha256(canonicalJson(metadata)), artifactHash: read.artifacts[0].sha256, location: { artifact: read.artifacts[0].name } });
-  return planD1Import({ records, artifacts: read.artifacts, diagnostics: [] }, {
+  const mapping: ImportMapping = {
     version: "1",
     map: (source) => {
       const accounting = (source.payload as unknown as { accounting: Accounting[] }).accounting;
@@ -105,7 +121,14 @@ export async function planMoveIn(read: ReadSource, snapshot: Snapshot, context: 
         ...(rejected ? { rejection: rejected.reason } : {}),
       };
     },
-  }, context);
+  };
+  const entries = records.map((source): PlanEntry => {
+    const { effects, unmapped, rejection } = mapping.map(source);
+    return { source, identity: sourceIdentity('lamp', namespace, source.kind, source.sourceId), effects,
+      unmapped: unmapped?.length || effects.length || rejection ? unmapped ?? [] : [{ reason: 'Source object has no native mapping; parsed record retained. Original availability is reported separately.' }],
+      ...(rejection ? { rejection } : {}) };
+  });
+  return { namespace, source: { records, artifacts: read.artifacts, diagnostics: [] }, entries, mapping };
 }
 
 export type CountKind = EntityKind | "postmortem";

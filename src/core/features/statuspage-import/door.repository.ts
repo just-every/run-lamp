@@ -81,10 +81,10 @@ export function createImportDoorRepository(db: D1Database) {
      * door, a plan whose apply failed or whose import was undone or rolled back
      * is not reused: the same bytes plan afresh. */
     async planOf(installationId: string, namespace: string, bundleSha256: string) {
-      const row = await db.prepare(`SELECT p.id,(p.job_id IS NOT NULL OR EXISTS(SELECT 1 FROM ik_jobs j WHERE j.operation_key='door:'||p.id)) AS started FROM ik_door_plans p
-        WHERE installation_id=? AND namespace=? AND bundle_sha256=? AND complete=1 AND NOT EXISTS(SELECT 1 FROM ik_door_apply_failures f WHERE f.plan_id=p.id)
-        AND NOT EXISTS(SELECT 1 FROM ik_jobs j WHERE j.operation_key='door:'||p.id AND j.state IN ('undone','rolled_back'))`).bind(installationId,namespace,bundleSha256).first<{id:string;started:number}>();
-      return row ? {id:row.id,started:row.started===1} : null;
+      const row = await db.prepare(`SELECT p.id,p.complete,(p.job_id IS NOT NULL OR EXISTS(SELECT 1 FROM ik_jobs j WHERE j.operation_key='door:'||p.id)) AS started FROM ik_door_plans p
+        WHERE installation_id=? AND namespace=? AND bundle_sha256=? AND NOT EXISTS(SELECT 1 FROM ik_door_apply_failures f WHERE f.plan_id=p.id)
+        AND NOT EXISTS(SELECT 1 FROM ik_jobs j WHERE j.operation_key='door:'||p.id AND j.state IN ('undone','rolled_back')) ORDER BY p.rowid DESC LIMIT 1`).bind(installationId,namespace,bundleSha256).first<{id:string;started:number;complete:number}>();
+      return row ? {id:row.id,started:row.started===1,complete:row.complete===1} : null;
     },
     /** A complete plan of the namespace nobody started importing, with its bundle. */
     async unstarted(installationId: string, namespace: string, planId: string) {

@@ -1,5 +1,5 @@
-import { canonicalJson, sha256 } from '../provenance/identity.ts';
-import { planFingerprint } from '../plan/index.ts';
+import { sha256 } from '../provenance/identity.ts';
+import { verifyParsedPlan } from '../d1/verified-plan.ts';
 import type { D1Database, D1Sql } from '../d1/types.ts';
 import type { DoorPlanRow, DoorRequest, DoorSnapshot } from './types.ts';
 import { DoorError } from './protocol.ts';
@@ -36,10 +36,12 @@ export async function loadSnapshot(request: DoorRequest, row: DoorPlanRow): Prom
   if (!chunks.length) throw new DoorError('snapshot_withdrawn', 410, {planId: row.id});
   // A torn read across pages fails the ordinals or the snapshot hash below.
   if (chunks.some((c, i) => c.ordinal !== i)) throw new DoorError('plan_custody_mismatch', 409);
-  const snapshot = JSON.parse(chunks.map(c => c.body).join('')) as DoorSnapshot;
-  if (sha256(canonicalJson(snapshot)) !== row.snapshot_hash || snapshot.id !== row.id || snapshot.namespace !== row.namespace || snapshot.bundleSha256 !== row.bundle_sha256
+  const body = chunks.map(c => c.body).join('');
+  if (sha256(body) !== row.snapshot_hash) throw new DoorError('plan_custody_mismatch', 409);
+  const snapshot = JSON.parse(body) as DoorSnapshot;
+  if (snapshot.id !== row.id || snapshot.namespace !== row.namespace || snapshot.bundleSha256 !== row.bundle_sha256
     || snapshot.previous !== row.previous_id || snapshot.plan.fingerprint !== row.fingerprint
-    || planFingerprint(snapshot.plan) !== row.fingerprint
+    || verifyParsedPlan(snapshot.plan) !== row.fingerprint
     || snapshot.plan.namespace !== snapshot.kitNamespace || snapshot.plan.destination !== request.options.destination
     || snapshot.plan.principalId !== request.options.ownerPrincipalId) throw new DoorError('plan_custody_mismatch', 409);
   return snapshot;
@@ -94,19 +96,22 @@ function packRows(rows: unknown[]): {json: string; count: number}[] {
 /** `retainedFrom` names the plan whose records a re-plan read because the
  * upload's credential-bearing bytes went: that plan's snapshot must stay held
  * instead of the upload's chunks. */
-export async function saveSnapshot(request: DoorRequest, snapshot: DoorSnapshot, upload: {id: string}, retainedFrom?: string): Promise<void> {
+export async function saveSnapshot(request: DoorRequest, snapshot: DoorSnapshot, upload: {id: string}, retainedFrom?: string, stepped = false): Promise<void> {
   const db = request.options.database, g = request.access;
-  await transact(db, request.authority, [
+  // The snapshot digest binds its stored bytes. The independently canonical
+  // plan fingerprint is the approval identity.
+  const body = JSON.stringify(snapshot);
+  const open = [
     sql('INSERT OR IGNORE INTO ik_door_namespaces(installation_id,namespace) VALUES(?,?)', g.installationId, g.namespace),
     assertion(sql('EXISTS(SELECT 1 FROM ik_door_namespaces WHERE installation_id=? AND namespace=? AND head_id IS ? AND pending_id IS NULL)', g.installationId, g.namespace, snapshot.previous)),
-    sql('INSERT INTO ik_door_plans(id,installation_id,namespace,bundle_sha256,fingerprint,previous_id,snapshot_hash) VALUES(?,?,?,?,?,?,?)', snapshot.id, g.installationId, g.namespace, snapshot.bundleSha256, snapshot.plan.fingerprint, snapshot.previous, sha256(canonicalJson(snapshot))),
+    sql('INSERT INTO ik_door_plans(id,installation_id,namespace,bundle_sha256,fingerprint,previous_id,snapshot_hash) VALUES(?,?,?,?,?,?,?)', snapshot.id, g.installationId, g.namespace, snapshot.bundleSha256, snapshot.plan.fingerprint, snapshot.previous, sha256(body)),
     sql('UPDATE ik_door_namespaces SET pending_id=? WHERE installation_id=? AND namespace=?', snapshot.id, g.installationId, g.namespace),
-  ]);
+  ];
   // Private staging remains visibly pending until every immutable chunk is stored.
   // Each statement inserts up to ~1.9 MB of 32,000-character rows, as the kit
   // packs its own plan chunks, so storing a snapshot costs one statement per
   // ~1.9 MB rather than per row; no domain effect occurs.
-  const body = canonicalJson(snapshot), rows: {ordinal: number; body: string}[] = [];
+  const rows: {ordinal: number; body: string}[] = [];
   for (let offset = 0; offset < body.length;) {
     let end = Math.min(offset + 32_000,body.length);
     if (end < body.length && /[\uD800-\uDBFF]/.test(body[end-1])) end--;
@@ -122,12 +127,35 @@ export async function saveSnapshot(request: DoorRequest, snapshot: DoorSnapshot,
     AND (SELECT count(*) FROM ik_door_plan_chunks WHERE plan_id=?)=?`,
     upload.id, g.installationId, g.namespace, snapshot.bundleSha256, retainedFrom ?? null, snapshot.previous, snapshot.previous, retainedFrom ?? null, retainedFrom ?? null, snapshot.id, written);
   const batch = (written: number, queries: D1Sql[]) => fenced(request, snapshot.id, held(written), () => transact(db, request.authority, [assertion(held(written)), ...queries]));
-  let written = 0;
-  for (const packed of packRows(rows)) {
-    await batch(written, [sql("INSERT INTO ik_door_plan_chunks(plan_id,ordinal,body) SELECT ?,json_extract(value,'$.ordinal'),json_extract(value,'$.body') FROM json_each(?)", snapshot.id, packed.json)]);
-    written += packed.count;
+  const packed = packRows(rows);
+  const insert = (part: typeof packed[number]) => sql("INSERT INTO ik_door_plan_chunks(plan_id,ordinal,body) SELECT ?,json_extract(value,'$.ordinal'),json_extract(value,'$.body') FROM json_each(?)", snapshot.id, part.json);
+  // The usual staged upload fits atomically, so a lost response can always
+  // retry from a full snapshot. Larger drafts keep the transport's bounded
+  // batches and the existing explicit cleanup for an interrupted write.
+  if (stepped && packed.reduce((size, part) => size + part.json.length, 0) <= 4_000_000) {
+    await transact(db, request.authority, [...open, assertion(held(0)), ...packed.map(insert), assertion(held(rows.length))]);
+    return;
   }
-  await batch(written, [sql('UPDATE ik_door_plans SET complete=1 WHERE id=?', snapshot.id)]);
+  await transact(db, request.authority, open);
+  let written = 0;
+  for (const part of packed) {
+    await batch(written, [insert(part)]);
+    written += part.count;
+  }
+  if (!stepped) await batch(written, [sql('UPDATE ik_door_plans SET complete=1 WHERE id=?', snapshot.id)]);
+}
+
+/** Promote only the fully verified private review under the current grant
+ * and the same lineage. Other requests cannot apply a draft. */
+export async function finishSnapshot(request: DoorRequest, row: DoorPlanRow, snapshot: DoorSnapshot, upload: {id: string}) {
+  const {access} = request;
+  await fenced(request,row.id,snapshotHeld(row.id),() => transact(request.options.database,request.authority,[
+    assertion(snapshotHeld(row.id)),
+    assertion(sql('EXISTS(SELECT 1 FROM ik_door_namespaces WHERE installation_id=? AND namespace=? AND head_id IS ? AND pending_id=?)',access.installationId,access.namespace,snapshot.previous,row.id)),
+    assertion(sql('EXISTS(SELECT 1 FROM ik_door_uploads u WHERE u.id=? AND u.installation_id=? AND u.namespace=? AND u.bundle_sha256=? AND (SELECT count(*) FROM ik_door_chunks c WHERE c.upload_id=u.id)=u.total_chunks)',upload.id,access.installationId,access.namespace,snapshot.bundleSha256)),
+    sql('UPDATE ik_door_plans SET complete=1 WHERE id=? AND snapshot_hash=?',row.id,row.snapshot_hash),
+    assertion(sql('EXISTS(SELECT 1 FROM ik_door_plans WHERE id=? AND snapshot_hash=? AND complete=1)',row.id,row.snapshot_hash)),
+  ]));
 }
 /** The owner-session mount has no opt-in, and refuses an outdated schema just as loudly. */
 export async function schemaCurrent(database: D1Database): Promise<boolean> {

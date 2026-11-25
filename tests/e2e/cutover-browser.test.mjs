@@ -419,6 +419,7 @@ test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 MOVE-009 — owner r
       const repeated = await moveIn.read(result.job.id); assert.equal(repeated.body.report.cutover.invitations.eligible, 0);
       const undone = await moveIn.undo(result.door); assert.equal(undone.status, 200, JSON.stringify(undone.body));
       assert.equal(undone.body.job.state, 'undone');
+      await moveIn.waitForPublication();
       for (const row of result.report.cutover.rows) assert.equal((await fetch(publicOrigin + row.path)).status, 404);
     }
     await context.close();

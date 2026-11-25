@@ -5,6 +5,7 @@ import { readDeployEnvFile } from "@runeditrun/rer/internal/modules/deploy-kit/e
 import { readArchive } from "./archive-validation.mjs";
 import { assertMailDns } from "./mail-dns.mjs";
 import { deploymentOwnership } from "./deployment-ownership.mjs";
+import { nativeWorkerCpuLimit } from "./deployment-cpu-limit.mjs";
 
 import { applyOwnerMigrations } from "./owner-migrations.mjs";
 import { assertMigrationsApplied, coreLedgerQuery, ledgerNames, observationLedgerSql, shippedMigrations } from "./setup-migrations.mjs";
@@ -61,6 +62,7 @@ async function main() {
   if (!["none", "rer"].includes(config.mailProvider)) await assertMailDns(config);
   const ownership = deploymentOwnership(config);
   const api = ownership.api;
+  const cpuLimitMs = await nativeWorkerCpuLimit(api);
   if (config.hosting === "workers-dev") {
     const registered = await api.request("/workers/subdomain");
     if (!registered?.subdomain || config.appHost !== `${names.worker}.${registered.subdomain}.workers.dev`) throw new Error("The configured workers.dev hostname does not match this Cloudflare account. Enable its Workers subdomain in Cloudflare, then update LAMP_APP_HOST and LAMP_PAGE_HOST.");
@@ -70,7 +72,7 @@ async function main() {
   await ensureBucket(ownership, names);
   await ensureQueue(ownership, names);
   const resources = { ...names, databaseId };
-  await writeGeneratedWrangler(resolve("wrangler.toml"), config, resources);
+  await writeGeneratedWrangler(resolve("wrangler.toml"), config, resources, { cpuLimitMs });
   await writeDeploymentRecord(deploymentRecordPath(config.environment), { environment: config.environment, accountId: process.env.CLOUDFLARE_ACCOUNT_ID?.trim(), pageHost: config.pageHost, appHost: config.appHost, resources, configuredAt: new Date().toISOString() });
   if (restoreFrom) {
     const imported = spawnSync(process.execPath, ["scripts/import.mjs", "--remote", "--environment", config.environment, "--from", resolve(restoreFrom)], { stdio: "inherit" });

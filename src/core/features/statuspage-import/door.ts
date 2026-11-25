@@ -18,6 +18,8 @@ import { importLimits } from './source';
 import { isImportSource } from './adapters';
 import { refusal } from './routes';
 import { reviewedPage } from './door-plan';
+import { withCredentialNames } from '../../../../modules/import-kit/src/provenance/credential-names';
+import { DOOR_BATCH_RECORDS } from '../../../../modules/import-kit/src/door/authority';
 
 /** The whole upload is one JSON value, so one record may be the whole bundle.
  * It carries each saved response as JSON text, so it may take twice the 8 MiB
@@ -82,10 +84,12 @@ async function readFirst(request: Request) {
 
 export function registerImportDoor(app: Hono<AppEnv>, bindings: AppBindings, service: StatuspageImportService, changed: ()=>Promise<unknown>, auth: () => OperatorAuth) {
   const repository = createImportDoorRepository(bindings.DB);
+  app.use('/api/rer/import/*', (_, next) => withCredentialNames(next));
+  app.use(`${operatorPrefix}*`, (_, next) => withCredentialNames(next));
   /** Plans an upload exactly as Move in plans a source, under the door's authority. */
-  const prepareBytes = async (bytes: Uint8Array, namespace: string, principalId: string, operatorId: string, authority: D1Sql, business: boolean, asOf?: string): Promise<Prepared> => {
+  const prepareBytes = async (bytes: Uint8Array, namespace: string, principalId: string, operatorId: string, authority: D1Sql, business: boolean, asOf?: string, legacyReview = false): Promise<Prepared> => {
     const valueHash = sha256(canonicalJson(JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes)) as Json));
-    return { ...await service.prepareDoor(bytes, namespace, principalId, operatorId, authority, business, asOf), valueHash };
+    return { ...await service.prepareDoor(bytes, namespace, principalId, operatorId, authority, business, asOf, legacyReview), valueHash };
   };
   const prepare = async (key: string, namespace: string, uploadId: unknown, principalId: string, operatorId: string, authority: D1Sql, business: boolean): Promise<Prepared> => {
     const bytes = typeof uploadId === 'string' ? await repository.uploadBytes(key, namespace, uploadId) : null;
@@ -97,13 +101,19 @@ export function registerImportDoor(app: Hono<AppEnv>, bindings: AppBindings, ser
   const settle = async (path: string, response: Response, actor: string, fence: D1Sql, after: (work: Promise<unknown>) => void): Promise<Response> => {
     if (!response.ok || !['apply', 'undo'].includes(path.slice(path.lastIndexOf('/') + 1))) return response;
     const body = await response.text();
-    const { job } = JSON.parse(body) as { job?: { id: string; state: string } };
+    const { job } = JSON.parse(body) as { job?: { id: string; state: string; total: number } };
     if (job) {
       if (path.endsWith('/undo')) await service.forgetUndoneInvites(job.id, fence);
       else await repository.recordApproval(job.id, actor, fence);
-      // Native writes already record durable snapshot work. A failed build stays
-      // pending for Cron; it cannot turn the committed import into a failed door.
-      after(Promise.resolve().then(changed).catch(cause => console.error('Lamp could not rebuild after an import; Cron retries it.', cause)));
+      if (job.state === 'completed' || job.state === 'undone' || job.state === 'rolled_back') {
+        // Native writes record durable snapshot work. Give a multi-batch move
+        // a separate invocation for its larger rebuild. One-batch moves keep
+        // the existing immediate background publication.
+        const publication = job.total > DOOR_BATCH_RECORDS
+          ? bindings.JOBS.send({ type: 'public-snapshot-rebuild' })
+          : Promise.resolve().then(changed);
+        after(publication.catch(cause => console.error('Lamp could not publish after an import; Cron retries it.', cause)));
+      }
     }
     return new Response(body, { status: response.status, headers: response.headers });
   };
@@ -118,6 +128,7 @@ export function registerImportDoor(app: Hono<AppEnv>, bindings: AppBindings, ser
     if (action === 'plan' && typeof input?.uploadId === 'string') {
       const bytes = await repository.uploadBytes(key, namespace, input.uploadId);
       const existing = bytes ? await repository.planOf(key, namespace, sha256(bytes)) : null;
+      if (existing && !existing.complete) return true;
       if (existing && !existing.started) { planId = existing.id; retained = true; }
     }
     const saved = planId ? await repository.planSnapshot(key, planId) : null;
@@ -227,17 +238,17 @@ export function registerImportDoor(app: Hono<AppEnv>, bindings: AppBindings, ser
      * review window, its bytes prepared again at its review instant against the
      * page as it is now. With `now`, the same bytes prepared at the current time,
      * the clock since must also have changed nothing they import. */
-    const stillPlans = async (reviewed: { asOf?: string; page?: string }, bytes: Uint8Array | null, now?: Prepared) => {
+    const stillPlans = async (reviewed: { asOf?: string; page?: string; pageState?: string }, bytes: Uint8Array | null, now?: Prepared) => {
       if (!bytes || !reviewed.asOf || !reviewed.page || expired(reviewed.asOf)) return false;
-      const again = await prepareBytes(bytes, name, principal, session.operator.id, authority, false, reviewed.asOf);
-      return again.page === reviewed.page && (!now || again.shape === now.shape);
+      const again = await prepareBytes(bytes, name, principal, session.operator.id, authority, false, reviewed.asOf, !reviewed.pageState);
+      return again.page === reviewed.page && (!now || again.shape() === now.shape());
     };
     let prepared: Promise<Prepared> | null = null;
     if (action === 'plan' && typeof input?.uploadId === 'string') {
       const bytes = await repository.uploadBytes(key, name, input.uploadId);
       const bundle = bytes ? sha256(bytes) : null;
       const existing = bundle ? await repository.planOf(key, name, bundle) : null;
-      if (bytes && bundle && !existing?.started) {
+      if (bytes && bundle && !existing?.started && existing?.complete !== false) {
         try {
           // Move in reports a source it imported before the door as already imported, as it always has.
           const before = await service.importedBefore(bytes, name, session);
@@ -259,11 +270,17 @@ export function registerImportDoor(app: Hono<AppEnv>, bindings: AppBindings, ser
     // of the page as it still is; otherwise the owner reviews a fresh one.
     const starts = action === 'apply' && typeof input?.planId === 'string' ? await repository.unstarted(key, name, input.planId) : null;
     if (starts) {
-      const reviewed = await reviewOf(starts.id);
+      const saved = await repository.planSnapshot(key, starts.id);
+      const reviewed = saved ? reviewedPage(saved.plan) : {};
       if(reviewed.overSubscriberLimit)return c.json({error:"This import is over the subscriber limit. Leave out subscribers or channels and run a fresh dry run."},409);
       if (reviewed.asOf && expired(reviewed.asOf)) return c.json({ error: EXPIRED }, 409);
       let current: boolean;
-      try { current = await stillPlans(reviewed, await repository.bundleBytes(key, name, starts.bundle_sha256)); }
+      try {
+        const bytes = await repository.bundleBytes(key, name, starts.bundle_sha256);
+        current = saved && reviewed.page && reviewed.pageState
+          ? !!bytes && await service.reviewDestination(saved.plan, reviewed.page, reviewed.pageState, principal, session.operator.id, authority)
+          : await stillPlans(reviewed, bytes);
+      }
       catch (cause) { return c.json({ error: refusal(cause) }, 409); }
       if (!current) return c.json({ error: CHANGED }, 409);
     }
@@ -281,7 +298,8 @@ export function registerImportDoor(app: Hono<AppEnv>, bindings: AppBindings, ser
     }
     const response = await settle(c.req.path, answered, session.operator.id, authority, work => c.executionCtx.waitUntil(work));
     if (action !== 'plan' || !response.ok) return response;
-    const plan = await response.json() as { planId: string };
+    const plan = await response.json() as { planId?: string };
+    if (!plan.planId) return c.json(plan, 200, { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' });
     const saved = await repository.planSnapshot(key, plan.planId);
     return c.json(saved ? { ...plan, ...await service.planReport(saved.plan, saved.jobId, session) } : plan, 200, { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' });
   });

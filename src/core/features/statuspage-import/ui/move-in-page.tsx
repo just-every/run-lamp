@@ -29,7 +29,7 @@ function ReportTable({ report }: { report: MoveInReport }) {
 function Reconciliation({ report }: { report: MoveInReport }) {
   const reconciliation = report.reconciliation;
   if (!reconciliation) return null;
-  return <div role="status" aria-label="Source rows to Lamp records"><p><strong>{reconciliation.statement}</strong></p><p>Shown as groups: {reconciliation.groupRows.map(row => row.name).join(", ")}.</p><p>{reconciliation.effects.statement}</p></div>;
+  return <div className="move-in-reconciliation" role="status" aria-label="Source rows to Lamp records"><p><strong>{reconciliation.statement}</strong></p><p>Shown as groups: {reconciliation.groupRows.map(row => row.name).join(", ")}.</p><p>{reconciliation.effects.statement}</p></div>;
 }
 
 function ReportItems({ report }: { report: MoveInReport }) {

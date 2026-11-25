@@ -11,10 +11,13 @@ import { sourcePublicAddresses, inspectSourcePublicAddresses, resolvePublicAddre
 import type { Session } from '@runeditrun/rer/modules/operator-auth';
 import { sessionAuthority } from '../../platform/auth/authority';
 import { isMailPreparationError } from '../../platform/mail/sender';
-import { canonicalJson, readD1ImportJob, readD1ImportUndoReport, resumeD1Import, undoD1Import, type D1ImportContext, type D1Sql, type ImportJob, type ImportPlan } from "../../../../modules/import-kit/src/d1/index.ts";
+import { canonicalJson, readD1ImportJob, readD1ImportUndoReport, resumeD1Import, sha256, undoD1Import, type D1ImportContext, type D1Sql, type ImportJob, type ImportPlan } from "../../../../modules/import-kit/src/d1/index.ts";
+import { canonicalHash } from "../../../../modules/import-kit/src/provenance/canonical-hash";
+import { draftD1Import } from "../../../../modules/import-kit/src/d1/jobs";
+import { sourceIdentity } from "../../../../modules/import-kit/src/provenance/identity";
 import { stored } from "../../../../modules/import-kit/src/d1/jobs.ts";
 import { nowIso } from "../../shared/ids";
-import { planMoveIn, reportFromPlan, type MoveInReport } from "./planning";
+import { draftMoveIn, reportFromPlan, type MoveInReport } from "./planning";
 import type { Accounting, Snapshot } from "./rows";
 import { ownedWithoutBaseline, type OwnedRecord } from "./ownership.repository";
 import { importSources, isImportSource, sourceAdapter, type SourceInput } from "./adapters";
@@ -28,6 +31,15 @@ import { readImportVerification } from './verification.repository';
 const DESTINATION = "lamp";
 const INVITES_PER_REQUEST = 50;
 const SOURCES = `(${importSources.map((name) => `'${name}'`).join(",")})`;
+
+/** Store the mapping's native inputs in a stable order. An unchanged source
+ * at the same review instant can then recheck its destination without remapping. */
+function pageState(snapshot: Snapshot, operatorId: string) {
+  const map = <T>(rows: Map<string, T>) => [...rows].sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0);
+  const { allocated, destinations, references, orders, templateNames, ...native } = snapshot;
+  return sha256(canonicalJson({ ...native, operatorId, allocated: [...allocated].sort(),
+    destinations: map(destinations), references: map(references), orders: map(orders), templateNames: map(templateNames ?? new Map()) }));
+}
 
 export type MoveInActor = Session;
 /** A door import's plan, for Move in's resume and undo through the door. */
@@ -65,7 +77,7 @@ function doorPreparationContext(db: D1Database, principalId: string, namespace: 
 }
 
 /** Up to three records as the dry run names them, so the owner can find them. */
-function recordNames(plan: ImportPlan, records: OwnedRecord[]) {
+function recordNames(plan: Pick<ImportPlan, 'entries'>, records: OwnedRecord[]) {
   const named = new Map(plan.entries.map(entry => [`${entry.source.kind}:${entry.source.sourceId}`,
     (entry.source.payload as { accounting?: Accounting[] }).accounting?.find(item => item.kind === entry.source.kind)?.name]));
   const names = [...new Set(records.map(({ kind, sourceId }) => {
@@ -135,7 +147,7 @@ export function createStatuspageImportService(db: D1Database, hooks: MoveInHooks
   }
 
   /** Equal operators share native data, but each source record lands once. */
-  async function sourceClear(plan: ImportPlan, business = false) {
+  async function sourceClear(plan: Pick<ImportPlan, 'namespace' | 'entries' | 'fingerprint' | 'principalId'>, business = false) {
     // Door jobs use a bundle-specific kit namespace, so owner uploads are
     // compared with the source's explicit identities. A later upload of an
     // imported source is that import's catch-up (docs/moving-in.md): the door
@@ -258,26 +270,45 @@ export function createStatuspageImportService(db: D1Database, hooks: MoveInHooks
     /** One door upload, planned as Move in has always planned a source, for the
      * door's own plan: the records it reads and the mapping it applies. Read-only;
      * the door admitted the session or grant first. */
-    async prepareDoor(bytes: Uint8Array, namespace: string, principalId: string, operatorId: string, authority: D1Sql, business: boolean, asOf = nowIso()) {
+    async prepareDoor(bytes: Uint8Array, namespace: string, principalId: string, operatorId: string, authority: D1Sql, business: boolean, asOf = nowIso(), legacyReview = false) {
       const {input,read} = await readDoorExport(bytes);
       if (namespace!==input.source) throw new Error('The grant namespace must match the source.');
       const context = doorPreparationContext(db, principalId, input.source, authority);
       // Imported records name the operator who imported them as their author.
-      const plan = await planMoveIn(read,await snapshot(context),context,operatorId,asOf);
+      const native = await snapshot(context);
+      const reviewed = pageState(native, operatorId);
+      const draft = draftMoveIn(read,native,operatorId,asOf);
+      // Only reviews saved before the destination digest used the internal
+      // planner's fingerprint. New reviews admit the final door plan once.
+      const plan = legacyReview ? await draftD1Import(draft.source,draft.mapping,context)
+        : { ...draft, principalId, fingerprint: canonicalHash(draft.entries) };
       await sourceClear(plan, business);
       await assertAuthority(context);
-      return doorMapping(plan, business);
+      return doorMapping(plan, business, reviewed);
+    },
+    async reviewDestination(plan: ImportPlan, fingerprint: string, expected: string, principalId: string, operatorId: string, authority: D1Sql) {
+      const view = moveInPlan(plan);
+      const context = doorPreparationContext(db, principalId, view.namespace, authority);
+      if (pageState(await snapshot(context), operatorId) !== expected) return false;
+      const entries = view.entries.map(entry => ({
+        ...entry, identity: sourceIdentity(DESTINATION, view.namespace, entry.source.kind, entry.source.sourceId),
+      }));
+      await sourceClear({ ...view, entries, fingerprint });
+      await assertAuthority(context);
+      return true;
     },
     /** A source Move in imported before the door, by its saved responses (an
      * import the operator made and did not undo): Move in reports it as already
      * imported and changes nothing, as it always has. Door imports carry their own
      * kit namespace, so only those earlier imports match. */
     async importedBefore(bytes: Uint8Array, namespace: string, actor: MoveInActor) {
+      const context = importContext(db, actor, namespace);
+      await assertAuthority(context);
+      const rows = (await db.prepare("SELECT id FROM ik_jobs WHERE principal_id=? AND destination=? AND namespace=? AND state NOT IN ('undone','rolled_back') ORDER BY rowid DESC").bind(actor.operator.id, DESTINATION, namespace).all<{ id: string }>()).results;
+      if (!rows.length) return null;
       const {input,read} = await readDoorExport(bytes);
       if (namespace!==input.source) return null;
-      const context = importContext(db, actor, input.source), identity = artifactIdentity(read);
-      await assertAuthority(context);
-      const rows = (await db.prepare("SELECT id FROM ik_jobs WHERE principal_id=? AND destination=? AND namespace=? AND state NOT IN ('undone','rolled_back') ORDER BY rowid DESC").bind(actor.operator.id, DESTINATION, input.source).all<{ id: string }>()).results;
+      const identity = artifactIdentity(read);
       for (const row of rows) {
         const { plan } = await stored(row.id, context);
         if (artifactIdentity(plan) !== identity) continue;

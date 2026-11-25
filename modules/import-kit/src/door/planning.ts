@@ -2,14 +2,14 @@ import { readRawSource } from './raw.ts';
 import { randomUUID } from 'node:crypto';
 import { canonicalJson, sha256 } from '../provenance/identity.ts';
 import { readFileSource } from '../readers/file.ts';
-import { planD1Import } from '../d1/jobs.ts';
+import { admitD1Import, draftD1Import, planD1Import } from '../d1/jobs.ts';
 import { erasedSourcePredicates } from '../d1/erasure-claims.ts';
 import type { ImportPlan, MappingResult, SourceBundle } from '../types.ts';
 import type { DoorPlanRow, DoorRecord, DoorRequest, DoorSnapshot } from './types.ts';
 import { kitContext } from './authority.ts';
 import { importedTargets, recordKey } from './inventory.ts';
 import { DoorError } from './protocol.ts';
-import { assertion, lineage, loadSnapshot, planRow, saveSnapshot, sql, statement, transact } from './store.ts';
+import { assertion, finishSnapshot, lineage, loadSnapshot, planRow, saveSnapshot, sql, statement, transact } from './store.ts';
 import { bundleBytes, text, uploadRow, type UploadRow } from './uploads.ts';
 import { sourceRefusal } from './refusals.ts';
 import { intakeState } from './intake-policy.ts';
@@ -22,7 +22,9 @@ export function preview(snapshot: DoorSnapshot, created: boolean) {
     diagnostics:plan.diagnostics,differences};
 }
 export async function plan(request: DoorRequest, input: Record<string, unknown>) {
-  if (Object.keys(input).some(k=>!['uploadId','catchup'].includes(k)) || (input.catchup !== undefined && typeof input.catchup !== 'boolean')) throw new DoorError('invalid_plan_input',400);
+  if (Object.keys(input).some(k=>!['uploadId','catchup','stepped'].includes(k))
+    || (input.catchup !== undefined && typeof input.catchup !== 'boolean')
+    || (input.stepped !== undefined && input.stepped !== true)) throw new DoorError('invalid_plan_input',400);
   const upload = await uploadRow(request,text(input.uploadId,'upload_id'));
   try { return await planUpload(request,input,upload); }
   catch (error) {
@@ -61,14 +63,20 @@ async function planUpload(request: DoorRequest, input: Record<string, unknown>, 
     AND p.id NOT IN (SELECT id FROM applied)`)
     .bind(catchup?1:0,request.access.installationId,request.access.namespace,request.access.installationId,request.access.namespace,upload.bundle_sha256).first<DoorPlanRow>();
   if (existing) {
-    if (!existing.complete) throw new DoorError('plan_staging_interrupted_cancel_and_replan',409,{planId:existing.id});
+    if (!existing.complete && input.stepped !== true) throw new DoorError('plan_staging_interrupted_cancel_and_replan',409,{planId:existing.id});
     const snapshot = await loadSnapshot(request,existing);
     if (canonicalJson(snapshot.plan.source.intake ?? null) !== canonicalJson(intakeState(upload.intake_json)?.custody ?? null)) throw new DoorError('plan_intake_changed_use_new_namespace',409);
     if (snapshot.sourceCount > request.access.maxRecords) throw new DoorError('plan_exceeds_grant_quota');
     if (snapshot.plan.mappingVersion !== request.options.mapping.version) throw new DoorError('snapshot_mapping_changed_use_new_namespace',409);
     if (request.access.catchup === 'bounded' && (!snapshot.standingApproval || snapshot.standingApproval.id !== request.access.approvalRecordId || snapshot.standingApproval.at !== request.access.approvedAt)) throw new DoorError('standing_approval_mismatch');
+    if (!existing.complete) {
+      if (catchup !== !!snapshot.previous || !!snapshot.standingApproval !== (request.access.catchup === 'bounded')) throw new DoorError('plan_continuation_mismatch',409);
+      admitD1Import(snapshot.plan, kitContext(request,snapshot));
+      await refuseErased(request,upload,snapshot.plan);
+      await finishSnapshot(request,existing,snapshot,upload);
+    }
     await dropCredentialBytes(request,snapshot,upload);
-    return preview(snapshot,false);
+    return preview(snapshot,!existing.complete);
   }
   if (current.pending_id) throw new DoorError('namespace_has_pending_import',409);
   // An erasure withdrew the live import's snapshot, so nothing can be compared
@@ -117,7 +125,12 @@ async function planUpload(request: DoorRequest, input: Record<string, unknown>, 
     }
     return result;
   }};
-  snapshot.plan = await planD1Import(source,mapping,kitContext(request,{...snapshot,plan:{mappingVersion:options.mapping.version} as ImportPlan}));
+  const context = kitContext(request,{...snapshot,plan:{mappingVersion:options.mapping.version} as ImportPlan});
+  // Small exports and existing clients can complete the review in one request.
+  // Stepped clients keep the draft private while creation admission runs in
+  // its own request. A credential-cleared replan already uses retained custody.
+  const stepped = input.stepped === true && source.records.length > 100 && !retainedFrom;
+  snapshot.plan = await (stepped ? draftD1Import : planD1Import)(source,mapping,context);
   const seen = new Set<string>();
   for (const entry of snapshot.plan.entries) {
     const key = recordKey(entry.source), old = prior.get(key); seen.add(key);
@@ -137,7 +150,8 @@ async function planUpload(request: DoorRequest, input: Record<string, unknown>, 
   if (request.access.catchup === 'bounded') assertBounded(snapshot,previous!);
   await refuseErased(request,upload,snapshot.plan);
   if (retired) await retire(request,retired,snapshot.plan);
-  await saveSnapshot(request,snapshot,upload,retainedFrom);
+  await saveSnapshot(request,snapshot,upload,retainedFrom,stepped);
+  if (stepped) return { state:'preparing' as const };
   await dropCredentialBytes(request,snapshot,upload);
   return preview(snapshot,true);
 }
@@ -219,7 +233,7 @@ const forget = (request: DoorRequest, upload: UploadRow) => transact(request.opt
  * record is refused and goes. Answers whether the reader removed credential values. */
 async function screen(request: DoorRequest, upload: UploadRow): Promise<boolean> {
   const id = randomUUID(), {kitNamespace,source} = await readUpload(request,upload,id), mapping = request.options.mapping;
-  await refuseErased(request,upload,await planD1Import(source,mapping,kitContext(request,{id,kitNamespace,plan:{mappingVersion:mapping.version} as ImportPlan})));
+  await refuseErased(request,upload,await draftD1Import(source,mapping,kitContext(request,{id,kitNamespace,plan:{mappingVersion:mapping.version} as ImportPlan})));
   return withheldCredentials(source);
 }
 export function assertBounded(snapshot: DoorSnapshot, previous: DoorSnapshot): void {

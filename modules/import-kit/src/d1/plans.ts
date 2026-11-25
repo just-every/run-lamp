@@ -10,7 +10,7 @@ import type { ImportPlan } from '../types.ts';
 import type { D1Database, D1Sql, D1PlanCodec } from './types.ts';
 import { canonicalJson, sha256 } from '../provenance/identity.ts';
 import { guard, sql } from './database.ts';
-import { canonicalChunks, canonicalHash } from '../provenance/canonical-stream.ts';
+import { canonicalChunks, canonicalHash, canonicalSize } from '../provenance/canonical-stream.ts';
 import { jsonChunks, PACKED_JSON_BYTES, SNAPSHOT_BYTES } from './sets.ts';
 import { entryLocator } from './entry-locator.ts';
 
@@ -23,10 +23,9 @@ export interface StoredPlan {
    * chunk of a large plan was. */
   fence?: number;
 }
-/** A stored plan larger than this is fenced by its custody revision instead of
- * resending every chunk in each guard, and is created through bounded staging. */
+/** A stored plan larger than this is created through bounded staging. */
 export const LARGE_PLAN_BYTES = 4 * 1024 * 1024;
-const large = (envelope: any): boolean => envelope?.d1Plan === 1 && Number.isSafeInteger(envelope.size) && envelope.size > LARGE_PLAN_BYTES;
+const chunked = (envelope: any): boolean => envelope?.d1Plan === 1;
 const snapshots = new WeakMap<ImportPlan, StoredPlan>();
 // Reserve room for JSON row metadata and D1's whole-result two-byte strings.
 // Measure the actual JSON-encoded row ceiling before choosing a page size:
@@ -35,16 +34,29 @@ const planReadRows = (bytes: number): number => Math.max(1, Math.min(64, Math.fl
 const quotedChunkBytes = (chunks: readonly { body: string }[]): number => chunks.reduce((max, chunk) => Math.max(max, Buffer.byteLength(JSON.stringify(chunk))), 0);
 export function planChunkReads(body: string, fenced: boolean, chunks: readonly { body: string }[]): number {
   const envelope = JSON.parse(body);
-  // A fenced large plan's revision read precedes its chunk reads.
-  return envelope?.d1Plan === 1 ? 1 + Math.ceil((envelope.chunks + 1) / planReadRows(quotedChunkBytes(chunks))) + Number(fenced && large(envelope)) : 0;
+  // A fenced plan's revision read precedes its chunk reads.
+  return chunked(envelope) ? 1 + Math.ceil((envelope.chunks + 1) / planReadRows(quotedChunkBytes(chunks))) + Number(fenced) : 0;
 }
 export function encodePlan(plan: ImportPlan, id: string): StoredPlan {
   const chunks: StoredPlan['chunks'] = [], hash = createHash('sha256'); let size = 0;
-  for (const body of canonicalChunks(plan, SNAPSHOT_BYTES)) { chunks.push({ job_id: id, ordinal: chunks.length, body }); size += Buffer.byteLength(body); hash.update(body); }
+  // Typical door plans are small enough for one native UTF-8 encoding.
+  // Larger plans still use bounded serialization to avoid large allocations.
+  const bodies = canonicalSize(plan) <= 8 * 1024 * 1024 ? splitPlanText(canonicalJson(plan)) : canonicalChunks(plan, SNAPSHOT_BYTES);
+  for (const body of bodies) { chunks.push({ job_id: id, ordinal: chunks.length, body }); size += Buffer.byteLength(body); hash.update(body); }
   if (chunks.length === 1) return { body: chunks[0].body, chunks: [] };
   const entries = entryLocator(plan, chunks), byte = ([chunk, offset]: number[]) => Buffer.from(chunks[chunk].body)[offset];
   if (entries.starts.some(start => byte(start) !== 0x7b) || byte(entries.end) !== 0x5d) throw new Error('IMPORT_PLAN_LOCATOR');
   return { body: canonicalJson({ d1Plan: 1, chunks: chunks.length, entries, size, sha256: hash.digest('hex') }), chunks };
+}
+
+function* splitPlanText(text: string): Generator<string> {
+  const bytes = Buffer.from(text);
+  for (let offset = 0; offset < bytes.length;) {
+    let end = Math.min(offset + SNAPSHOT_BYTES, bytes.length);
+    while (end < bytes.length && (bytes[end] & 0xc0) === 0x80) end--;
+    yield bytes.toString('utf8', offset, end);
+    offset = end;
+  }
 }
 /** The adapter's codec retains a normalized plan. A plan holding original bytes
  * (an available artifact or an attachment) stays canonical, as erasure re-retains
@@ -57,7 +69,7 @@ export function retainPlan(plan: ImportPlan, id: string, codec?: D1PlanCodec): {
   const rows = encoded.chunks.map(({ ordinal, body }) => ({ ordinal, body }));
   return { encoded, body: encoded.body, statements: jsonChunks(rows, PACKED_JSON_BYTES).map(body => changedLazy(retainedSql(["INSERT INTO ik_d1_plan_chunks(job_id,ordinal,body) SELECT owner.job_id,json_extract(value,'$.ordinal'),json_extract(value,'$.body') FROM json_each(",") CROSS JOIN (SELECT "," AS job_id) owner"],[body,id],[0]),()=>JSON.parse(body).map((row:any)=>putRow('ik_d1_plan_chunks',{job_id:id,...row})))) };
 }
-/** `fenced`: capture a large plan's custody revisions before reading its chunks,
+/** `fenced`: capture a chunked plan's custody revision before reading its chunks,
  * so its guards fence those revisions instead of resending the plan. Only for
  * guards evaluated before the transaction's own writes (unbounded transport). */
 export async function loadPlans(rows: any[], db: D1Database, codec?: D1PlanCodec, fence?:D1Sql, fenced = false): Promise<Map<string, ImportPlan>> {
@@ -70,7 +82,7 @@ export async function loadPlans(rows: any[], db: D1Database, codec?: D1PlanCodec
     for (const row of marked) {
       const envelope = JSON.parse(row.plan_json);
       if (!Number.isSafeInteger(envelope.chunks) || envelope.chunks < 1) throw new Error('STORED_PLAN_CHANGED');
-      if (fenced && large(envelope)) {
+      if (fenced) {
         // Any later change to these chunks or the job's custody advances a revision.
         const revision = await db.prepare('SELECT revision FROM ik_d1_custody_revisions WHERE job_id=?').bind(row.id).first();
         if (revision && Number.isSafeInteger(revision.revision)) fences.set(row.id, revision.revision);

@@ -143,8 +143,21 @@ export function moveInDoor(send) {
   const sourceOf = reviewed => reviewed.source ?? reviewed.namespace ?? 'statuspage';
   return {
     door, read,
+    async waitForPublication() {
+      const path = '/api/app/statuspage-import/publication';
+      let revision;
+      const deadline = Date.now() + 30_000;
+      do {
+        const response = await send(revision === undefined ? path : `${path}?revision=${revision}`);
+        assert.equal(response.status, 200);
+        revision = response.body.revision;
+        if (response.body.published) return;
+        await new Promise(resolve => setTimeout(resolve, 50));
+      } while (Date.now() < deadline);
+      assert.fail(`public page did not reach import revision ${revision}`);
+    },
     /** The dry run: the door's plan with Move in's report, and the fetched responses. */
-    async preview({ source = 'statuspage', files, pageId = '', apiKey, publicUrl, publicAccessAcknowledged = false, components }) {
+    async preview({ onPreparing, source = 'statuspage', files, pageId = '', apiKey, publicUrl, publicAccessAcknowledged = false, components }) {
       let fetched;
       if (!files?.length) {
         const response = await send('/api/app/statuspage-import/fetch', { source, publicAccessAcknowledged, pageId, ...(source === 'sorry' && publicUrl ? { publicUrl } : {}), apiKey });
@@ -165,8 +178,17 @@ export function moveInDoor(send) {
           if (uploaded.status !== 200) return uploaded;
           uploadId = uploaded.body.uploadId;
         }
-        let planned = await door(source, 'plan', { uploadId });
-        if (planned.status === 409 && planned.body.error === 'catchup_required') planned = await door(source, 'plan', { uploadId, catchup: true });
+        const request = { uploadId, stepped: true, catchup: false };
+        let planned;
+        for (let round = 0; round < 1000; round++) {
+          planned = await door(source, 'plan', request);
+          if (planned.status === 409 && planned.body.error === 'catchup_required' && !request.catchup) {
+            request.catchup = true;
+            continue;
+          }
+          if (planned.status !== 200 || planned.body.state !== 'preparing') break;
+          await onPreparing?.(planned.body);
+        }
         // A source imported and undone is uploaded afresh, as the server asks.
         if (planned.status === 409 && planned.body.error === 'import_undone_upload_again') { attempt = planned.body.details.attempt; continue; }
         return planned.status === 200 ? { status: 200, body: { ...planned.body, source, ...(fetched ? { files: fetched } : {}) } } : planned;

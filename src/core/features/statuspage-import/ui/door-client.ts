@@ -19,11 +19,17 @@ type DoorJob = { id: string; state: string };
 export function moveInDoor(source: string) {
   const call = <T>(action: string, body: unknown) => appApi<T>(`/api/operator/import/${action}`, { method: "POST", headers: { "X-Import-Source": source }, body: JSON.stringify(body) });
   async function planned<T>(uploadId: string) {
-    try { return await call<T>("plan", { uploadId }); }
-    catch (cause) {
-      if (cause instanceof ApiError && cause.message === "catchup_required") return call<T>("plan", { uploadId, catchup: true });
-      throw cause;
+    const request = { uploadId, stepped: true, catchup: false };
+    for (let round = 0; round < MAX_ROUNDS; round++) {
+      try {
+        const result = await call<T & { state?: string }>("plan", request);
+        if (result.state !== "preparing") return result;
+      } catch (cause) {
+        if (!(cause instanceof ApiError) || cause.message !== "catchup_required" || request.catchup) throw cause;
+        request.catchup = true;
+      }
     }
+    throw new Error("The dry run is still preparing. Run it again to continue.");
   }
   async function until(action: "apply" | "undo", body: unknown, working: string[]) {
     let job: DoorJob | undefined;
