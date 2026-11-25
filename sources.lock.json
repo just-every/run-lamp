@@ -4263,6 +4263,10 @@
       "sha256": "0e425b0597335ab08306840f64fedb9c2412399bee3b976c898b6c094c0020a4",
       "executable": false
     },
+    "scripts/verification/test-budget.mjs": {
+      "sha256": "c6a8eccc0b8f3a8f33635395f1271d3c23841c001e6c38353c3520ba481987a5",
+      "executable": false
+    },
     "scripts/verify-visual-edit.mjs": {
       "sha256": "68765caeaa2ade86e754b0064da1c8dfe9c4a077e97a887882ea6e6351f088cc",
       "executable": false
@@ -8265,6 +8269,10 @@
     },
     "src/site/run.ts": {
       "sha256": "0d9371aa76d4a744ec8ea4aa324330ecd3faca16ca111b3f81525821c456bac4",
+      "executable": false
+    },
+    "test-budget.json": {
+      "sha256": "a7f84e6b785dd7d9249cea69665ab3d78347c8f660a7fadb325856d0b1d9519a",
       "executable": false
     },
     "TESTING.md": {
