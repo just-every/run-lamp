@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.11.41
+
+- **`/health` is cheap enough for an uptime monitor.** It checks that D1 answers (one `select 1`, reused for 30 seconds within an isolate) and that the R2 and Queue bindings are present, and returns 503 naming the failed dependency. It no longer writes an R2 object or puts a Queue message on a refresh, so a cold or long-idle Worker answers within a 2-second monitor limit. `/health/deep` on the app host runs the full check: D1, an R2 write, read and delete, and a Queue message, reusing a passing answer for 30 seconds. The heartbeat runs the deep check live. The dependency-health D1 row is no longer written or read.
+- **An unavailable vendor source no longer shows a stale all-clear.** After three failed reads, the public page shows when the vendor's status became unavailable and names a last reported state only when it was a disruption. The public vendor API returns `state: null` while the source is unavailable and its last observation was Operational. Operators keep the last observation. For a custom Statuspage v2 source, enter the public URL ending in `/api/v2/summary.json`.
+- **Published reports confirm on the reader view.** After you publish an incident report, Lamp queues the page build in a separate Worker invocation, and the editor confirms publication once every selected page serves a generation that includes the report. The editor stops checking after five minutes or a reported build failure and offers a page-build retry, which uses the saved report and its original publication and does not repeat subscriber notifications.
+- **Queued Move in jobs resume.** A reviewed import that was queued before the door recorded its job ID can be applied again with the same reviewed fingerprint.
+- **Local readiness matches local mail.** A local installation with suppressed mail omits the email form and its readiness check. The page address is still checked, and hosted mail still requires the form.
+
+### Upgrading from 1.11.40
+
+Back up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.41`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release adds no migrations. Point uptime monitors at `/health`; use `/health/deep` on the app host when you need the storage and queue round trip.
+
 ## 1.11.40
 
 - **Lamp sets a Worker CPU limit on Workers Paid.** `rer deploy` sends `limits.cpu_ms = 30000` on Workers Paid. On Workers Free it omits the setting, and Cloudflare retains its 10 ms CPU limit per HTTP request. The deploy credential must be able to read the account’s Workers settings. In workers.dev mode, the Paid limit applies to the app Worker and the separate public page Worker. Verification of the Sorry import changes is local. Whether they resolve Cloudflare Error 1102 on the hosted import remains unverified.

@@ -1,54 +1,35 @@
 {
-  "version": "1.11.40",
-  "previousVersion": "1.11.38",
+  "version": "1.11.41",
+  "previousVersion": "1.11.40",
   "date": "2026-11-25",
-  "publicReleaseNotes": "- **Lamp sets a Worker CPU limit on Workers Paid.** `rer deploy` sends `limits.cpu_ms = 30000` on Workers Paid. On Workers Free it omits the setting, and Cloudflare retains its 10 ms CPU limit per HTTP request. The deploy credential must be able to read the account’s Workers settings. In workers.dev mode, the Paid limit applies to the app Worker and the separate public page Worker. Verification of the Sorry import changes is local. Whether they resolve Cloudflare Error 1102 on the hosted import remains unverified.\n- **Move in resumes large imports.** Lamp keeps a private review draft and prepares it across bounded requests. Apply requires the reviewed fingerprint, resumes the same job from its last committed row position, and queues publication of the public page and feed after the final batch. If an older review was interrupted while saving its draft, Lamp returns its plan ID so you can cancel it and replan. Lamp records its local Base import-kit adaptations in `base-copies.json`. In local testing with the 1,113-record Sorry export, peak sampled CPU on the Business door fell from 2.09 s to 0.77 s.\n- **Scheduled work no longer rereads history.** Lamp's minute Cron read rows in proportion to everything it had ever stored: about 1,100 rows a run after thirty days and over 7,000 with a month of provider callbacks, on a database whose Workers Free allowance every tool on the account shares. Each scheduled query now reads only work that is still due through a matching index: unfinished alert rule work, chat and social posts not yet queued for delivery, and provider callbacks not yet applied. In a local D1 test, a scheduled run read under 100 rows at both one and thirty days of history.\n- **Other senders' provider callbacks leave the minute sweep.** On a shared mail provider account, a callback no Lamp send claims within fifteen minutes is set aside instead of being reread every minute. If its send is recorded later, Lamp still applies it. A callback for a Lamp send looks up its delivery directly instead of reading every delivery ever recorded.\n- **Sending a notification reads only its own delivery's records.** Claiming each email or webhook delivery read every delivery attempt Lamp had ever recorded, so publishing one update cost more with every past send: about 210,000 rows for 30 subscribers after thirty days. Each claim, the update's retry schedule and the subscriber's notification links now seek their own rows, and ending an incident follow suppresses only that follower's queued notifications. In the same local test, publishing now reads about 12,000 rows, mostly for the public page rebuild.\n- **Public metric charts read one stored series per metric.** A pushed or pulled minute point no longer rebuilds the whole public page, which read every incident and every minute of every metric on each push. A metric's first data, a reset to no data and a source going stale or resuming still republish at once; later points appear at the next five-minute refresh.\n- **Communication performance reads on view and on Refresh.** The Settings → Reports card read every delivery in the month every 15 seconds while visible. It now reads when it comes into view and when you choose **Refresh performance**, and its month query seeks only that month's incidents and deliveries. An incident's reach panel still refreshes every 15 seconds.\n- **Health reads the migration ledger once an hour.** `/health` keeps its schema observation for an hour per Worker instead of five minutes. A release applies its migrations before its Worker starts, so new instances observe them at once; `ageMs` reports the observation's age.\n- **Release verification upgrades from the declared previous release.** The upgrade journey helper uses the Move in plan request supported by that release.\n- **Known mobile issue.** A long imported component group heading (`.component-group h3`) can overflow the public status page at 390 px. This predates the release and remains a follow-up.\n\n### Upgrading from 1.11.38\n\nBack up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.40`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. Apply `0091_bounded_scheduled_reads.sql` before starting the updated Worker. It adds indexes for due work and delivery lookups, markers for queued posts and unmatched provider callbacks, and a table with one public series row per metric. The migration writes zero data rows. After the upgrade or an archive restore, the minute sweep marks posts whose deliveries were already queued and sets aside old unmatched provider callbacks. The metrics repository builds missing series rows from stored minute points as scheduled work or metric writes run.",
-  "contractChanges": {},
+  "publicReleaseNotes": "- **`/health` is cheap enough for an uptime monitor.** It checks that D1 answers (one `select 1`, reused for 30 seconds within an isolate) and that the R2 and Queue bindings are present, and returns 503 naming the failed dependency. It no longer writes an R2 object or puts a Queue message on a refresh, so a cold or long-idle Worker answers within a 2-second monitor limit. `/health/deep` on the app host runs the full check: D1, an R2 write, read and delete, and a Queue message, reusing a passing answer for 30 seconds. The heartbeat runs the deep check live. The dependency-health D1 row is no longer written or read.\n- **An unavailable vendor source no longer shows a stale all-clear.** After three failed reads, the public page shows when the vendor's status became unavailable and names a last reported state only when it was a disruption. The public vendor API returns `state: null` while the source is unavailable and its last observation was Operational. Operators keep the last observation. For a custom Statuspage v2 source, enter the public URL ending in `/api/v2/summary.json`.\n- **Published reports confirm on the reader view.** After you publish an incident report, Lamp queues the page build in a separate Worker invocation, and the editor confirms publication once every selected page serves a generation that includes the report. The editor stops checking after five minutes or a reported build failure and offers a page-build retry, which uses the saved report and its original publication and does not repeat subscriber notifications.\n- **Queued Move in jobs resume.** A reviewed import that was queued before the door recorded its job ID can be applied again with the same reviewed fingerprint.\n- **Local readiness matches local mail.** A local installation with suppressed mail omits the email form and its readiness check. The page address is still checked, and hosted mail still requires the form.\n\n### Upgrading from 1.11.40\n\nBack up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.41`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release adds no migrations. Point uptime monitors at `/health`; use `/health/deep` on the app host when you need the storage and queue round trip.",
+  "contractChanges": {
+    "PAGE-006": {
+      "change": "changed",
+      "summary": "/health reports 503 when the database is unreachable, and /health/deep when storage or the queue is; the public page does not depend on either.",
+      "was": "/health reported 503 when the database, the queue or object storage was unreachable.",
+      "now": "/health reports 503 when the database is unreachable or a binding is missing; /health/deep on the app host reports 503 when object storage or the queue is unreachable."
+    },
+    "DEP-001": {
+      "change": "changed",
+      "summary": "An unavailable vendor source shows when it became unavailable and never reports a stale Operational publicly.",
+      "was": "Three consecutive failed reads showed the first unavailable time and preserved the last observation on the public page and API.",
+      "now": "Three consecutive failed reads show when the source became unavailable. Operators keep the last observation; the public page shows a last reported disruption with the notice, and the public vendor API returns `state: null` when the last observation was Operational."
+    }
+  },
   "proseChanges": [
     {
-      "document": "docs/alerts-from-monitoring-tools.md",
-      "section": "Public performance charts",
-      "change": "changed",
-      "date": "2026-11-25",
-      "summary": "Later metric points appear at the page's next five-minute refresh.",
-      "was": "Each pushed or pulled metric point republished the public page.",
-      "now": "A metric's first data, a reset to no data and a source going stale or resuming republish the page at once. Later points appear at the page's next five-minute refresh."
-    },
-    {
-      "document": "docs/subscribers-and-notifications.md",
-      "section": "Review communication performance",
-      "change": "changed",
-      "date": "2026-11-25",
-      "summary": "The communication performance card reads on view and on Refresh.",
-      "was": "The card refreshed its month every 15 seconds while visible.",
-      "now": "The card reads its month when it comes into view and when you choose Refresh performance."
-    },
-    {
-      "document": "docs/moving-in.md",
-      "section": "Business import door (opt-in)",
-      "change": "changed",
-      "date": "2026-11-25",
-      "summary": "Business clients can prepare and apply large imports across bounded requests.",
-      "was": "The plan request saved the review in one request.",
-      "now": "Send stepped planning for a large export and repeat while it is preparing. Repeat Apply with the reviewed fingerprint while the job is queued or applying. Use a fresh action grant for each request."
-    },
-    {
       "document": "OPERATIONS.md",
-      "section": "Owner inputs",
+      "section": "Dependency failure",
       "change": "changed",
       "date": "2026-11-25",
-      "summary": "The deploy credential must be able to read the account’s Workers settings.",
-      "was": "Native deploy used Cloudflare’s default Worker CPU limit.",
-      "now": "Native deploy reads the account’s Workers settings. It sets the Worker CPU limit on Workers Paid and omits the setting on Workers Free."
+      "summary": "/health is a cheap check; /health/deep runs the storage and queue round trip.",
+      "was": "/health checked D1, R2 and Queue reachability, recording a good result and refreshing it in the background.",
+      "now": "/health checks that D1 answers and the R2 and Queue bindings are present, writing nothing. /health/deep on the app host runs the R2 write, read and delete and a Queue message; the heartbeat runs it live."
     }
   ],
   "extensionPointChanges": [],
-  "migrations": [
-    {
-      "id": "0091_bounded_scheduled_reads.sql",
-      "buyerSteps": "Apply `0091_bounded_scheduled_reads.sql` before starting the updated Worker. It adds indexes for due work and delivery lookups, markers for queued posts and unmatched provider callbacks, and a table with one public series row per metric. The migration writes zero data rows. After the upgrade or an archive restore, the minute sweep marks posts whose deliveries were already queued and sets aside old unmatched provider callbacks. The metrics repository builds missing series rows from stored minute points as scheduled work or metric writes run."
-    }
-  ],
+  "migrations": [],
   "breaking": false,
-  "agentUpdateInstructions": "Back up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.40`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. Apply `0091_bounded_scheduled_reads.sql` before starting the updated Worker. It adds indexes for due work and delivery lookups, markers for queued posts and unmatched provider callbacks, and a table with one public series row per metric. The migration writes zero data rows. After the upgrade or an archive restore, the minute sweep marks posts whose deliveries were already queued and sets aside old unmatched provider callbacks. The metrics repository builds missing series rows from stored minute points as scheduled work or metric writes run.\n\nThe deploy credential must be able to read the account’s Workers settings. On the Business import door, send `stepped: true` to plan a large export and repeat while the response is `preparing`. Repeat Apply with the reviewed fingerprint while the job is `queued` or `applying`. Use a fresh action grant for each request.\n\nAfter the update, a scheduled run reads a flat number of D1 rows as history grows. Run `node --test tests/e2e/scheduled-read-budget.test.mjs` to measure the reads on a local database with thirty days of history. Check that later metric points appear at the next five-minute refresh."
+  "agentUpdateInstructions": "Back up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.41`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release adds no migrations. Point uptime monitors at `/health`; use `/health/deep` on the app host when you need the storage and queue round trip. After deploying, check that `/health` answers 200 within 2 seconds and that `/health/deep` on the app host answers 200."
 }
