@@ -3015,6 +3015,14 @@
       "sha256": "a06c696308acfd9ca75cb6f04548c2eb6dcdfdbb8829680d0b6d09f87121d3e0",
       "executable": false
     },
+    "release-history/1.11.43.CONTRACT.md": {
+      "sha256": "d9845b1b5118098a31863172b8ba5063503503261b58746df12a515bbc9d4c36",
+      "executable": false
+    },
+    "release-history/1.11.43.json": {
+      "sha256": "f8b5cd97a724e11f4f2b8aa1fe3274d2b53fb63a32bced306785d70fb96828df",
+      "executable": false
+    },
     "release-history/1.11.5.CONTRACT.md": {
       "sha256": "2a72e905c96ba05640e2b01ac04d573651f0cfe4f597d42e4895ef32de961a35",
       "executable": false
