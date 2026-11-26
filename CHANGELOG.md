@@ -3,10 +3,11 @@
 ## 1.11.43
 
 - **Stored public pages rebuild faster.** Lamp batches database reads, shares imported history across snapshot inputs and reuses prepared reliability history during timed refreshes. Cron publishes the page independently of traffic analysis. Failed builds log the step and error so operators can tell where they stopped.
+- **The owner can sign in by email while every other email stays off.** Set the new deploy input `MAIL_RECIPIENTS=owner` with a mail provider (`MAIL_PROVIDER`, `MAIL_FROM_ADDRESS`, `MAIL_DKIM_SELECTOR`, `MAIL_PROVIDER_API_KEY`). Lamp then behaves exactly as with email off: no invitations, subscriber or operator email, and Settings reports email as off. The provider sends one message only: the sign-in link the installation owner asks for on the staff sign-in page. The owner is the active Owner account created by the setup claim, at its current address. Any other address, known or not, gets the same answer on the page and no mail. The link is single use and expires after 20 minutes. The sign-in page says the email links go to the owner only. The default, `any`, keeps ordinary email, and the deploy refuses `MAIL_RECIPIENTS=owner` with `MAIL_PROVIDER=none`. See [Or send only the owner's sign-in link](docs/deploy.md#or-send-only-the-owners-sign-in-link).
 
 ### Upgrading from 1.11.42
 
-Back up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.43`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release adds no migrations.
+Back up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.43`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release adds no migrations. Existing installations keep ordinary email behaviour unless you add `MAIL_RECIPIENTS=owner` to the input file.
 
 ## 1.11.42
 
