@@ -8,23 +8,26 @@ export function createTrafficAlerts(storage: TrafficStorage, unresolved: () => P
       // Leave one minute for in-flight waitUntil increments before evaluating.
       const minute = Math.floor(at / MINUTE) - 2;
       const { multiple } = await storage.settings();
-      for (const surface of TRAFFIC_SURFACES) {
+      async function evaluate(surface: (typeof TRAFFIC_SURFACES)[number]) {
         const stored = await storage.state(surface);
         const state = stored.value;
+        let queued = false;
         const deliver = async (signal: NonNullable<typeof state>['pending']) => {
-          if (signal && !await unresolved()) await alert({ eventId: `traffic:${surface}:${signal.minute}`, title: 'Public-page traffic spike', text: `${trafficSurfaceNames[surface]}: ${signal.count} requests in one minute, against a trailing seven-day same-hour baseline of ${signal.baseline?.toFixed(2)} per minute. Customers may be seeing a problem before monitoring does.` });
+          if (!signal || await unresolved()) return;
+          await alert({ eventId: `traffic:${surface}:${signal.minute}`, title: 'Public-page traffic spike', text: `${trafficSurfaceNames[surface]}: ${signal.count} requests in one minute, against a trailing seven-day same-hour baseline of ${signal.baseline?.toFixed(2)} per minute. Customers may be seeing a problem before monitoring does.` });
+          queued = true;
         };
-        // Native outbox event uniqueness makes a failed acknowledgement or
-        // repeated Cron safe. Acknowledge while advancing the next minute, so
-        // normal Cron does at most one state PUT per surface per minute.
+        // Native outbox uniqueness makes acknowledgement retry safe.
         await deliver(state?.pending ?? null);
-        if (state && state.minute >= minute) continue;
+        if (state && state.minute >= minute) return queued;
+        const signalFor = storage.signals(surface);
         let next = state ? state.minute + 1 : minute;
         let active = state?.active ?? false;
         let pending: NonNullable<typeof state>['pending'] = null;
         let evaluated = next;
         for (let count = 0; next <= minute && count < 32; next++, count++) {
-          const signal = await storage.signal(surface, next);
+          const signal = await signalFor(next, false);
+          if (!state && !signal.count) return queued;
           const elevated = signal.baseline !== null && signal.count > signal.baseline * multiple;
           pending = elevated && !active && !await unresolved() ? signal : null;
           active = elevated;
@@ -32,7 +35,16 @@ export function createTrafficAlerts(storage: TrafficStorage, unresolved: () => P
           if (pending) break;
         }
         if (await storage.saveState(surface, { minute: evaluated, active, pending }, stored.etag)) await deliver(pending);
+        return queued;
       }
+      // The independent surfaces can share storage latency. Keep the number
+      // of concurrent surface walks bounded even after a missed tick.
+      let queued = false;
+      for (let offset = 0; offset < TRAFFIC_SURFACES.length; offset += 3) {
+        const results = await Promise.all(TRAFFIC_SURFACES.slice(offset, offset + 3).map(evaluate));
+        queued ||= results.some(Boolean);
+      }
+      return queued;
     },
     async recovery(check: RecoveryCheck): Promise<RecoveryCheck> {
       const minute = Math.floor(Date.parse(check.checkedAt) / MINUTE) - 2;
