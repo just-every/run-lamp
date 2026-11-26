@@ -5,6 +5,7 @@ import type { Context, Hono } from "hono";
 import { createTrafficStorage } from "../traffic-alerts/storage";
 import type { TrafficSurface } from "../traffic-alerts/surfaces";
 import type { AppEnv } from "../../app/types";
+import { installedSignIn } from "./installed-signin";
 import { escapeHtml, escapeXml } from "./format";
 import { applyPublicIsolationHeaders } from "./headers";
 import type { PublicSnapshotService } from "./service";
@@ -20,12 +21,18 @@ import { preparePublicSubscribeDocument, wantsNativeSubscribeForm } from "../sub
 // Bytes remain cacheable using the generation validator below. Outage retention
 // is explicit in the DO/edge cache, where responses can be labelled stale.
 const CACHE_CONTROL = "public, max-age=0, stale-if-error=3600";
+function installedSignInUrl(context: Context<AppEnv>) {
+  const target = new URL("/signin", context.req.url);
+  target.hostname = context.env.LAMP_APP_HOST.trim().toLowerCase();
+  return target.href;
+}
+
 const MAINTENANCE_OVERRUN_MS = 15 * 60_000;
 function isMaintenanceOverrunning(state: string | null | undefined, endsAt: string | null | undefined, now: number) {
   const end = endsAt ? Date.parse(endsAt) : Number.NaN;
   return state === "In progress" && Number.isFinite(end) && end + MAINTENANCE_OVERRUN_MS <= now;
 }
-function applyPublicHeaders(headers: Headers, origin: string, cacheable = true) {
+export function applyPublicHeaders(headers: Headers, origin: string, cacheable = true) {
   if (cacheable) headers.set("Cache-Control", CACHE_CONTROL);
   applyPublicIsolationHeaders(headers, origin);
   // Public snapshot bytes contain no credentials or private data. Owner-browser
@@ -45,18 +52,28 @@ function unavailable(requestUrl: string) {
   return publicResponse("The last known public status snapshot is unavailable. No current state is being inferred.", "text/plain; charset=utf-8", requestUrl, 503);
 }
 
-async function cacheResponse(cache: Cache | null, request: Request, response: Response) {
-  if (!cache) return;
+export async function cacheResponse(cache: Cache | null, request: Request, response: Response) {
+  if (!cache) return false;
   try {
+    const validator = response.headers.get("ETag");
+    if (validator) {
+      const retained = await cache.match(request);
+      if (retained) {
+        await retained.body?.cancel();
+        if (retained.headers.get("ETag") === validator) return true;
+      }
+    }
     const headers = new Headers(response.headers);
     // Cache API does not honour stale-if-error. Retain the immutable artifact
     // independently for the promised outage window while keeping the public
     // response's generation-revalidation policy unchanged.
     headers.set("Cache-Control", "public, max-age=3600");
     await cache.put(request, new Response(response.clone().body, { status: response.status, statusText: response.statusText, headers }));
+    return true;
   } catch {
     // The cache is an optional stale source. Its write availability must not
     // change the result of a successful immutable R2 snapshot read.
+    return false;
   }
 }
 
@@ -103,58 +120,6 @@ async function labelledStaleResponse(cached: Response, artifact: string) {
   return new Response(cached.body, { status: cached.status, headers });
 }
 
-// Resolve installation routing when serving immutable HTML so local URLs keep
-// their scheme/port and changing the configured app host needs no DB read.
-function installedSignInUrl(context: Context<AppEnv>) {
-  const target = new URL("/signin", context.req.url);
-  // Match the host dispatcher's normalization of installation bindings.
-  target.hostname = context.env.LAMP_APP_HOST.trim().toLowerCase();
-  return target.href;
-}
-
-function installedSignIn(response: Response, context: Context<AppEnv>) {
-  if (!response.headers.get("Content-Type")?.includes("text/html")) return response;
-  const target = installedSignInUrl(context);
-  const operatorLink = `<a data-lamp-signin href="${escapeHtml(target)}">Sign in</a>`;
-  let signInSeen = false;
-  return new HTMLRewriter()
-    .on("body", {
-      element(element) {
-        element.onEndTag((endTag) => {
-          if (signInSeen) return;
-          endTag.before(`<footer>${operatorLink}</footer>`, { html: true });
-          signInSeen = true;
-        });
-      },
-    })
-    .on("nav.status-utilities a", {
-      element(element) {
-        if (element.hasAttribute("data-lamp-signin") || element.getAttribute("href") === "/signin" || element.getAttribute("href") === target) element.remove();
-      },
-    })
-    .on("footer", {
-      element(element) {
-        // Archived generations predate the footer link. Reuse a marked link
-        // when present, or add the operator entry after the customer resources.
-        element.onEndTag((endTag) => {
-          if (signInSeen) return;
-          endTag.before(` ${operatorLink}`, { html: true });
-          signInSeen = true;
-        });
-      },
-    })
-    .on("footer a[data-lamp-vpat]", {
-      element(element) { element.setAttribute("href", new URL("/docs/accessibility/vpat", target).href); },
-    })
-    .on("footer a[data-lamp-signin]", {
-      element(element) {
-        if (signInSeen) return void element.remove();
-        element.setAttribute("href", target);
-        signInSeen = true;
-      },
-    }).transform(response);
-}
-
 function maintenanceOverrunState(html: string, now: number) {
   return [...html.matchAll(/<p class="maintenance-window"([^>]*)>/g)].map(([, attributes]) => {
     const state = attributes.match(/\bdata-maintenance-state="([^"]*)"/)?.[1];
@@ -177,19 +142,11 @@ function currentMaintenanceOverruns(response: Response, now: number) {
     }).transform(response);
 }
 
-export function registerPublicSnapshotRoutes(app: Hono<AppEnv>, service: PublicSnapshotService, protectedPage?: { path: string; prefix: string; accentColor: string }) {
+export function snapshotArtifactRoute(
+  service: Pick<PublicSnapshotService, "readArtifact" | "prelaunch" | "hasCurrentSnapshot">,
+  protectedPage?: { path: string; prefix: string; accentColor: string },
+) {
   // While the page is pre-launch every answer from the page host asks search engines to stay away.
-  const serve = (artifact: (context: Context<AppEnv>) => string, download = false, missingArtifact?: string) => {
-    return async (context: Context<AppEnv>) => {
-      if (protectedPage) return answerProtectedArtifact(service, artifact(context), context.req.url, protectedPage, missingArtifact);
-      // The artifact read already carries the generation's pre-launch flag, so a served page reads the pointer once;
-      // only an answer that never reached a stored artifact asks the service again.
-      const seen: { prelaunch?: boolean } = {};
-      const response = await answerArtifact(artifact, download, missingArtifact, seen)(context);
-      if (seen.prelaunch ?? await service.prelaunch()) response.headers.set("X-Robots-Tag", PRELAUNCH_ROBOTS_TAG);
-      return preparePublicSubscribeDocument(response, context.req.raw, context.env);
-    };
-  };
   const answerArtifact = (artifact: (context: Context<AppEnv>) => string, download: boolean, missingArtifact: string | undefined, seen: { prelaunch?: boolean }) => async (context: Context<AppEnv>): Promise<Response> => {
     // Only the fixed surface crosses this boundary: never the request, path,
     // query, cookie, address or user agent. Counting cannot delay public bytes.
@@ -219,15 +176,18 @@ export function registerPublicSnapshotRoutes(app: Hono<AppEnv>, service: PublicS
         // HTML also varies with its serving-time action and full installed URL.
         // Version that transformation so an old validator cannot retain a
         // header sign-in link after an upgrade of the same stored artifact.
-        const html = object.contentType.includes("text/html") ? new TextDecoder().decode(object.bytes) : "";
-        const overrunState = object.contentType.includes("text/html") ? maintenanceOverrunState(html, servedAt) : "";
-        const representation = object.contentType.includes("text/html")
-          ? `installed-signin-footer-v3:${installedSignInUrl(context)}${overrunState.includes("1") ? `:maintenance-overrun-v1:${overrunState}` : ""}`
+        const isHtml = object.contentType.includes("text/html");
+        const signIn = isHtml ? installedSignInUrl(context) : "";
+        const prepared = object.home?.signIn === signIn;
+        const overrunState = isHtml && (!prepared || object.home?.maintenance)
+          ? maintenanceOverrunState(new TextDecoder().decode(object.bytes), servedAt) : "";
+        const representation = isHtml
+          ? `installed-signin-footer-v3:${signIn}${overrunState.includes("1") ? `:maintenance-overrun-v1:${overrunState}` : ""}`
           : context.env?.LAMP_APP_HOST ?? "";
         const etag = `W/"${encodeURIComponent(object.version)}/${encodeURIComponent(artifact(context))}/${encodeURIComponent(representation)}"`;
         response.headers.set("ETag", etag);
-        response = installedSignIn(response, context);
-        response = currentMaintenanceOverruns(response, servedAt);
+        if (isHtml && !prepared) response = installedSignIn(response, signIn);
+        if (overrunState) response = currentMaintenanceOverruns(response, servedAt);
         if (object.retainedReady) response.headers.set("X-Lamp-Snapshot-Retained", "true");
         await cacheResponse(cache, cacheRequest, response);
         if (object.stale) return labelledStaleResponse(response, artifact(context));
@@ -235,6 +195,7 @@ export function registerPublicSnapshotRoutes(app: Hono<AppEnv>, service: PublicS
         // deliver the stale-labelled body even if the visitor has these bytes.
         const validators = context.req.header("If-None-Match")?.split(",").map((value) => value.trim().replace(/^W\//, ""));
         if (response.status === 200 && !wantsNativeSubscribeForm(context.req.raw) && validators?.some((value) => value === "*" || value === etag.replace(/^W\//, ""))) {
+          await response.body?.cancel();
           return new Response(null, { status: 304, headers: response.headers });
         }
         return response;
@@ -243,7 +204,7 @@ export function registerPublicSnapshotRoutes(app: Hono<AppEnv>, service: PublicS
         const notFound = await service.readArtifact(missingArtifact);
         if (notFound) {
           seen.prelaunch = notFound.prelaunch;
-          const response = installedSignIn(publicResponse(notFound.bytes, notFound.contentType, context.req.url, 404), context);
+          const response = installedSignIn(publicResponse(notFound.bytes, notFound.contentType, context.req.url, 404), installedSignInUrl(context));
           response.headers.set("X-Lamp-Snapshot-Generated-At", notFound.generatedAt);
           if (notFound.retainedReady) response.headers.set("X-Lamp-Snapshot-Retained", "true");
           return notFound.stale ? labelledStaleResponse(response, missingArtifact) : response;
@@ -257,11 +218,27 @@ export function registerPublicSnapshotRoutes(app: Hono<AppEnv>, service: PublicS
     } catch {
       const cached = await cache?.match(cacheRequest).catch(() => undefined);
       if (cached) {
-        return labelledStaleResponse(currentMaintenanceOverruns(installedSignIn(cached, context), Date.now()), artifact(context));
+        return labelledStaleResponse(currentMaintenanceOverruns(installedSignIn(cached, installedSignInUrl(context)), Date.now()), artifact(context));
       }
       return unavailable(context.req.url);
     }
   };
+
+  return (artifact: (context: Context<AppEnv>) => string, download = false, missingArtifact?: string) => {
+    return async (context: Context<AppEnv>) => {
+      if (protectedPage) return answerProtectedArtifact(service, artifact(context), context.req.url, protectedPage, missingArtifact);
+      // The artifact read already carries the generation's pre-launch flag, so a served page reads the pointer once;
+      // only an answer that never reached a stored artifact asks the service again.
+      const seen: { prelaunch?: boolean } = {};
+      const response = await answerArtifact(artifact, download, missingArtifact, seen)(context);
+      if (seen.prelaunch ?? await service.prelaunch()) response.headers.set("X-Robots-Tag", PRELAUNCH_ROBOTS_TAG);
+      return preparePublicSubscribeDocument(response, context.req.raw, context.env);
+    };
+  };
+}
+
+export function registerPublicSnapshotRoutes(app: Hono<AppEnv>, service: PublicSnapshotService, protectedPage?: { path: string; prefix: string; accentColor: string }) {
+  const serve = snapshotArtifactRoute(service, protectedPage);
 
   // Today's answer for this path is the Worker's plain 404; only a pre-launch page has a robots.txt.
   app.get("/robots.txt", async context => {
@@ -325,7 +302,7 @@ export function protectedSnapshotHeaders(headers = new Headers()) {
   return headers;
 }
 
-async function answerProtectedArtifact(service: PublicSnapshotService, key: string, requestUrl: string, { prefix, accentColor }: { prefix: string; accentColor: string }, missing?: string) {
+async function answerProtectedArtifact(service: Pick<PublicSnapshotService, "readArtifact">, key: string, requestUrl: string, { prefix, accentColor }: { prefix: string; accentColor: string }, missing?: string) {
   const headers = protectedSnapshotHeaders();
   applyPublicIsolationHeaders(headers, new URL(requestUrl).origin);
   try {

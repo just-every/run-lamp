@@ -88,7 +88,7 @@ export function createAppServices(bindings: AppBindings, blobs: BlobStore, execu
     webhook: Boolean(webhookSecrets?.length) && bindings.EFFECTS_PAUSED !== "1",
     slack: Boolean(bindings.SLACK_CLIENT_ID && bindings.SLACK_CLIENT_SECRET && bindings.SLACK_SIGNING_SECRET && bindings.WEBHOOK_SIGNING_SECRET && bindings.SUBSCRIBER_TOKEN_SECRET) && !outboundUnavailable(bindings, "Slack subscriptions"),
     teams: Boolean(bindings.WEBHOOK_SIGNING_SECRET && bindings.SUBSCRIBER_TOKEN_SECRET) && !outboundUnavailable(bindings, "Teams subscriptions"),
-  }), blobs, extensions.publicSnapshotPolicies, extensions.publicSnapshotEvents, extensions.slots, createRetainedSnapshotCache(bindings), runningReleaseIdentity(bindings));
+  }), blobs, extensions.publicSnapshotPolicies, extensions.publicSnapshotEvents, extensions.slots, createRetainedSnapshotCache(bindings), runningReleaseIdentity(bindings), false, authOrigin(bindings));
   const statusPages = createStatusPageRepository(bindings.DB);
   const scopedSnapshots = createScopedSnapshots(bindings, blobs, statusPages, extensions.publicSnapshotPolicies);
   const requestPublication = createRequestPublication(primarySnapshot, bindings.JOBS);
