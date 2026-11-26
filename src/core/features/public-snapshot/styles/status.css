@@ -1,18 +1,25 @@
-/* The overall state: the first thing on the page, one white plate, tinted only when something is wrong. */
-.status-banner { margin: 0; }
-#status-live { min-width: 0; border: 1px solid var(--line); border-radius: 20px; background: var(--card); box-shadow: var(--shadow-card); padding: 32px 36px; }
-.status-summary { display: flex; align-items: center; gap: 20px; }
-.status-summary h1 { margin: 0; font-size: 34px; line-height: 1.12; letter-spacing: -.022em; }
+/* The overall state: the first thing on the page, one white plate overlapping the brand band, tinted only when
+   something is wrong. Its update time and time details close the plate under a hairline. */
+.status-banner { position: relative; z-index: 1; overflow: hidden; margin: 0; border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); box-shadow: var(--shadow-card); padding: 34px 40px 20px; }
+.masthead + .status-banner { margin-top: calc(-1 * var(--band-overlap)); }
+#status-live { position: relative; min-width: 0; margin-bottom: 16px; border-bottom: 1px solid var(--line); padding-bottom: 26px; }
+.status-wave { position: absolute; top: 34px; right: -2px; width: 250px; height: 62px; pointer-events: none; }
+.status-wave path { fill: none; stroke: var(--status-wave, var(--ok-wash)); stroke-width: 9; stroke-linecap: round; }
+.status-summary { position: relative; display: flex; align-items: center; gap: 28px; }
+.status-summary h1 { margin: 0; font-size: 42px; font-weight: 700; line-height: 1.1; letter-spacing: -.025em; }
 .status-summary .eyebrow { margin-bottom: 6px; }
-.overall-status-icon { display: grid; width: 56px; height: 56px; flex: none; place-items: center; border-radius: 50%; background: #e2f1e8; color: var(--ok); }
-.overall-status-icon svg { width: 30px; height: 30px; stroke-width: 2.25; }
-.status-live-update { margin: 24px 0 0; border-top: 1px solid var(--line); padding-top: 18px; color: var(--ink); font-size: 15px; overflow-wrap: anywhere; }
-.status-generated { margin: 6px 0 0; color: var(--ink-3); font-size: 13px; }
+.overall-status-icon { display: grid; width: 80px; height: 80px; flex: none; place-items: center; border-radius: 50%; background: var(--ok-wash); color: var(--ok); }
+.overall-status-icon svg { width: 38px; height: 38px; stroke-width: 2.25; }
+.status-live-update { position: relative; margin: 12px 0 0 108px; color: var(--ink); font-size: 15px; overflow-wrap: anywhere; }
+.status-generated { position: relative; display: inline-block; margin: 0; color: var(--ink-3); font-size: 14px; line-height: 24px; vertical-align: top; }
+.status-banner [data-generation-details] { position: relative; display: inline-block; margin-left: 14px; border-left: 1px solid var(--line-strong); padding-left: 14px; vertical-align: top; }
+.status-banner .time-details { font-size: 14px; }
 
-.status-banner.partially-unavailable #status-live, .status-banner.degraded-performance #status-live { border-color: rgb(201 138 18 / .32); background: #fffaee; }
+.status-banner.operational { --status-wave: var(--ok-wash); }
+.status-banner.partially-unavailable, .status-banner.degraded-performance { --status-wave: #fbedc9; border-color: rgb(201 138 18 / .32); background: #fffaee; }
 .status-banner.partially-unavailable .overall-status-icon, .status-banner.degraded-performance .overall-status-icon { background: #fbedc9; color: var(--amber-ink); }
-.status-banner.major-outage #status-live { border-color: rgb(180 68 50 / .26); background: #fdf3f1; }
+.status-banner.major-outage { --status-wave: #f6dfd9; border-color: rgb(180 68 50 / .26); background: #fdf3f1; }
 .status-banner.major-outage .overall-status-icon { background: #f6dfd9; color: var(--down); }
-.status-banner.under-maintenance #status-live { border-color: rgb(79 111 168 / .26); background: #f3f6fb; }
+.status-banner.under-maintenance { --status-wave: #e1e8f4; border-color: rgb(79 111 168 / .26); background: #f3f6fb; }
 .status-banner.under-maintenance .overall-status-icon { background: #e1e8f4; color: var(--maint); }
 .status-banner.under-maintenance .overall-status-icon svg { stroke-width: 1.9; }

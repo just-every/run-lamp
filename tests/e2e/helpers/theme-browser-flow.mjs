@@ -44,7 +44,7 @@ export async function statusCardContrastBrowserFlow({ appUrl, pageUrl, browser, 
     try {
       const page = await context.newPage();
       assert.equal((await page.goto(pageUrl)).status(), 200);
-      const card = page.locator(".status-banner.operational #status-live");
+      const card = page.locator(".status-banner.operational");
       const update = card.locator(".status-live-update");
       await expect(update).toBeVisible();
       await expect(update).toHaveText(/\S/);

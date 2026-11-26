@@ -29,7 +29,7 @@ const REQUEST_BUILD_MS = 10_000;
 const SNAPSHOT_REFRESH_MS = 5 * 60_000;
 const PUBLICATION_SURFACES = ["page.html", "feed.atom", "feed.rss", "widget.js", "embed/script.js"];
 const LOGO_CONTENT_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
-export const PUBLIC_SNAPSHOT_RENDERER_VERSION = "lamp-public-snapshot-v30";
+export const PUBLIC_SNAPSHOT_RENDERER_VERSION = "lamp-public-snapshot-v31";
 
 interface SnapshotPointer {
   version: string;

@@ -8,7 +8,7 @@ import { createHash, createHmac } from "node:crypto";
 import { mkdtemp, rm } from "node:fs/promises";
 import { createServer as createHttpServer } from "node:http";
 import { resolve } from "node:path";
-import { after, before } from "node:test";
+import { after, before, test } from "node:test";
 import { AxeBuilder } from "@axe-core/playwright";
 import { chromium } from "playwright";
 
@@ -395,3 +395,56 @@ async function scriptFreeSubscriptionJourney() {
     }
   }
 }
+
+// The header band takes the business's brand colour; its text ink is chosen from that colour, so a dark and a pale
+// brand both leave every header word readable on the painted band and on the wave laid over it.
+test("PAGE-012 — the public header reads at AA on a dark and a pale brand colour", async () => {
+  const relative = (channel) => { const unit = channel / 255; return unit <= 0.04045 ? unit / 12.92 : ((unit + 0.055) / 1.055) ** 2.4; };
+  const luminance = ([red, green, blue]) => 0.2126 * relative(red) + 0.7152 * relative(green) + 0.0722 * relative(blue);
+  const ratio = (left, right) => { const [light, dark] = [luminance(left), luminance(right)].sort((a, b) => b - a); return (light + 0.05) / (dark + 0.05); };
+  const rgb = (value) => value.match(/[\d.]+/g).slice(0, 3).map(Number);
+  const current = await currentSettings();
+  const decoder = await context.newPage();
+  try {
+    for (const accentColor of ["#1B2340", "#F3E9B5"]) {
+      const saved = await appFetch("/api/app/page-settings", { method: "PUT", body: JSON.stringify({ pageName: current.pageName, tagline: "Service updates for customers", accentColor, timezone: current.timezone, hostname: current.hostname, footerCreditEnabled: current.footerCreditEnabled, mailFromAddress: current.mailFromAddress }) });
+      assert.equal(saved.status, 200);
+      for (let attempt = 0; attempt < 80 && !(await (await fetch(`${pageUrl}/assets/status-page.css`)).text()).includes(`--accent:${accentColor}`); attempt += 1) await new Promise((resolve) => setTimeout(resolve, 100));
+      for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
+        const page = await browser.newPage({ viewport });
+        try {
+          assert.equal((await page.goto(`${pageUrl}/`, { waitUntil: "networkidle" }))?.status(), 200);
+          // The band as painted: a pixel at the page's top-left corner, outside the wave.
+          const shot = (await page.screenshot({ clip: { x: 2, y: 2, width: 1, height: 1 } })).toString("base64");
+          const band = await decoder.evaluate(async (png) => {
+            const image = new Image();
+            image.src = `data:image/png;base64,${png}`;
+            await image.decode();
+            const canvas = document.createElement("canvas");
+            canvas.width = canvas.height = 1;
+            const drawing = canvas.getContext("2d");
+            drawing.drawImage(image, 0, 0);
+            return [...drawing.getImageData(0, 0, 1, 1).data.slice(0, 3)];
+          }, shot);
+          const brand = [1, 3, 5].map((offset) => Number.parseInt(accentColor.slice(offset, offset + 2), 16));
+          assert.ok(band.every((channel, index) => Math.abs(channel - brand[index]) <= 2), `the band paints ${accentColor} at ${viewport.width}px, not rgb(${band})`);
+          const wave = rgb(await page.locator(".masthead-wave path").first().evaluate((path) => getComputedStyle(path).fill));
+          const header = await page.locator(".masthead .brand span, .masthead .tagline, .masthead .status-utilities a").evaluateAll((elements) => elements.map((element) => {
+            const style = getComputedStyle(element);
+            return { text: element.textContent.trim(), color: style.color, background: style.backgroundColor };
+          }));
+          assert.equal(header.length, 5, "page name, tagline and the three header links are on the band");
+          for (const item of header) {
+            const surfaces = item.background === "rgba(0, 0, 0, 0)" ? [band, wave] : [rgb(item.background)];
+            const worst = Math.min(...surfaces.map((surface) => ratio(rgb(item.color), surface)));
+            assert.ok(worst >= 4.5, `"${item.text}" reads at ${worst.toFixed(2)}:1 on ${accentColor} at ${viewport.width}px`);
+          }
+        } finally {
+          await page.close();
+        }
+      }
+    }
+  } finally {
+    await decoder.close();
+  }
+});

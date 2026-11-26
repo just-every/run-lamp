@@ -1,35 +1,36 @@
-/* The business's public status page in Lamp's own quiet style: warm paper lit softly from above, green-black ink,
-   white plates with hairlines, quiet pills with a coloured state dot, Inter. The business keeps its name, logo and
-   accent; the accent marks the one action a visitor takes (subscribing) and nothing else. State colours stay
-   semantic. */
+/* The business's public status page in Lamp's own quiet style: the business's brand colour fills a band across the
+   top with a soft wave, the current state sits on a white plate overlapping it, and the rest of the page is white
+   with cool ink, hairlines and quiet pills. The header's ink is chosen from the brand colour by contrast. State
+   colours stay semantic and apart from the brand. Inter. */
 :root {
-  --paper: #f8f6f0;
-  --glow-peach: 251 222 196;
-  --glow-sun: 253 234 196;
-  --ink: #182d24;
-  --ink-2: #44544c;
-  --ink-3: #5f6d66;
-  --on-ink: #fbfaf5;
+  --paper: #ffffff;
+  --ink: #142b3a;
+  --ink-2: #4a6072;
+  --ink-3: #5a6e7e;
+  --on-ink: #ffffff;
   --card: #ffffff;
-  --card-tint: #fbfaf7;
-  --stage: #eef0ea;
-  --chip: #f5f4ef;
-  --line: rgb(24 45 36 / .10);
-  --line-strong: rgb(24 45 36 / .16);
+  --card-tint: #f6f8fa;
+  --stage: #eef2f5;
+  --chip: #f1f5f8;
+  --line: rgb(20 43 58 / .09);
+  --line-strong: rgb(20 43 58 / .15);
   --amber: #eab54e;
-  --amber-wash: #fff7e2;
+  --amber-wash: #fff4d6;
   --amber-ink: #8a5a06;
   --ok: #19865a;
+  --ok-wash: #e2f1e8;
   --down: #b44432;
+  --down-wash: #fbe9e5;
   --degraded: #c98a12;
   --maint: #4f6fa8;
-  --quiet: #8a958f;
-  --no-data: #e4e2da;
+  --maint-wash: #e6ecf6;
+  --quiet: #8a98a3;
+  --no-data: #e3e8ec;
   --ok-mark: #34a070;
-  --accent: __LAMP_ACCENT_COLOR__;
-  --accent-ink: __LAMP_ACCENT_INK__;
-  --shadow-card: 0 1px 2px rgb(24 45 36 / .04), 0 8px 24px -16px rgb(24 45 36 / .16);
+  __LAMP_BRAND_TOKENS__;
+  --shadow-card: 0 1px 2px rgb(20 43 58 / .04), 0 12px 34px -14px rgb(20 43 58 / .14);
   --radius: 16px;
+  --band-overlap: 76px;
   --public-font: "Inter", "Inter Fallback", Arial, system-ui, sans-serif;
   color: var(--ink);
   background: var(--paper);
@@ -40,53 +41,60 @@ html { background: var(--paper); }
 body {
   min-width: 320px;
   margin: 0;
+  overflow-x: clip;
+  background: var(--paper);
   color: var(--ink);
   font: 400 15px/1.55 var(--public-font);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  /* Morning light on the paper: a peach glow from the top right, a softer sun-warmth from the left, both fading
-     out well before the record below. */
-  background:
-    radial-gradient(70% 560px at 92% -120px, rgb(var(--glow-peach) / .62), rgb(var(--glow-peach) / 0) 72%),
-    radial-gradient(55% 520px at 0% 40px, rgb(var(--glow-sun) / .5), rgb(var(--glow-sun) / 0) 70%),
-    radial-gradient(60% 700px at 100% 1100px, rgb(var(--glow-peach) / .22), rgb(var(--glow-peach) / 0) 70%),
-    var(--paper);
-  background-repeat: no-repeat;
 }
 h1, h2, h3, h4 { color: var(--ink); font-weight: 600; }
 strong { font-weight: 600; }
 a { color: inherit; text-underline-offset: 3px; text-decoration-thickness: 1px; }
 :focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; border-radius: 4px; }
-.page { width: min(100%, 1008px); min-height: 100vh; margin: 0 auto; padding: 0 24px 40px; }
+.page { width: min(100%, 1248px); min-height: 100vh; margin: 0 auto; padding: 0 24px 40px; }
 
-/* Masthead: the business, then the page's own few links. */
-.masthead { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 16px 32px; padding: 36px 0 32px; }
+/* Masthead: the business, then the page's own few links, on a full-width band of its brand colour. The band and
+   its wave sit behind the masthead's own box; the first plate below overlaps the band's foot. */
+.masthead { position: relative; isolation: isolate; display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 16px 32px; margin-bottom: 40px; padding: 34px 0 44px; color: var(--accent-ink); }
+.masthead::before { content: ""; position: absolute; z-index: -2; inset: 0 calc(50% - 50vw); background: var(--accent); }
+.masthead:has(+ .status-banner, + .subscriber-document) { margin-bottom: 0; padding-bottom: calc(44px + var(--band-overlap)); }
+.masthead-wave { position: absolute; z-index: -1; top: 0; right: calc(50% - 50vw); width: max(42vw, 360px); height: 100%; pointer-events: none; }
+.masthead-wave path { fill: var(--band-wave); }
+.masthead-wave .wave-far { opacity: .55; }
+.masthead :focus-visible { outline-color: var(--accent-ink); }
 .masthead-brand { min-width: 0; }
-.brand { display: inline-flex; align-items: center; gap: 12px; max-width: 100%; color: var(--ink); font-size: 21px; font-weight: 600; line-height: 1.25; letter-spacing: -.015em; text-decoration: none; overflow-wrap: anywhere; }
+.brand { display: inline-flex; align-items: center; gap: 12px; max-width: 100%; color: inherit; font-size: 26px; font-weight: 700; line-height: 1.25; letter-spacing: -.02em; text-decoration: none; overflow-wrap: anywhere; }
 .brand-mark { width: 36px; height: 36px; flex: none; border-radius: 10px; background: var(--card); box-shadow: 0 0 0 1px var(--line); object-fit: contain; }
-.brand-logo { display: block; width: auto; height: 36px; max-width: min(180px, 45vw); flex: 0 1 auto; min-width: 0; object-fit: contain; }
+.brand-logo { display: block; width: auto; height: 44px; max-width: min(220px, 45vw); flex: 0 1 auto; min-width: 0; object-fit: contain; filter: var(--logo-halo); }
 .brand span { min-width: 0; }
-.tagline { margin: 6px 0 0 48px; color: var(--ink-2); font-size: 14px; overflow-wrap: anywhere; }
+.brand-logo + span { border-inline-start: 1px solid color-mix(in srgb, currentColor 35%, transparent); padding-inline-start: 22px; margin-inline-start: 10px; }
+.tagline { margin: 4px 0 0 48px; color: inherit; font-size: 15px; overflow-wrap: anywhere; }
 .tagline:empty { display: none; }
-.status-utilities { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin-top: -2px; }
-.status-utilities a { display: inline-flex; align-items: center; min-height: 40px; border-radius: 999px; padding: 8px 14px; color: var(--ink-2); font-size: 14px; font-weight: 500; text-decoration: none; }
-.status-utilities a:hover, .status-utilities a[aria-current="page"] { background: rgb(24 45 36 / .06); color: var(--ink); }
-.status-utilities .subscribe-link { margin-left: 6px; background: var(--accent); color: var(--accent-ink); padding-inline: 18px; font-weight: 600; box-shadow: 0 6px 16px -8px rgb(24 45 36 / .45); }
-.status-utilities .subscribe-link:hover { background: var(--accent); color: var(--accent-ink); filter: brightness(.94); }
+.status-utilities { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 2px; }
+.status-utilities a { display: inline-flex; align-items: center; min-height: 40px; border-radius: 999px; padding: 8px 18px; color: inherit; font-size: 15px; font-weight: 600; text-decoration: none; }
+.status-utilities a:hover, .status-utilities a[aria-current="page"] { background: var(--band-current); color: inherit; }
+.status-utilities .subscribe-link { margin-left: 6px; background: var(--accent-ink); color: var(--accent); padding-inline: 20px; box-shadow: 0 6px 16px -8px rgb(20 43 58 / .45); }
+.status-utilities .subscribe-link:hover { background: var(--accent-ink); color: var(--accent); filter: brightness(.94); }
+.masthead .status-utilities .subscribe-link:focus-visible { outline-color: var(--accent-ink); }
 
 /* Shared type and pieces. */
-.eyebrow { margin: 0 0 6px; color: var(--ink-3); font-size: 12px; font-weight: 600; line-height: 1.3; letter-spacing: .12em; text-transform: uppercase; }
+.eyebrow { margin: 0 0 6px; color: var(--ink-3); font-size: 14px; font-weight: 600; line-height: 1.3; letter-spacing: .12em; text-transform: uppercase; }
 .section-heading { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; margin-bottom: 16px; }
-.section-heading h2 { margin: 0; font-size: 20px; line-height: 1.3; letter-spacing: -.012em; }
+.section-heading h2 { margin: 0; font-size: 30px; font-weight: 700; line-height: 1.25; letter-spacing: -.02em; }
 .section-heading p { margin: 0; color: var(--ink-3); font-size: 14px; }
-.text-link { display: inline-flex; align-items: center; gap: 6px; color: var(--ink); font-size: 14px; font-weight: 500; text-decoration: underline; text-decoration-color: rgb(24 45 36 / .35); }
+.text-link { display: inline-flex; align-items: center; gap: 6px; color: var(--accent-text); font-size: 14px; font-weight: 600; text-decoration: underline; text-decoration-color: color-mix(in srgb, currentColor 35%, transparent); }
 .text-link::after { content: "→"; text-decoration: none; }
 .text-link:hover { text-decoration-color: currentColor; }
 .empty-state { margin: 0; border: 1px dashed var(--line-strong); border-radius: var(--radius); background: rgb(255 255 255 / .55); padding: 28px; color: var(--ink-2); text-align: center; }
 
-/* State chips: a quiet pill with a coloured dot, as in the operator app. */
-.state-pill { display: inline-flex; flex: none; width: fit-content; align-items: center; gap: 7px; border: 1px solid var(--line-strong); border-radius: 999px; background: var(--chip); color: var(--ink); padding: 3px 11px 3px 9px; font-size: 13px; font-weight: 500; line-height: 1.4; white-space: nowrap; }
-.state-pill strong { font-weight: 500; }
+/* State chips: a quiet pill washed in its state's colour, with a coloured dot. */
+.state-pill { display: inline-flex; flex: none; width: fit-content; align-items: center; gap: 7px; border-radius: 999px; background: var(--chip); color: var(--ink); padding: 4px 12px 4px 10px; font-size: 13px; font-weight: 600; line-height: 1.4; white-space: nowrap; }
+.state-pill strong { font-weight: 600; }
+.state-operational, .state-resolved, .state-completed, .state-monitoring { background: var(--ok-wash); }
+.state-major-outage { background: var(--down-wash); }
+.state-partially-unavailable, .state-degraded-performance, .state-investigating, .state-identified { background: var(--amber-wash); }
+.state-under-maintenance, .state-scheduled, .state-in-progress { background: var(--maint-wash); }
 .state-pill::before { content: ""; width: 8px; height: 8px; flex: none; border-radius: 50%; background: var(--quiet); }
 .state-operational::before, .state-resolved::before, .state-completed::before, .state-monitoring::before { background: var(--ok); }
 .state-major-outage::before { background: var(--down); }
@@ -108,4 +116,7 @@ footer:empty { display: none; }
 .snapshot-stale { margin: 0; background: var(--amber-wash); box-shadow: inset 0 -1px 0 rgb(138 90 6 / .18); padding: 12px 24px; color: var(--amber-ink); font-size: 14px; font-weight: 500; line-height: 1.45; text-align: center; overflow-wrap: anywhere; }
 
 .time-details { color: var(--ink-3); font-size: 13px; overflow-wrap: anywhere; }
-.time-details summary { display: list-item; width: fit-content; min-height: 24px; line-height: 24px; cursor: pointer; }
+.time-details summary { display: flex; align-items: center; gap: 4px; width: fit-content; min-height: 24px; line-height: 24px; color: var(--accent-text); font-weight: 600; list-style: none; cursor: pointer; }
+.time-details summary::-webkit-details-marker { display: none; }
+.time-details summary::after { content: ""; width: 6px; height: 6px; margin-left: 4px; border: solid currentColor; border-width: 0 1.75px 1.75px 0; transform: rotate(-45deg); transition: transform .15s; }
+.time-details[open] summary::after { transform: rotate(45deg); }
