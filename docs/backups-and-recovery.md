@@ -166,9 +166,10 @@ an empty destination, then run `rer setup` with the original or restored owner's
 email before restarting Lamp. `rer export` and `rer import` work on the local
 installation only; the commands above cover a hosted one.
 
-Local passkeys must be enrolled again after restoring an archive. Start Lamp
-with `rer dev --host localhost`, open the private `RER_OPEN` link as the owner,
-and choose **Settings → Sign-in → Set up a local passkey**.
+Local passkeys must be enrolled again after restoring an archive. Run
+`rer setup --host localhost` once (it keeps the restored data), start Lamp with
+`rer dev`, open the private `RER_OPEN` link as the owner, and choose
+**Settings → Sign-in → Set up a local passkey**.
 
 The [operations reference](../OPERATIONS.md#portable-backups-and-restore) has
 the technical details of the archive.

@@ -560,7 +560,7 @@
       "executable": false
     },
     "docs/backups-and-recovery.md": {
-      "sha256": "525a30bd1cb98717f7705e4010a05fd02e1a77d5400d5f611b13f4121eb139d0",
+      "sha256": "fe3b2af14ede3da8d97d04f07f00ec3587cf58783e5cffefdccee306fb330d9e",
       "executable": false
     },
     "docs/business-self-host.md": {
@@ -3172,7 +3172,7 @@
       "executable": false
     },
     "RUN-LOCALLY.md": {
-      "sha256": "4e0c4e671878567f456181dfc604736847f4bfdfb7fe7c324387ca8070ed8360",
+      "sha256": "048f0cd038794860f5c5e9d8c231cb4fde57d0967b277811acca622c1195d844",
       "executable": false
     },
     "schema/business-field-inputs.mjs": {
