@@ -17,6 +17,7 @@ async function verifyGrant(token, env) {
     return payload;
   } catch { return null; }
 }
+const previewJobs = new Set(['public-snapshot-publish', 'public-snapshot-rebuild']);
 function denied() { return new Response('Preview access required', { status: 401, headers: { 'Cache-Control': 'no-store' } }); }
 
 export default {
@@ -52,8 +53,17 @@ export default {
     if (worker.scheduled) return worker.scheduled(controller, env, ctx);
   },
   async queue(batch, env, ctx) {
-    if (env.RER_PREVIEW_TOKEN) throw new Error('Preview queue effects are disabled');
     if (!worker.queue) throw new Error('Worker has no queue handler');
+    if (env.RER_PREVIEW_TOKEN) {
+      // A preview builds its own public page (its D1 and R2 only); every other queued effect stays off.
+      const publication = batch.messages.filter(message => previewJobs.has(message.body?.type));
+      if (publication.length !== batch.messages.length) {
+        for (const message of batch.messages) if (!publication.includes(message)) message.retry();
+        console.error('Preview queue effects are disabled');
+      }
+      if (publication.length) return worker.queue({ queue: batch.queue, messages: publication }, env, ctx);
+      return;
+    }
     return worker.queue(batch, env, ctx);
   },
 };

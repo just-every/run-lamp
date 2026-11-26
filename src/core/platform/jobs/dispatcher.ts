@@ -1,6 +1,8 @@
 export type LampJob =
   | { type: "health-probe"; requestedAt: string }
   | { type: "public-snapshot-rebuild" }
+  /** Pending, first or other-release publication, under the same lease Cron's retry takes. */
+  | { type: "public-snapshot-publish" }
   | { type: "delivery-dispatch"; eventId: string };
 
 export interface JobDispatcher {

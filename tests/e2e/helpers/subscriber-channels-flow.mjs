@@ -57,7 +57,14 @@ export async function subscriberChannelsFlow() {
     assert.equal(response.status, 200, response.text);
   };
   try {
+    // Health hands pending publication to the Queue after it answers; read the page once that work is built.
     await fixture.raw('/health');
+    const db = await fixture.runtime.getD1Database('DB');
+    for (let attempt = 0; attempt < 100; attempt++) {
+      const work = await db.prepare("SELECT requested_revision - completed_revision AS pending, (SELECT count(*) FROM snapshot_builds WHERE status = 'building') AS building FROM public_snapshot_work").first();
+      if (!work.pending && !work.building) break;
+      await new Promise(resolve => setTimeout(resolve, 50));
+    }
     await offers(['/subscribe', '/subscribe/teams']);
     await page.locator('#subscribe').scrollIntoViewIfNeeded();
     await capture('subscribe-unconfigured');

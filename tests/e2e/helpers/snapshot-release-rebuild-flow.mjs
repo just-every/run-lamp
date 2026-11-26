@@ -1,12 +1,13 @@
 import assert from 'node:assert/strict';
-import { openStatusJourney } from './status-journey.mjs';
+import { openStatusJourney, eventually } from './status-journey.mjs';
 
 const OLD_TEXT = 'Subscribe to status updates (written by an earlier release)';
 const OLD_MARK = '<!-- earlier release -->';
 const HEADING = 'Subscribe to status updates';
 
 /** U101-14: a deploy that changes the page's code rebuilds the stored public page, once, and a
- * reset database still advances the bucket's pointer. The Worker, D1, R2 and the retained
+ * reset database still advances the bucket's pointer. /health answers first and hands the build to
+ * the Queue: a monitor's probe never waits on a page build. The Worker, D1, R2 and the retained
  * replica are real; a deploy is a new Worker over the same storage with another release
  * identity, and "the earlier release's renderer" is its stored page.html. */
 /** Runs the deploys and returns what each left behind; the caller closes `j`. */
@@ -23,8 +24,13 @@ export async function observeSnapshotReleaseRebuild({ afterDatabaseReset } = {})
     const page = async () => ({ html: await (await (await bucket()).get(`snapshots/${(await pointer()).version}/page.html`)).text() });
     const served = async () => { const response = await j.publicResponse('/'); return { status: response.status, html: await response.text(), robots: response.headers.get('x-robots-tag') }; };
     const health = async () => (await j.raw('/health')).status;
+    const queueAttempts = async () => (await (await j.raw('/test/queue')).json()).attempts;
+    const queueOutage = async outage => { await j.raw('/test/queue', { method: 'PUT', body: JSON.stringify({ outage }) }); };
+    const building = () => count("SELECT count(*) AS n FROM snapshot_builds WHERE status = 'building'");
+    // The build runs after health answered; wait for the page that release publishes.
+    const publishedBy = release => eventually(stored, state => state.pointer.releaseIdentity === release && state.work.completed === state.work.requested && state.building === 0, `${release} publishes the stored page`);
     const deploy = async release => { await j.restart({ bindings: { RER_RELEASE_DIGEST: release } }); };
-    const stored = async () => { const current = await pointer(); return { pointer: current, builds: await builds(), work: await work(), page: await page() }; };
+    const stored = async () => { const current = await pointer(); return { pointer: current, builds: await builds(), building: await building(), work: await work(), page: await page() }; };
     // The page as the previous release rendered it: the stored bytes, not what today's renderer writes.
     const writeEarlierRelease = async () => {
       const current = await pointer(); const key = `snapshots/${current.version}/page.html`;
@@ -70,10 +76,16 @@ export async function observeSnapshotReleaseRebuild({ afterDatabaseReset } = {})
     for (let call = 0; call < 3; call++) assert.equal(await health(), 200);
     facts.sameRelease = await stored();
 
-    // A new release.
+    // A new release. With the Queue down, health still answers at once and builds nothing itself.
     await deploy('release-2');
+    await queueOutage(true);
+    const attemptsBefore = await queueAttempts();
+    facts.handOffHealth = await health();
+    await eventually(queueAttempts, attempts => attempts > attemptsBefore, 'health hands the new release to the Queue after answering');
+    facts.handOff = await stored();
+    await queueOutage(false);
     facts.newReleaseHealth = await health();
-    facts.newRelease = await stored();
+    facts.newRelease = await publishedBy('release-2');
     facts.newRelease.served = await served();
     await deploy('release-2');
     assert.equal(await health(), 200);
@@ -83,7 +95,7 @@ export async function observeSnapshotReleaseRebuild({ afterDatabaseReset } = {})
     await j.db.prepare('UPDATE public_snapshot_work SET requested_revision = completed_revision + 1').run();
     await deploy('release-2');
     facts.pendingHealth = await health();
-    facts.pending = await stored();
+    facts.pending = await eventually(stored, state => state.work.completed === state.work.requested && state.building === 0, 'pending work is built');
 
     // The database was reset (a new one under the old bucket): its counters restart, the bucket's pointer does not.
     await j.db.batch([
@@ -95,6 +107,7 @@ export async function observeSnapshotReleaseRebuild({ afterDatabaseReset } = {})
     facts.beforeReset = await stored();
     await deploy('release-4');
     facts.resetHealth = await health();
+    await publishedBy('release-4');
     await afterDatabaseReset?.(j);
     facts.reset = await stored();
     facts.reset.served = await served();
@@ -108,7 +121,7 @@ export async function observeSnapshotReleaseRebuild({ afterDatabaseReset } = {})
     await writeEarlierRelease();
     await deploy('release-5');
     facts.prelaunchHealth = await health();
-    facts.prelaunch = await stored();
+    facts.prelaunch = await publishedBy('release-5');
     facts.prelaunch.served = await served();
 
     // The scheduled path: nothing is rebuilt that is not due, and an operator change still publishes.
@@ -123,13 +136,16 @@ export async function observeSnapshotReleaseRebuild({ afterDatabaseReset } = {})
     // A rebuild that cannot finish (the logo object is gone) never fails health, and the next health completes it.
     await j.db.prepare("UPDATE page_settings SET logo_key = 'branding/missing', logo_content_type = 'image/png'").run();
     await deploy('release-6');
+    const latestBuild = () => j.db.prepare("SELECT status, error FROM snapshot_builds ORDER BY started_at DESC LIMIT 1").first();
+    const buildsBeforeFailure = await builds();
     facts.failingHealth = await health();
+    await eventually(async () => ({ builds: await builds(), latest: await latestBuild() }), state => state.builds > buildsBeforeFailure && state.latest.status === 'failed', 'the background rebuild fails');
     facts.failing = await stored();
-    facts.failingBuild = await j.db.prepare("SELECT status, error FROM snapshot_builds ORDER BY started_at DESC LIMIT 1").first();
+    facts.failingBuild = await latestBuild();
     await j.db.prepare('UPDATE page_settings SET logo_key = NULL, logo_content_type = NULL').run();
     await deploy('release-6');
     facts.recoveredHealth = await health();
-    facts.recovered = await stored();
+    facts.recovered = await publishedBy('release-6');
 
     return { j, facts };
   } catch (cause) {
@@ -154,7 +170,11 @@ export async function snapshotReleaseRebuildFlow() {
     assert.equal(facts.sameRelease.pointer.generation, first.pointer.generation);
     assert.ok(earlier(facts.sameRelease), 'and leaves the stored page as it was');
 
-    // (a) a new release rebuilds before health answers; the next health on it does not.
+    // (a) health answers before any build: with the Queue down it answers 200 and the stored page is untouched.
+    assert.equal(facts.handOffHealth, 200);
+    assert.equal(facts.handOff.builds, first.builds, 'health builds nothing itself');
+    assert.equal(facts.handOff.pointer.releaseIdentity, 'release-1');
+    // A new release is rebuilt once, in the background; the next health on it builds nothing.
     assert.equal(facts.newReleaseHealth, 200);
     assert.equal(facts.newRelease.builds, first.builds + 1, 'a new release is rebuilt once');
     assert.equal(facts.newRelease.pointer.releaseIdentity, 'release-2');
@@ -196,7 +216,7 @@ export async function snapshotReleaseRebuildFlow() {
     assert.equal(facts.cronSameRelease.builds, facts.prelaunch.builds, 'Cron on the release that built the page builds nothing');
     assert.equal(facts.cronSameRelease.pointer.version, facts.prelaunch.pointer.version);
 
-    // A failing rebuild never fails health; the next health finishes it.
+    // A failing rebuild never fails health; the next health on a new isolate finishes it.
     assert.equal(facts.failingHealth, 200, 'health answers although the rebuild failed');
     assert.equal(facts.failingBuild.status, 'failed');
     assert.equal(facts.failing.pointer.version, facts.afterChange.pointer.version, 'the published page is untouched by the failed build');

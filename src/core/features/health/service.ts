@@ -3,7 +3,7 @@ import type { DependencyProber } from "../../platform/health";
 
 export type HealthStatus =
   | { status: "ok"; checkedAt: string }
-  | { status: "unavailable"; dependency: "database" | "storage" | "queue" | "snapshot" };
+  | { status: "unavailable"; dependency: "database" | "storage" | "queue" };
 
 export interface HealthService {
   /**
@@ -17,9 +17,14 @@ export interface HealthService {
    * queue message, checked now. A good answer younger than maxAgeMs is reused.
    */
   deep(maxAgeMs?: number): Promise<HealthStatus>;
+  /**
+   * Once per isolate, after /health has answered: hands a configured page's first snapshot, or a
+   * page this release has not built yet, to background work. A health answer never waits on a build.
+   */
+  publish(): Promise<void>;
 }
 
-/** Publishes a configured page's first snapshot; true once a current snapshot exists. */
+/** Hands due publication to background work; true once nothing more is due from this isolate. */
 export type InitialPublication = () => Promise<boolean>;
 
 // A database answer serves /health from this isolate for this long, so repeated probes make no D1 call.
@@ -31,7 +36,7 @@ export const DEEP_ANSWER_MS = 30_000;
 const databaseAnswered = new WeakMap<object, number>();
 const deepPassed = new WeakMap<object, number>();
 const deepRunning = new WeakMap<object, Promise<HealthStatus>>();
-const published = new WeakSet<object>();
+const publication = new WeakMap<object, Promise<void>>();
 
 export function createHealthService(repository: HealthRepository, prober: DependencyProber, publishInitialSnapshot: InitialPublication = async () => true): HealthService {
   async function databaseAnswers(): Promise<number | undefined> {
@@ -46,18 +51,6 @@ export function createHealthService(repository: HealthRepository, prober: Depend
     const now = Date.now();
     databaseAnswered.set(repository.key, now);
     return now;
-  }
-
-  // Every hosted deployment publishes its initial state before traffic
-  // arrives, even before Cloudflare starts Cron. This runs no mail work.
-  async function publication(): Promise<boolean> {
-    if (published.has(repository.key)) return true;
-    try {
-      if (await publishInitialSnapshot()) published.add(repository.key);
-      return true;
-    } catch {
-      return false;
-    }
   }
 
   async function roundTrip(): Promise<HealthStatus> {
@@ -83,12 +76,24 @@ export function createHealthService(repository: HealthRepository, prober: Depend
 
   return {
     async check() {
-      const [publishable, answeredAt] = await Promise.all([publication(), databaseAnswers()]);
+      const answeredAt = await databaseAnswers();
       if (answeredAt === undefined) return { status: "unavailable", dependency: "database" };
       const missing = prober.missing();
       if (missing) return { status: "unavailable", dependency: missing };
-      if (!publishable) return { status: "unavailable", dependency: "snapshot" };
       return { status: "ok", checkedAt: new Date(answeredAt).toISOString() };
+    },
+    // Every hosted deployment publishes its initial state before traffic arrives, even
+    // before Cloudflare starts Cron. A failed or not-yet-due hand-off is tried again by
+    // the isolate's next health request; Cron retries the build itself.
+    publish() {
+      const known = publication.get(repository.key);
+      if (known) return known;
+      const next = publishInitialSnapshot().then(
+        (done) => { if (!done) publication.delete(repository.key); },
+        (cause) => { publication.delete(repository.key); console.error("Lamp could not hand its public page to background publication; Cron retries it.", cause); },
+      );
+      publication.set(repository.key, next);
+      return next;
     },
     // Concurrent requests share one running round trip.
     deep(maxAgeMs = 0) {

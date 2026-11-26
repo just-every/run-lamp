@@ -12,7 +12,7 @@ let localSnapshotBootstrapFinished = false;
 function isLampJob(value: unknown): value is LampJob {
   if (typeof value !== "object" || value === null) return false;
   const candidate = value as { type?: unknown; eventId?: unknown };
-  return candidate.type === "health-probe" || candidate.type === "public-snapshot-rebuild"
+  return candidate.type === "health-probe" || candidate.type === "public-snapshot-rebuild" || candidate.type === "public-snapshot-publish"
     || (candidate.type === "delivery-dispatch" && typeof candidate.eventId === "string");
 }
 
@@ -77,9 +77,10 @@ export async function runQueue(batch: MessageBatch<unknown>, bindings: AppBindin
       message.ack();
       continue;
     }
-    if (message.body.type === "public-snapshot-rebuild") {
+    if (message.body.type === "public-snapshot-rebuild" || message.body.type === "public-snapshot-publish") {
       try {
-        await runtime.services.publicSnapshots.rebuild();
+        if (message.body.type === "public-snapshot-rebuild") await runtime.services.publicSnapshots.rebuild();
+        else await runtime.services.publicSnapshots.retryPendingBuild();
         message.ack();
       } catch (cause) {
         message.retry();

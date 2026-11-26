@@ -13,6 +13,8 @@ export function registerHealthRoutes(
 ) {
   app.get("/health", async (context) => {
     const [health, schemaObservation] = await Promise.all([healthService.check(), observeSchema(bindings.DB)]);
+    // Publication runs after the answer: a page build can take longer than any monitor waits.
+    if (health.status === "ok") context.executionCtx.waitUntil(healthService.publish());
     const ageMs = Math.max(0, Date.now() - Date.parse(schemaObservation.observedAt));
     const payload = { ...health, buildVersion, schemaObservation: { ...schemaObservation, ageMs } };
     // A healthy answer names the deployment that gave it, so a deploy can

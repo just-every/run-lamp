@@ -99,7 +99,7 @@ Use configuration and extensions when they save work. Direct core, schema, UI or
   `migrations/core/` list, whose numbers belong to Lamp's releases ([`migrations/README.md`](migrations/README.md)).
 - The stored public page is rebuilt when a core `*_snapshot_dirty` trigger raises `public_snapshot_work.requested_revision`,
   when the stored page's `PUBLIC_SNAPSHOT_RENDERER_VERSION` (`src/core/features/public-snapshot/service.ts`) is not the code's,
-  or when the running release identity (`RER_RELEASE_DIGEST`, else the Worker version id, where the host names it) is not the one
+  or when the running release identity (`RER_RELEASE_DIGEST`, else `RER_DEPLOY_FINGERPRINT`, else the Worker version id, where the host names it) is not the one
   that built it. Since 1.11.35 timed refreshes reuse the saved snapshot inputs, so a change to how the page renders moves
   `PUBLIC_SNAPSHOT_RENDERER_VERSION`, and a company table whose rows reach the public page needs triggers like the core's
   (`migrations/core/0006_snapshot_build_ordering.sql`: `UPDATE public_snapshot_work SET requested_revision = requested_revision + 1

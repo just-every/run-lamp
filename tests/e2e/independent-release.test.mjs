@@ -47,7 +47,7 @@ test('ACCESS-001 SETUP-002 — a packaged installation refuses missing deploy au
   const bindings={...artifact.deploymentSpec.publicVariables,LAMP_APP_HOST:'127.0.0.1',LAMP_PAGE_HOST:'status.lamp.test',SETUP_TOKEN:secret,SESSION_SECRET:sessionSecret,SETUP_OPERATOR_EMAIL:'owner@example.test',AUTH_LOCAL:'true',MAIL_PROVIDER:'resend',MAIL_FROM_ADDRESS:'status@example.test',MAIL_PROVIDER_API_KEY:'test-only-provider',SUBSCRIBER_TOKEN_SECRET:'test-subscriber-secret-'.repeat(3),WEBHOOK_SIGNING_SECRET:'test-webhook-secret-'.repeat(3),RER_INSTALLATION_ID:'independent-local'};
   const modules=artifact.modules.map(module=>({type:module.type==='esm'?'ESModule':module.type==='compiled-wasm'?'CompiledWasm':'Text',path:module.name,contents:module.type==='compiled-wasm'?raw.get(module.payload):raw.get(module.payload).toString()}));
   modules.sort((a,b)=>a.path===artifact.mainModule?-1:b.path===artifact.mainModule?1:0);
-  const runtimeOptions={name:'lamp-independent',modules,compatibilityDate:artifact.deploymentSpec.compatibilityDate,compatibilityFlags:artifact.deploymentSpec.compatibilityFlags,d1Databases:{DB:'lamp-independent-db'},r2Buckets:{SNAPSHOTS:'lamp-independent-snapshots'},durableObjects:{SNAPSHOT_CACHE:{className:'SnapshotCache',useSQLite:true}},queueProducers:{JOBS:'lamp-independent-jobs'},resourcePersistencePath:join(temporary,'state'),serviceBindings:{ASSETS:async request=>{const asset=artifact.assets.find(asset=>asset.path===new URL(request.url).pathname);return asset?new Response(raw.get(asset.payload),{headers:{'Content-Type':asset.contentType}}):new Response(null,{status:404});}},outboundService:async request=>{assert.equal(new URL(request.url).hostname,'api.resend.com','unexpected external request');mail.push(await request.json());return Response.json({id:'test-only-mail-'+mail.length});}};
+  const runtimeOptions={name:'lamp-independent',modules,compatibilityDate:artifact.deploymentSpec.compatibilityDate,compatibilityFlags:artifact.deploymentSpec.compatibilityFlags,d1Databases:{DB:'lamp-independent-db'},r2Buckets:{SNAPSHOTS:'lamp-independent-snapshots'},durableObjects:{SNAPSHOT_CACHE:{className:'SnapshotCache',useSQLite:true}},queueProducers:{JOBS:'lamp-independent-jobs'},queueConsumers:Object.fromEntries(artifact.deploymentSpec.queueConsumers.map(consumer=>['lamp-independent-jobs',{maxBatchTimeout:0,maxRetries:consumer.maxRetries}])),resourcePersistencePath:join(temporary,'state'),serviceBindings:{ASSETS:async request=>{const asset=artifact.assets.find(asset=>asset.path===new URL(request.url).pathname);return asset?new Response(raw.get(asset.payload),{headers:{'Content-Type':asset.contentType}}):new Response(null,{status:404});}},outboundService:async request=>{assert.equal(new URL(request.url).hostname,'api.resend.com','unexpected external request');mail.push(await request.json());return Response.json({id:'test-only-mail-'+mail.length});}};
   let origin, appPort;
   const startRuntime = (overrides, firstPort) => startMiniflare({
     label: 'independent release Worker',
@@ -78,11 +78,12 @@ test('ACCESS-001 SETUP-002 — a packaged installation refuses missing deploy au
   assert.equal((await publicRequest('/auth/bootstrap',setup)).status,404);
   assert.equal((await request('/auth/bootstrap',{...setup,headers:{...setup.headers,Origin:'https://other.test'}})).status,403);
   // A hosted deployment stores the page settings before the owner claims it, and
-  // health publishes that page. Public availability is independent of owner setup.
+  // health hands that page to the Queue after answering. Public availability is independent of owner setup.
   await db.prepare(setupPageSettingsStatement({pageName:owner.pageName,pageTagline:owner.tagline,pageTimezone:owner.timezone,pageHost:'status.lamp.test',mailFromAddress:'status@example.test',pageAccentColor:'#16794C'})).run();
   assert.equal((await request('/health')).status,200);
   assert.equal((await request('/setup/status')).status,409);
-  const pendingPage=await publicRequest('/');
+  let pendingPage;
+  for(let attempt=0;attempt<100&&(pendingPage=await publicRequest('/')).status!==200;attempt++){await pendingPage.body?.cancel();await new Promise(resolve=>setTimeout(resolve,100));}
   assert.equal(pendingPage.status,200,'a configured published page is available before owner claim');
   assert.equal(pendingPage.headers.get('x-lamp-snapshot-retained'),'true');
   assert.ok(pendingPage.headers.get('etag'),'the public page retains its generation validator');
@@ -138,6 +139,12 @@ test('ACCESS-001 SETUP-002 — a packaged installation refuses missing deploy au
   assert.equal((await preview('/signin',{Cookie:previewCookie})).status,200);
   assert.equal((await preview(assetPath,{Cookie:previewCookie})).status,200,'a valid grant admits the emitted browser asset');
   assert.equal((await preview('/__rer/release',{Authorization:'Bearer '+previewSecret})).status,200);
+  // A preview has no Cron and no queued effects, yet its health hands the page to its own Queue, which rebuilds it for this release.
+  assert.equal((await preview('/health',{Cookie:previewCookie})).status,200);
+  const previewPointer=async()=>JSON.parse(await (await (await runtime.getR2Bucket('SNAPSHOTS')).get('snapshots/current.json')).text());
+  let previewPage;
+  for(let attempt=0;attempt<100&&(previewPage=await previewPointer()).releaseIdentity!==releaseDigest;attempt++)await new Promise(resolve=>setTimeout(resolve,100));
+  assert.equal(previewPage.releaseIdentity,releaseDigest,'a preview rebuilds its stored page for the release it runs');
   assert.equal((await preview('/signin?rer_preview_grant='+grant('another-release'))).status,401,'a different release has no authority');
   assert.equal((await preview('/signin?rer_preview_grant='+grant(releaseDigest,Date.now()-1))).status,401,'expired preview authority stays closed');
 

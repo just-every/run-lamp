@@ -65,20 +65,14 @@ export function createApp(bindings: AppBindings, execution?: MailExecution) {
   const app = new Hono<AppEnv>();
   const authorizedReads = new WeakMap<Request, OperatorReadSession>();
   const services = createAppServices(bindings, createSnapshotBlobStore(bindings), execution);
+  // A deploy that changed the code leaves the previous page in storage, and a configured page
+  // may have no snapshot yet: the queue consumer builds it from this release, as Cron would.
   const healthService = createHealthService(createHealthRepository(bindings.DB), createDependencyProber(bindings.SNAPSHOTS, bindings.JOBS), async () => {
     if (await services.publicSnapshots.hasCurrentSnapshot()) {
-      // A deploy that changed the code leaves the previous page in storage; rebuild it from
-      // this release. Health still answers if the rebuild fails: the work stays pending for the next try.
-      try {
-        if (await services.publicSnapshots.needsRebuild()) await services.publicSnapshots.retryPendingBuild();
-      } catch (cause) {
-        console.error("Lamp could not rebuild its public page for this release.", cause);
-      }
-      return true;
-    }
-    if (!await createSetupRepository(bindings.DB).pageConfigured()) return false;
-    await services.publicSnapshots.retryPendingBuild();
-    return services.publicSnapshots.hasCurrentSnapshot();
+      if (!await services.publicSnapshots.needsRebuild()) return true;
+    } else if (!await createSetupRepository(bindings.DB).pageConfigured()) return false;
+    await bindings.JOBS.send({ type: "public-snapshot-publish" });
+    return true;
   });
   const publicWriteLimiter = createPublicWriteRateLimiter(bindings.DB);
   // Before every route that subscribes someone or sends a message.

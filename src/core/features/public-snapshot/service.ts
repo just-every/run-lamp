@@ -83,9 +83,14 @@ export interface PublicSnapshotService {
   needsRebuild(): Promise<boolean>;
 }
 
-/** The release this Worker is running: the delivery digest, else the uploaded Worker version. Null where the host names neither (local development). */
-export function runningReleaseIdentity(bindings: Pick<AppBindings, "RER_RELEASE_DIGEST" | "RER_VERSION_METADATA" | "RER_VERSION">): string | null {
-  return bindings.RER_RELEASE_DIGEST || bindings.RER_VERSION_METADATA?.id || bindings.RER_VERSION?.id || null;
+/**
+ * The release this Worker is running: the delivery digest, else the deployed build's fingerprint, else the
+ * uploaded Worker version. A workers.dev install runs one build as two Workers (app and page) with two version
+ * ids; the fingerprint is the same on both, so neither takes the page the other built for another release.
+ * Null where the host names none (local development).
+ */
+export function runningReleaseIdentity(bindings: Pick<AppBindings, "RER_RELEASE_DIGEST" | "RER_DEPLOY_FINGERPRINT" | "RER_VERSION_METADATA" | "RER_VERSION">): string | null {
+  return bindings.RER_RELEASE_DIGEST || bindings.RER_DEPLOY_FINGERPRINT || bindings.RER_VERSION_METADATA?.id || bindings.RER_VERSION?.id || null;
 }
 
 function parsePointer(object: BlobObject): SnapshotPointer {

@@ -400,10 +400,13 @@ runs the reachability check: D1, an R2 write, read and delete, and a Queue messa
 returning 503 naming the failed dependency; a passing answer is reused for 30
 seconds so requests cannot multiply storage writes. The heartbeat runs the same
 deep check live. A successful public
-response is not a healthy-backend proof. `/health` also publishes a configured
-page's first snapshot before reporting readiness, including the initial migrated
-state in previews where cron is disabled. A failed snapshot build returns 503.
-This readiness step does not dispatch scheduled incidents, maintenance or mail.
+response is not a healthy-backend proof. `/health` never waits on a page build:
+once per Worker isolate, after it has answered, it hands a configured page's first
+snapshot, pending work or a page built by another release to the Queue, which builds
+it under the same lease as Cron. A preview runs that publication job, including the
+initial migrated state, although its Cron and other queued effects are off. A failed
+build leaves its work pending for Cron and does not change the `/health` answer.
+This step does not dispatch scheduled incidents, maintenance or mail.
 A Cloudflare-wide outage needs separately operated hosting; this release does not
 provision an independent standby or make that deployment claim.
 
