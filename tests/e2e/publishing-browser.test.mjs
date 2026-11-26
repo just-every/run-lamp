@@ -52,6 +52,7 @@ let originalVisualSource;
 function configWithLocalMail(config) {
   return { ...config, vars: { ...config.vars,
     RER_DEV_KEY: "test-only-publishing-browser-dev-key", RER_DEV_ORIGIN: appUrl, RER_DEV_IDENTITY: "off",
+    SUBSCRIBER_TOKEN_SECRET: "test-only-publishing-browser-subscriber-secret",
   } };
 }
 
