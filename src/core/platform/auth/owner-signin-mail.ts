@@ -3,6 +3,7 @@ import type { MailSender } from '../mail';
 import { baseMailSender } from './mail-sender';
 
 type OwnerAccount = { id: string; email: string };
+export type OwnerSignInTransport = (ownerEmail: string) => MailSender;
 
 /** The installation's owner: the active Owner account the setup claim created (oa_bootstrap), at its current address. */
 function installationOwner(db: D1Database): Promise<OwnerAccount | null> {
@@ -16,17 +17,17 @@ function installationOwner(db: D1Database): Promise<OwnerAccount | null> {
  * that request, so no invitation, step-up or notice can use the owner-only transport. Any other address, known or not,
  * gets the same answer as an unknown one and no mail. The transport refuses any recipient but the owner's address.
  */
-export function ownerSignInLinks(db: D1Database, config: AuthConfig & { local: boolean }, fromAddress: string, mail: MailSender,
+export function ownerSignInLinks(db: D1Database, config: AuthConfig & { local: boolean }, fromAddress: string, mail: OwnerSignInTransport,
   clientIp: (request: Request) => string): OperatorAuth['requestMagicLink'] {
-  const owner = baseMailSender(mail, 'owner-signin');
   const auth = createOperatorAuth({ db, config: { ...config, MAIL_FROM: fromAddress }, clientIp,
     hooks: { async beforeMagicLink({ operator }) { return (await installationOwner(db))?.id === operator.id; } },
     mailSender: { async send(message) {
       const account = await installationOwner(db);
-      if (!account || message.to.length !== 1 || normalizeEmail(message.to[0]) !== normalizeEmail(account.email)) {
+      if (!account || message.to.length !== 1 || normalizeEmail(message.to[0]) !== normalizeEmail(account.email) ||
+        'cc' in message || 'bcc' in message) {
         throw new Error('The owner-only sign-in transport refused a recipient other than the installation owner.');
       }
-      return owner.send(message);
+      return baseMailSender(mail(account.email), 'owner-signin').send(message);
     } },
   });
   return auth.requestMagicLink;

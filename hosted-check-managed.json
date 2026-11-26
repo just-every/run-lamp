@@ -6,9 +6,6 @@
     "LAMP_PAGE_HOST": "status.rer-hosted-check.invalid",
     "SETUP_OPERATOR_EMAIL": "owner@rer-hosted-check.invalid",
     "MAIL_PROVIDER": "rer",
-    "MAIL_FROM": "proof@rer-hosted-check.invalid",
-    "MAIL_FROM_ADDRESS": "proof@rer-hosted-check.invalid",
-    "MAIL_RELAY_URL": "https://mail.rer-hosted-check.invalid/api/managed-mail/send",
     "LAMP_RESOURCE_PREFIX": ""
   },
   "d1": [
@@ -43,26 +40,8 @@
       "environment": "WEBHOOK_SIGNING_SECRET"
     },
     {
-      "binding": "MAIL_PROVIDER",
-      "environment": "MAIL_PROVIDER",
-      "verifyStandIn": "rer",
-      "optional": true
-    },
-    {
-      "binding": "MAIL_FROM",
-      "environment": "MAIL_FROM",
-      "verifyStandIn": "proof@rer-hosted-check.invalid",
-      "optional": true
-    },
-    {
       "binding": "MAIL_API_KEY",
       "environment": "MAIL_API_KEY",
-      "optional": true
-    },
-    {
-      "binding": "MAIL_RELAY_URL",
-      "environment": "MAIL_RELAY_URL",
-      "verifyStandIn": "https://mail.rer-hosted-check.invalid/api/managed-mail/send",
       "optional": true
     },
     {
@@ -75,6 +54,8 @@
     "LAMP_PAGE_WORKER",
     "MAIL_PROVIDER",
     "MAIL_RECIPIENTS",
+    "MAIL_FROM",
+    "MAIL_RELAY_URL",
     "LAMP_RESOURCE_PREFIX",
     "LAMP_APP_HOST",
     "LAMP_PAGE_HOST"

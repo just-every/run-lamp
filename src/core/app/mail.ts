@@ -1,4 +1,5 @@
 import type { AppBindings } from './types';
+import type { OwnerSignInTransport } from '../platform/auth/owner-signin-mail';
 import { UnavailableMailSender, developmentMail, SesMailSender, PostmarkMailSender, MailgunMailSender, FailoverMailSender, MailRouteGuardSender, createMailRouteRepository, type DirectMailProvider, ResendMailSender, SendGridMailSender, RerMailSender, createMailSendRepository, type MailSender } from '../platform/mail';
 
 export type MailExecution = Request | 'background';
@@ -34,11 +35,17 @@ export function createAppMailTransport(bindings: AppBindings, extension: MailSen
 }
 
 /** The owner's sign-in link transport: only with MAIL_RECIPIENTS=owner and a configured provider. */
-export function createOwnerSignInTransport(bindings: AppBindings, extension: MailSender | undefined): MailSender | undefined {
-  return ownerOnlyMail(bindings) ? providerMailTransport(bindings, extension).sender : undefined;
+export function createOwnerSignInTransport(bindings: AppBindings, extension: MailSender | undefined): OwnerSignInTransport | undefined {
+  if (!ownerOnlyMail(bindings)) return;
+  if (bindings.MAIL_PROVIDER === 'rer') {
+    if (!(bindings.MAIL_API_KEY && bindings.MAIL_RELAY_URL) && !isLocalMailExecution(bindings)) return;
+    return ownerEmail => providerMailTransport(bindings, undefined, ownerEmail).sender;
+  }
+  const { sender } = providerMailTransport(bindings, extension);
+  if (sender.configured) return () => sender;
 }
 
-function providerMailTransport(bindings: AppBindings, extension: MailSender | undefined): { sender: MailSender; local: boolean } {
+function providerMailTransport(bindings: AppBindings, extension: MailSender | undefined, ownerEmail?: string): { sender: MailSender; local: boolean } {
   if (bindings.MAIL_PROVIDER === 'none') return { sender: new UnavailableMailSender(), local: false };
   if (bindings.MAIL_PROVIDER && !['rer', 'resend', 'sendgrid', 'mailgun', 'ses', 'postmark'].includes(bindings.MAIL_PROVIDER)) throw new Error('MAIL_PROVIDER must be rer, resend, sendgrid, mailgun, ses or postmark.');
   if (bindings.MAILGUN_REGION && !['us', 'eu'].includes(bindings.MAILGUN_REGION)) throw new Error('MAILGUN_REGION must be us or eu.');
@@ -51,7 +58,7 @@ function providerMailTransport(bindings: AppBindings, extension: MailSender | un
     : new ResendMailSender({ apiKey, fromAddress: bindings.MAIL_FROM_ADDRESS });
   const primaryProvider = bindings.MAIL_PROVIDER || 'resend';
   const primary = primaryProvider === 'rer'
-    ? new RerMailSender({ apiKey: bindings.MAIL_API_KEY, fromAddress: bindings.MAIL_FROM, relayUrl: bindings.MAIL_RELAY_URL }, repository)
+    ? new RerMailSender({ apiKey: bindings.MAIL_API_KEY, fromAddress: bindings.MAIL_FROM, relayUrl: bindings.MAIL_RELAY_URL, ownerEmail }, repository)
     : providerSender(primaryProvider, bindings.MAIL_PROVIDER_API_KEY);
   if (bindings.MAIL_SECONDARY_PROVIDER && (!['resend','sendgrid','mailgun','ses','postmark'].includes(bindings.MAIL_SECONDARY_PROVIDER) || primaryProvider === 'rer')) throw new Error('A secondary mail provider requires two different direct providers.');
   if (Boolean(bindings.MAIL_SECONDARY_PROVIDER) !== Boolean(bindings.MAIL_SECONDARY_API_KEY)) throw new Error('MAIL_SECONDARY_PROVIDER and MAIL_SECONDARY_API_KEY must be configured together.');

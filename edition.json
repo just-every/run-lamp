@@ -117,7 +117,7 @@
         ],
         "origin": {
           "repository": "https://github.com/runeditrun/base.git",
-          "revision": "d320c1436aaeb95d2485c1a0e69afa00ac8fb51a",
+          "revision": "89286ad9506d78936935a6e665d7de92ffcb1508",
           "path": ".",
           "paths": [
             "modules/mail"

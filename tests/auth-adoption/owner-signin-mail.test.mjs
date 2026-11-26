@@ -6,8 +6,9 @@ import { database, load } from '../operator-readiness/runtime.mjs';
 import { openSnapshotCacheRuntime } from '../e2e/snapshot-cache-runtime.mjs';
 import { authFixture, secret, setupToken } from './runtime.mjs';
 
-// Real Lamp routes, Base's email-link flow and D1; only SendGrid's network edge is substituted.
+// Real Lamp routes, Base's email-link flow and D1; only the relay's network edge is substituted.
 const origin = 'https://app.example.test', owner = 'owner@example.com';
+const relayUrl = 'https://relay.example.test/api/managed-mail/send';
 
 test('ACCESS-001 MAIL_RECIPIENTS=owner mails the sign-in link to the owner only, and the page answers every address alike', async () => {
   const dir = await mkdtemp(join(process.cwd(), '.lamp-owner-signin-'));
@@ -16,14 +17,15 @@ test('ACCESS-001 MAIL_RECIPIENTS=owner mails the sign-in link to the owner only,
   try {
     const { createApp } = await load('src/core/app/server.ts');
     globalThis.fetch = async (url, init) => {
-      if (new URL(String(url)).hostname !== 'api.sendgrid.com') throw new Error(`Unexpected network call: ${url}`);
+      if (String(url) !== relayUrl) throw new Error(`Unexpected network call: ${url}`);
       sent.push(JSON.parse(init.body));
-      return new Response(null, { status: 202, headers: { 'X-Message-Id': `synthetic-${sent.length}` } });
+      return Response.json({ messageId: `<synthetic-${sent.length}@relay.example.test>` }, { status: 202 });
     };
     const env = { DB: storage.db, SNAPSHOT_CACHE: cache.namespace, SNAPSHOTS: storage.bucket,
       LAMP_APP_HOST: 'app.example.test', LAMP_PAGE_HOST: 'page.example.test', AUTH_ORIGIN: origin, SETUP_OPERATOR_EMAIL: owner,
       SESSION_SECRET: secret, SETUP_TOKEN: setupToken, WEBHOOK_SIGNING_SECRET: 'synthetic-lamp-3',
-      MAIL_PROVIDER: 'sendgrid', MAIL_RECIPIENTS: 'owner', MAIL_FROM_ADDRESS: 'lamp@example.com', MAIL_PROVIDER_API_KEY: 'synthetic-lamp-sendgrid-key' };
+      MAIL_PROVIDER: 'rer', MAIL_RECIPIENTS: 'owner', MAIL_FROM: 'lamp@example.com', MAIL_FROM_ADDRESS: 'lamp@example.com',
+      MAIL_RELAY_URL: relayUrl, MAIL_API_KEY: 'synthetic-lamp-relay-key' };
     const { app } = createApp(env);
     const call = (path, { method = 'GET', form, cookie } = {}) => app.fetch(new Request(origin + path, { method,
       headers: { Host: 'app.example.test', Origin: origin, 'CF-Connecting-IP': '192.0.2.41', Accept: 'text/html',
@@ -48,7 +50,7 @@ test('ACCESS-001 MAIL_RECIPIENTS=owner mails the sign-in link to the owner only,
     }
     assert.equal(new Set(answers).size, 1, `every address gets the same answer: ${answers.join(' | ')}`);
     assert.equal(sent.length, 1, 'exactly one message left: the owner\'s');
-    assert.deepEqual(sent[0].personalizations.flatMap(p => [...(p.to ?? []), ...(p.cc ?? []), ...(p.bcc ?? [])]).map(r => r.email), [owner]);
+    assert.deepEqual([sent[0].to, sent[0].cc, sent[0].bcc].filter(Boolean), [owner]);
 
     const link = new URL(JSON.stringify(sent[0]).match(/https:\/\/app\.example\.test\/auth\/confirm\?token=[A-Za-z0-9_-]+/)[0]);
     const token = link.searchParams.get('token');
