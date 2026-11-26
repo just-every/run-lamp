@@ -1,3 +1,4 @@
+import { submitPublicSubscription } from "./public-subscribe-request.mjs";
 import assert from "node:assert/strict";
 import { openSubscriberManagementFixture } from "./subscriber-management-fixture.mjs";
 
@@ -39,10 +40,10 @@ export async function incidentSubscriptionApiFlow() {
       const refused=await call(path,writer.token,"POST",{channel:"webhook",destination,contactEmail:address("unsafe-webhook")});
       assert.equal(refused.status,400,`${destination}: ${await refused.text()}`);
     }
-    const publicRefused=await raw(fixture.publicOrigin+"/subscribe/incident",{method:"POST",headers:{Origin:fixture.publicOrigin,"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({incidentId:incident.id,channel:"webhook",destination:"https://[::1]/synthetic-lamp-1",contactEmail:address("unsafe-public-webhook")}).toString()});
+    const publicRefused=await submitPublicSubscription(raw, fixture.publicOrigin+"/subscribe/incident",{method:"POST",headers:{Origin:fixture.publicOrigin,"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({incidentId:incident.id,channel:"webhook",destination:"https://[::1]/synthetic-lamp-1",contactEmail:address("unsafe-public-webhook")}).toString()});
     assert.equal(publicRefused.status,400,await publicRefused.text());
     for(const destination of unsafeDestinations.slice(4)) {
-      const refusedPublic=await raw(fixture.publicOrigin+"/subscribe/incident",{method:"POST",headers:{Origin:fixture.publicOrigin,"Content-Type":"application/x-www-form-urlencoded","CF-Connecting-IP":"203.0.113."+(unsafeDestinations.indexOf(destination)+1)},body:new URLSearchParams({incidentId:incident.id,channel:"webhook",destination,contactEmail:address("unsafe-public-webhook")}).toString()});
+      const refusedPublic=await submitPublicSubscription(raw, fixture.publicOrigin+"/subscribe/incident",{method:"POST",headers:{Origin:fixture.publicOrigin,"Content-Type":"application/x-www-form-urlencoded","CF-Connecting-IP":"203.0.113."+(unsafeDestinations.indexOf(destination)+1)},body:new URLSearchParams({incidentId:incident.id,channel:"webhook",destination,contactEmail:address("unsafe-public-webhook")}).toString()});
       assert.equal(refusedPublic.status,400,`${destination}: ${await refusedPublic.text()}`);
     }
     const afterUnsafe=await fixture.databaseState();

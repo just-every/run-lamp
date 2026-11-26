@@ -33,3 +33,8 @@
   .subscribe input { font-size: 16px; }
   .subscribe button { width: 100%; }
 }
+
+/* Offer the private, native form when scripts cannot fetch a signed token. */
+form[data-subscribe-check]:has(+ noscript.subscribe-no-script a, + noscript.subscribe-no-script p) {
+  display: none;
+}

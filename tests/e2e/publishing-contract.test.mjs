@@ -1,3 +1,4 @@
+import { submitPublicSubscription } from "./helpers/public-subscribe-request.mjs";
 import { maintenanceCancellationFlow, maintenanceReminderTimingFlow } from "./helpers/maintenance-notices-flow.mjs";
 import assert from 'node:assert/strict';
 import { admitAttributionOperator, actorAudits, assertMaintenanceActor, assertPublicationActor } from './helpers/operator-attribution.mjs';
@@ -129,7 +130,7 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
     assert.ok(JSON.stringify(preview.preview).includes(wording.customerImpact));
     await review(incident.id);
     const subscriber = 'reviewed-publication-reader@example.test';
-    const subscription = await j.raw(new URL('/subscribe', j.publicOrigin).href, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ email: subscriber, componentId: component.id }) });
+    const subscription = await submitPublicSubscription(j.raw, new URL('/subscribe', j.publicOrigin).href, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ email: subscriber, componentId: component.id }) });
     assert.equal(subscription.status, 202);
     const confirmation = await eventually(() => j.messages.find(mail => mail.to.includes(subscriber)), Boolean, 'subscriber confirmation mail');
     assert.equal((await j.raw(confirmation.text.match(/https?:\/\/\S+\/confirm-subscription\/\S+/)[0])).status, 200);

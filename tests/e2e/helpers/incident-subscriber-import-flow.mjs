@@ -1,3 +1,4 @@
+import { submitPublicSubscription } from "./public-subscribe-request.mjs";
 import assert from "node:assert/strict";
 import { notificationActivity, assertNoNewNotifications } from "../../helpers/import-notifications.mjs";
 
@@ -42,7 +43,7 @@ export async function incidentSubscriberImportFlow({ t, runtime, api, moveIn, im
   await assertNoNewNotifications(runtime, activity, "applying incident followers sends no replay or invitation");
   const tokensForFollower = async () => (await runtime.db.prepare('SELECT COUNT(*) AS count FROM subscriber_tokens WHERE subscriber_id=?').bind(follower.id).first()).count;
   assert.equal(await tokensForFollower(), 0, "silent import creates no confirmation authority");
-  const repeatedPublicPost = await runtime.raw(publicOrigin + "/subscribe/incident", { method: "POST", headers: { Accept: "text/html", "Content-Type": "application/x-www-form-urlencoded", "Sec-Fetch-Site": "same-origin" }, body: new URLSearchParams({ incidentId: incident.id, channel: "email", email: follower.destination }) });
+  const repeatedPublicPost = await submitPublicSubscription(runtime.raw, publicOrigin + "/subscribe/incident", { method: "POST", headers: { Accept: "text/html", "Content-Type": "application/x-www-form-urlencoded", "Sec-Fetch-Site": "same-origin" }, body: new URLSearchParams({ incidentId: incident.id, channel: "email", email: follower.destination }) });
   assert.equal(repeatedPublicPost.status, 202, await repeatedPublicPost.clone().text());
   assert.match(await repeatedPublicPost.text(), /Check your inbox/u);
   assert.equal(await tokensForFollower(), 0, "a repeated public POST cannot bypass the owner's import invitation or mint a confirmation token");

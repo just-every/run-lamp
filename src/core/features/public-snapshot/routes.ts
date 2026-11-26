@@ -12,6 +12,7 @@ import { incidentPublicationStatus } from "./incident-publication-status";
 import { nativeApiArtifact } from "./native-api";
 import { componentFeedArchiveKey, feedArchiveKey, historyArchiveKey } from "./archive";
 import { PRELAUNCH_ROBOTS_KEY, PRELAUNCH_ROBOTS_TAG } from "../prelaunch/policy";
+import { preparePublicSubscribeDocument, wantsNativeSubscribeForm } from "../subscribers/public-subscribe-markup";
 
 // Stable public URLs are selectors, not immutable artifacts. Revalidate the
 // generation on every reuse; downstream stale-while-revalidate can otherwise
@@ -186,7 +187,7 @@ export function registerPublicSnapshotRoutes(app: Hono<AppEnv>, service: PublicS
       const seen: { prelaunch?: boolean } = {};
       const response = await answerArtifact(artifact, download, missingArtifact, seen)(context);
       if (seen.prelaunch ?? await service.prelaunch()) response.headers.set("X-Robots-Tag", PRELAUNCH_ROBOTS_TAG);
-      return response;
+      return preparePublicSubscribeDocument(response, context.req.raw, context.env);
     };
   };
   const answerArtifact = (artifact: (context: Context<AppEnv>) => string, download: boolean, missingArtifact: string | undefined, seen: { prelaunch?: boolean }) => async (context: Context<AppEnv>): Promise<Response> => {
@@ -233,7 +234,7 @@ export function registerPublicSnapshotRoutes(app: Hono<AppEnv>, service: PublicS
         // Only a verified current generation can return 304. An outage must
         // deliver the stale-labelled body even if the visitor has these bytes.
         const validators = context.req.header("If-None-Match")?.split(",").map((value) => value.trim().replace(/^W\//, ""));
-        if (response.status === 200 && validators?.some((value) => value === "*" || value === etag.replace(/^W\//, ""))) {
+        if (response.status === 200 && !wantsNativeSubscribeForm(context.req.raw) && validators?.some((value) => value === "*" || value === etag.replace(/^W\//, ""))) {
           return new Response(null, { status: 304, headers: response.headers });
         }
         return response;

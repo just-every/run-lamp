@@ -6,12 +6,14 @@ import { z } from "zod";
 
 import type { AppEnv } from "../../app/types";
 import { MailUnavailableError } from "../../platform/mail";
-import { requestNetworkSubject, type PublicWriteRateLimiter } from "../../platform/security/rate-limiter";
+import type { PublicWriteRateLimiter } from "../../platform/security/rate-limiter";
+import { bodyLimit } from "hono/body-limit";
 import { ulidSchema } from "../../shared/ids";
 import { applyPublicIsolationHeaders } from "../public-snapshot/headers";
 import { renderSubscribeResult, renderSubscriberManagementPage, renderSubscriberTokenPage, type SubscribersService } from "./service";
 import { registerSubscriberIntakeRoutes } from "./intake-routes";
 import { webhookFormatSchema } from "./webhook-format";
+import { issuePublicSubscribeChallenge, type createPublicSubscribeCheck } from "./public-subscribe-check";
 
 const subscriberQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(100),
@@ -58,25 +60,32 @@ function parsedComponentIds(value: unknown) {
   });
 }
 
-export function registerSubscriberRoutes(app: Hono<AppEnv>, service: SubscribersService, options: { rateLimiter?: PublicWriteRateLimiter; prelaunch?: () => Promise<boolean>; localMail?: boolean; smsConfigured?: () => boolean } = {}) {
+export function registerSubscriberRoutes(app: Hono<AppEnv>, service: SubscribersService, options: { rateLimiter?: PublicWriteRateLimiter; check?: ReturnType<typeof createPublicSubscribeCheck>; prelaunch?: () => Promise<boolean>; localMail?: boolean; smsConfigured?: () => boolean } = {}) {
   registerSubscriberIntakeRoutes(app,service,options);
   // The link pages of existing subscribers keep working before launch, but offer no way back to a form that is not there.
   const subscribeOffered = async () => !(await options.prelaunch?.());
   const full = (request: Request, pageName: string) => tokenResponse(request, renderSubscriberTokenPage("Subscriptions full", `<p>This page cannot take new subscriptions on that channel right now.</p><p>Follow the feeds for updates.</p><nav class="status-utilities" aria-label="Feeds"><a href="/feed.atom">Atom feed</a><a href="/feed.rss">RSS feed</a></nav>`, pageName), 409);
   registerIncidentSubscriberRoutes(app,service,{...options,response:tokenResponse,full});
-  app.post("/subscribe", async (context) => {
+  app.get("/subscribe/challenge", async (context) => {
+    context.header("Cache-Control", "no-store");
+    if (context.req.header("Sec-Fetch-Site") === "cross-site") return context.body(null, 403);
+    const challenge = await issuePublicSubscribeChallenge(context.env, context.req.raw);
+    return challenge ? context.json(challenge) : context.body(null, 503);
+  });
+  app.post("/subscribe", bodyLimit({ maxSize: 16_384 }), async (context) => {
     const pageName = await service.getPageName();
     const result = (title: string, message: string, status: number) => publicFormResponse(context.req.raw, title, message, status, pageName);
     if (context.req.header("Sec-Fetch-Site") === "cross-site") return result("Subscription unavailable", "Cross-site subscription requests are not accepted.", 403);
-    if (options.rateLimiter && !(await options.rateLimiter.allow({ scope: "subscribe", subject: requestNetworkSubject(context.req.raw), limit: 5 }))) return result("Too many requests", "Too many subscription requests. Try again in a minute.", 429);
     // all: true keeps every ticked componentId; without it Hono keeps only the last one.
     const body = await context.req.parseBody({ all: true });
     const parsed = emailSchema.safeParse({ email: body.email });
     if (!parsed.success) return result("Check your email address", "Enter a valid email address.", 400);
     try {
       const componentIds = parsedComponentIds(body.componentId);
-      const preferences = formPreferences(body);
-      await service.requestEmailSubscription(parsed.data.email, new URL(context.req.url).origin, componentIds, preferences);
+      if (await options.check?.(context.req.raw, body)) {
+        const preferences = formPreferences(body);
+        await service.requestEmailSubscription(parsed.data.email, new URL(context.req.url).origin, componentIds, preferences);
+      }
       // Preserve the same response for active, pending and suppressed requests.
       if (!context.req.header("Accept")?.includes("text/html")) return options.localMail
         ? result("Local subscription", "No email was sent on this computer. The local owner can confirm pending subscribers in Subscribers → Delivery log.", 202)

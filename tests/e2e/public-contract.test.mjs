@@ -904,7 +904,7 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
       const body = await response.text();
       for (const value of [hidden.id, hidden.name, hidden.note]) assert.ok(!body.includes(value));
     }
-    assert.ok(html.includes('<form method="post" action="/subscribe">'));
+    assert.ok(html.includes('<form method="post" action="/subscribe"'));
     assert.ok(html.includes('data-local-time'));
     assert.ok(gzipSync(Buffer.from(html)).byteLength <= limits.snapshotMaxBytesGzipped.value, 'the declared catalogue remains usable at its public HTML budget');
     const ownAssets = [...html.matchAll(/<(?:script|link)\b[^>]+(?:src|href)="([^"]+)"/g)].map(match => match[1]);
@@ -1465,7 +1465,9 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
         await plain.screenshot({ path: `${process.env.LAMP_SCREENSHOTS}/${width}-script-disabled-refresh.png` });
       }
     }
+    await plain.getByRole('link', { name: 'Subscribe by email', exact: true }).click();
     await plain.locator('input[name=email]').fill('public-reader@example.test');
+    await delay(1000);
     await Promise.all([plain.waitForNavigation(), plain.locator('form[action="/subscribe"] button[type=submit]').click()]);
     await eventually(() => j.messages.find(message => message.to.includes('public-reader@example.test')), Boolean, 'plain form sends subscriber confirmation');
     await publicIsolationFlow(j, browser);

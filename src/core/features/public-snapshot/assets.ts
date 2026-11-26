@@ -1,6 +1,7 @@
 import { componentStateLabels } from "../../shared/component-state-label";
 import type { PageTheme } from "../../shared/page-theme";
 import { publicStyles } from "./public-styles";
+import subscribeScript from "../subscribers/public-subscribe-form.js?raw";
 
 /** Browser-only behavior and CSS belong to generated snapshot artifacts. */
 export const publicPageScript = String.raw`(() => {
@@ -53,7 +54,7 @@ export const publicPageScript = String.raw`(() => {
       // Keep the most recent status that loaded successfully.
     }
   }, 30000);
-})();`;
+})();${subscribeScript}`;
 
 export function publicPageStyles(accentColor: string, theme?: PageTheme, origin?: string) {
   return publicStyles(accentColor, theme, origin);

@@ -19,8 +19,8 @@ export default {
   async fetch(request: Request, env: Parameters<typeof worker.fetch>[1], context: ExecutionContext) {
     if (new URL(request.url).pathname === "/test/delivery-failures" && request.method === "GET") return Response.json(deliveryFailures);
     if (new URL(request.url).pathname === "/test/clock" && request.method === "PUT") {
-      const input = await request.json<{ now: number }>();
-      if (!Number.isFinite(input.now) || input.now < (clock ?? RealDate.now())) return new Response("Clock must advance", { status: 400 });
+      const input = await request.json<{ now: number; allowRewind?: boolean }>();
+      if (!Number.isFinite(input.now) || (input.allowRewind !== true && input.now < (clock ?? RealDate.now()))) return new Response("Clock must advance", { status: 400 });
       clock = input.now;
       return new Response(null, { status: 204 });
     }

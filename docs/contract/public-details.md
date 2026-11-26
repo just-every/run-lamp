@@ -12,7 +12,7 @@ The app host serves `/docs` and each published `/docs/<slug>` page as public doc
 
 ## PAGE-002 — Readable without script
 
-The complete content of PAGE-001, and the subscribe form of SUB-001, are present and usable in the initial HTML response. With JavaScript disabled, every status, update, and timestamp is rendered and readable and the subscribe form submits. Script preserves the page’s configured time zone and its visible label; operator entry, timelines, previews and public timestamps use that same zone.
+The initial HTML contains the complete content of PAGE-001 and the subscribe form of SUB-001. With JavaScript disabled, every status, update and timestamp is readable. The subscribe link opens the native form with a fresh token when using the built-in check. Script preserves the configured page time zone and its visible label. Operator entry, timelines, previews and public timestamps use that same zone.
 
 ## PAGE-003 — Weight
 
@@ -58,7 +58,7 @@ Page name, logo, accent color, timezone, hostname, and a footer-credit toggle ar
 
 ## PAGE-013 — Enforced isolation
 
-Every public page response carries a `Content-Security-Policy` whose `default-src`, `script-src`, `style-src`, `img-src`, `connect-src`, `form-action`, and `base-uri` name only the deployment's own origin, and `frame-ancestors 'none'`, together with `X-Content-Type-Options: nosniff` and `Referrer-Policy: strict-origin-when-cross-origin`. The page contains no CAPTCHA and no consent banner, because it stores nothing on the visitor's device and loads nothing that would need either.
+Public page responses carry a `Content-Security-Policy` whose `default-src`, `script-src`, `style-src`, `img-src`, `connect-src`, `form-action`, and `base-uri` name only the deployment's own origin by default, and `frame-ancestors 'none'`, together with `X-Content-Type-Options: nosniff` and `Referrer-Policy: strict-origin-when-cross-origin`. Installing the optional Turnstile check allows scripts and frames from `https://challenges.cloudflare.com` in public page documents. The default page contains no CAPTCHA or consent banner and stores no visitor data.
 
 ## PAGE-014 — Live refresh
 

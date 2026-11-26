@@ -45,6 +45,7 @@ import { registerPageSettingsRoutes } from "../features/page-settings";
 import { registerWebsiteRoutes } from "../features/website";
 import { registerOperatorRoutes, requireOperator, type OperatorReadSession } from "../features/operators/routes";
 import { registerSubscriberRoutes } from "../features/subscribers";
+import { createPublicSubscribeCheck } from "../features/subscribers/public-subscribe-check";
 import { registerPublicSnapshotRoutes } from "../features/public-snapshot";
 import { registerReportRoutes } from "../features/reports";
 import { registerAiRoutes } from "../features/ai";
@@ -121,7 +122,7 @@ export function createApp(bindings: AppBindings, execution?: MailExecution) {
   registerBriefRoutes(app, services.briefs);
   registerAiRoutes(app, services.ai);
   registerMaintenanceRoutes(app, services.maintenance);
-  registerSubscriberRoutes(app, services.subscribers, { rateLimiter: publicWriteLimiter, prelaunch: linkPagesPrelaunch, localMail, smsConfigured: services.sms.configured });
+  registerSubscriberRoutes(app, services.subscribers, { rateLimiter: publicWriteLimiter, check: createPublicSubscribeCheck(bindings, publicWriteLimiter), prelaunch: linkPagesPrelaunch, localMail, smsConfigured: services.sms.configured });
   registerIncidentFollowSettingsRoutes(app,bindings.DB,services.publicSnapshots.rebuild);
   registerPrelaunchRoutes(app,snapshotBlobs,bindings.DB,()=>services.publicSnapshots.rebuild(true));
   registerSmsRoutes(app,services.sms,()=>services.subscribers.getPageName(),bindings.TWILIO_AUTH_TOKEN,publicWriteLimiter);

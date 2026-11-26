@@ -72,6 +72,16 @@
       "environment": "SUBSCRIBER_TOKEN_SECRET"
     },
     {
+      "binding": "TURNSTILE_SITE_KEY",
+      "environment": "TURNSTILE_SITE_KEY",
+      "optional": true
+    },
+    {
+      "binding": "TURNSTILE_SECRET_KEY",
+      "environment": "TURNSTILE_SECRET_KEY",
+      "optional": true
+    },
+    {
       "binding": "WEBHOOK_SIGNING_SECRET",
       "environment": "WEBHOOK_SIGNING_SECRET"
     },

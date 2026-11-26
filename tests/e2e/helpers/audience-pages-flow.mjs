@@ -1,3 +1,4 @@
+import { submitPublicSubscription } from "./public-subscribe-request.mjs";
 import assert from 'node:assert/strict';
 import { legacyPublication, openAudienceInstallations } from './audience-archive-fixture.mjs';
 import { eventually, openStatusJourney } from './status-journey.mjs';
@@ -90,7 +91,7 @@ async function waitFor(j, page, path, marker) {
 
 async function subscribePublic(j) {
   const email = ['synthetic-lamp-audience-reader', 'example.test'].join('@');
-  const subscription = await j.raw(new URL('/subscribe', j.publicOrigin).href, {
+  const subscription = await submitPublicSubscription(j.raw, new URL('/subscribe', j.publicOrigin).href, {
     method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ email }),
   });
   assert.equal(subscription.status, 202);
@@ -356,7 +357,7 @@ export async function audiencePagesFlow() {
       assert.equal(unselected.status, 404, path);
       requireBody(await unselected.text(), [], staffOnly, `Acme ${path}`);
     }
-    const publicFollow = await j.raw(new URL('/subscribe/incident', j.publicOrigin).href, {
+    const publicFollow = await submitPublicSubscription(j.raw, new URL('/subscribe/incident', j.publicOrigin).href, {
       method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({ incidentId: confidential.id, channel: 'email', email: reader }),
     });

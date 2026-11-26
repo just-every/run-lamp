@@ -5,6 +5,7 @@ import { smsBindings } from './sms-subscriber-flow.mjs';
 import { recordedSlackExchange } from '../slack-subscriptions-helper.mjs';
 import { subscriberTeamsUrl } from '../teams-subscriptions-helper.mjs';
 import { actorAudits, admitAttributionOperator, assertActorAudit } from './operator-attribution.mjs';
+import { submitPublicSubscription } from './public-subscribe-request.mjs';
 
 const SUBSCRIBE_ROUTES = ['/subscribe', '/subscribe/incident', '/subscribe/teams', '/subscribe/sms', '/subscribe/slack'];
 
@@ -31,8 +32,13 @@ export async function prelaunchFlow() {
     const { incident } = await fixture.publish(component, 'Synthetic Lamp prelaunch incident');
     const incidentPath = `/incidents/${incident.reference}`;
     let network = 0;
-    const send = (path, init = {}) => raw(`${publicOrigin}${path}`, { ...init, headers: { 'CF-Connecting-IP': `192.0.2.${++network}`, ...init.headers } });
-    const form = (path, fields) => send(path, { method: 'POST', headers: { Origin: publicOrigin, Accept: 'text/html', 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams(fields).toString() });
+    const networkHeader = () => ({ 'CF-Connecting-IP': `192.0.2.${++network}` });
+    const send = (path, init = {}) => raw(`${publicOrigin}${path}`, { ...init, headers: { ...networkHeader(), ...init.headers } });
+    const form = (path, fields, challenge = false) => {
+      const url = publicOrigin + path;
+      const init = { method: 'POST', headers: { ...networkHeader(), Origin: publicOrigin, Accept: 'text/html', 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams(fields) };
+      return challenge ? submitPublicSubscription(raw, url, init) : raw(url, init);
+    };
     const bodies = {
       '/subscribe': { email: 'synthetic-lamp-stranger@example.test' },
       '/subscribe/incident': { incidentId: incident.id, channel: 'email', email: 'synthetic-lamp-stranger@example.test' },
@@ -75,11 +81,14 @@ export async function prelaunchFlow() {
     assert.equal(openRobots.status, 404);
     assert.equal(await openRobots.text(), 'Not found.');
     const sent = fixture.messages.length;
-    for (const route of SUBSCRIBE_ROUTES) assert.notEqual((await form(route, bodies[route])).status, 503, `${route} is open while the setting is unset`);
+    for (const route of SUBSCRIBE_ROUTES) {
+      const challenge = route === '/subscribe' || route === '/subscribe/incident';
+      assert.notEqual((await form(route, bodies[route], challenge)).status, 503, `${route} is open while the setting is unset`);
+    }
     assert.ok(fixture.messages.length > sent, 'an open page sends its confirmation');
     // An existing subscriber, to prove their links outlive the switch.
     const existing = 'synthetic-lamp-existing@example.test';
-    assert.equal((await form('/subscribe', { email: existing })).status, 202);
+    assert.equal((await form('/subscribe', { email: existing }, true)).status, 202);
     await fixture.confirm(existing);
     const unsubscribeLink = fixture.messagesFor(existing).flatMap(message => message.text.match(/https?:\/\/\S+\/unsubscribe\/\S+/) ?? [])[0];
     assert.ok(unsubscribeLink, 'the confirmation carries an unsubscribe link');
@@ -89,7 +98,7 @@ export async function prelaunchFlow() {
     const manageLink = await eventuallySubscriber(async () => linkIn(existing, /https?:\/\/\S+\/manage\/\S+/), Boolean, 'the existing subscriber gets a manage link');
     // A second subscriber who has not confirmed yet: their link must still work once the page is pre-launch.
     const pending = 'synthetic-lamp-pending@example.test';
-    assert.equal((await form('/subscribe', { email: pending })).status, 202);
+    assert.equal((await form('/subscribe', { email: pending }, true)).status, 202);
     const confirmLink = await eventuallySubscriber(async () => linkIn(pending, /https?:\/\/\S+\/confirm-subscription\/\S+/), Boolean, 'the pending subscriber gets a confirmation link');
     // The link pages of subscribers and the Teams card, each with its own function. The Teams token is unissued:
     // the page still wears the same masthead.
@@ -225,7 +234,9 @@ export async function prelaunchFlow() {
     assert.equal(restored.headers.get('x-robots-tag'), null);
     assert.ok(mastheadSubscribe(await (await send(`/confirm-subscription/${unissued}`)).text()), 'link pages carry the masthead Subscribe link again');
     assert.equal((await send('/robots.txt')).status, 404);
-    assert.equal((await form('/subscribe', { email: 'synthetic-lamp-later@example.test' })).status, 202, 'a stranger can subscribe once the page has launched');
+    const later = 'synthetic-lamp-later@example.test';
+    assert.equal((await form('/subscribe', { email: later }, true)).status, 202);
+    assert.ok(fixture.messagesFor(later).some(mail => mail.text.includes('/confirm-subscription/')), 'a stranger can subscribe once the page has launched');
     await fixture.signIn(adminEmail);
     await assertRefused(true, 401, 'the revoked Admin session cannot enable pre-launch');
   } finally {

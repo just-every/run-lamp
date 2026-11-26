@@ -1,3 +1,4 @@
+import { submitPublicSubscription } from "./public-subscribe-request.mjs";
 import { completeRoute } from "./complete-route.mjs";
 import assert from "node:assert/strict";
 import { mkdir } from "node:fs/promises";
@@ -21,7 +22,7 @@ export async function subscriberPreferencesFlow() {
       const form = new URLSearchParams({ email, componentId: component.id, preferencesPresent: "1" });
       for (const eventKind of eventKinds) form.append("eventKind", eventKind);
       if (minimumImpact) form.set("minimumImpact", minimumImpact);
-      const response = await raw(`${pageOrigin}/subscribe`, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded", Origin: pageOrigin, Accept: "text/html" }, body: form.toString() });
+      const response = await submitPublicSubscription(raw, `${pageOrigin}/subscribe`, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded", Origin: pageOrigin, Accept: "text/html" }, body: form.toString() });
       const text = await response.text();
       assert.equal(response.status, 202, text);
       return { status: response.status, text };

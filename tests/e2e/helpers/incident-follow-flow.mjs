@@ -1,3 +1,4 @@
+import { submitPublicSubscription } from "./public-subscribe-request.mjs";
 import { incidentFollowConsentFlow } from "./incident-follow-consent-flow.mjs";
 import assert from "node:assert/strict";
 import { openIncidentFollowFixture } from "./incident-follow-fixture.mjs";
@@ -49,7 +50,7 @@ export async function incidentFollowFlow() {
     const original = (await list()).find(row => row.destination === email);
     assert.equal(original.state, "pending");
     const pageSubscribe = async () => {
-      const response = await raw(`${fixture.origin}/subscribe`, { method: "POST", headers: { Origin: fixture.origin, Accept: "text/html", "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ email }).toString() });
+      const response = await submitPublicSubscription(raw, `${fixture.origin}/subscribe`, { method: "POST", headers: { Origin: fixture.origin, Accept: "text/html", "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ email }).toString() });
       return { status: response.status, text: await response.text() };
     };
     const pageAccepted = await pageSubscribe();

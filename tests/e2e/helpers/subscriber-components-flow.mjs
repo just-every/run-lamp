@@ -1,3 +1,4 @@
+import { submitPublicSubscription } from "./public-subscribe-request.mjs";
 import assert from "node:assert/strict";
 import { parse } from "parse5";
 import { openSubscriberManagementFixture, eventuallySubscriber, pageOrigin } from "./subscriber-management-fixture.mjs";
@@ -24,7 +25,7 @@ export async function subscriberComponentsFlow() {
         const form = new URLSearchParams({ email: address, preferencesPresent: "1" });
         for (const componentId of componentIds) form.append("componentId", componentId);
         for (const kind of ["incidents", "maintenance"]) form.append("eventKind", kind);
-        const response = await raw(`${pageOrigin}/subscribe`, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded", Origin: pageOrigin }, body: form.toString() });
+        const response = await submitPublicSubscription(raw, `${pageOrigin}/subscribe`, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded", Origin: pageOrigin }, body: form.toString() });
         assert.equal(response.status, 202, await response.text());
         id = (await fixture.list()).find(row => row.destination === address).id;
       } else {
@@ -35,7 +36,7 @@ export async function subscriberComponentsFlow() {
       }
       await fixture.confirm(address);
       if (channel === "email") {
-        const response = await raw(`${pageOrigin}/subscribe`, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded", Origin: pageOrigin }, body: new URLSearchParams({ email: address }).toString() });
+        const response = await submitPublicSubscription(raw, `${pageOrigin}/subscribe`, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded", Origin: pageOrigin }, body: new URLSearchParams({ email: address }).toString() });
         assert.equal(response.status, 202, await response.text());
       }
       const manageUrl = fixture.messagesFor(address).map(message => message.text.match(/https?:\/\/\S+\/manage\/\S+/)?.[0]).find(Boolean);

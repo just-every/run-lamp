@@ -1,4 +1,5 @@
 import type { Hono } from "hono";
+import { bodyLimit } from "hono/body-limit";
 import { z } from "zod";
 import type { AppEnv } from "../../app/types";
 import { ulidSchema } from "../../shared/ids";
@@ -7,6 +8,7 @@ import { MailUnavailableError } from "../../platform/mail";
 import { SubscriberLimitError } from "./limits";
 import { IncidentSubscriptionUnavailableError } from "./incident.repository";
 import { renderSubscriberTokenPage, type SubscribersService } from "./service";
+import type { createPublicSubscribeCheck } from "./public-subscribe-check";
 
 const includeReport=z.preprocess(value=>value===undefined?undefined:Array.isArray(value)?value.includes("1"):value==="1",z.boolean().optional());
 const incidentFollowSchema=z.discriminatedUnion("channel",[
@@ -19,21 +21,29 @@ const escapeHtml=(value:string)=>value.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"
 
 export function registerIncidentSubscriberRoutes(app:Hono<AppEnv>,service:SubscribersService,options:{
   rateLimiter?:PublicWriteRateLimiter;
+  check?:ReturnType<typeof createPublicSubscribeCheck>;
   localMail?:boolean;
   response:(request:Request,body:string,status?:number)=>Response;
   full:(request:Request,pageName:string)=>Response;
 }) {
-  app.post("/subscribe/incident",async context=>{
+  app.post("/subscribe/incident",bodyLimit({maxSize:16_384}),async context=>{
     const pageName=await service.getPageName();
     const result=(title:string,message:string,status:number)=>options.response(context.req.raw,renderSubscriberTokenPage(title,`<p>${message}</p><p><a href="/">See current status</a></p>`,pageName),status);
     if(context.req.header("Sec-Fetch-Site")==="cross-site")return result("Subscription unavailable","Cross-site subscription requests are not accepted.",403);
-    if(options.rateLimiter&&!await options.rateLimiter.allow({scope:"subscribe",subject:requestNetworkSubject(context.req.raw),limit:5}))return result("Too many requests","Too many subscription requests. Try again in a minute.",429);
-    const input=incidentFollowSchema.safeParse(await context.req.parseBody({all:true}));
+    const body=await context.req.parseBody({all:true});
+    const { subscribeWebsite, subscribeToken, "cf-turnstile-response": turnstile, ...subscription } = body;
+    const input=incidentFollowSchema.safeParse(subscription);
     if(!input.success)return result("Check your subscription","Choose a valid incident, channel and address.",400);
     try {
+      if(input.data.channel!=="sms") {
+        if(await options.check?.(context.req.raw,body))await service.requestIncidentSubscription(input.data,new URL(context.req.url).origin);
+        return options.localMail
+          ? result("Local subscription","No email was sent on this computer. The local owner can confirm pending subscribers in Subscribers → Delivery log.",202)
+          : result("Check your inbox","Check your email to confirm or manage this incident subscription.",202);
+      }
+      if(options.rateLimiter&&!await options.rateLimiter.allow({scope:"subscribe",subject:requestNetworkSubject(context.req.raw),limit:5}))return result("Too many requests","Too many subscription requests. Try again in a minute.",429);
       const incident=await service.requestIncidentSubscription(input.data,new URL(context.req.url).origin);
-      if(options.localMail&&input.data.channel!=="sms")return result("Local subscription",`No email was sent on this computer. The local owner can confirm pending subscribers in Subscribers → Delivery log. Following ${escapeHtml(incident.reference)} only.`,202);
-      return result(input.data.channel==="sms"?"Check your messages":"Check your inbox",`Check your ${input.data.channel==="sms"?"messages":"email"} to confirm or manage this subscription. Following ${escapeHtml(incident.reference)} only.`,202);
+      return result("Check your messages",`Check your messages to confirm or manage this subscription. Following ${escapeHtml(incident.reference)} only.`,202);
     } catch(cause) {
       if(cause instanceof SubscriberLimitError)return options.full(context.req.raw,pageName);
       if(cause instanceof IncidentSubscriptionUnavailableError)return result("Subscription unavailable","This incident is unavailable.",404);

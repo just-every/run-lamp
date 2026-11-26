@@ -1,4 +1,5 @@
 import { subscriberChannelsFlow } from './subscriber-channels-flow.mjs';
+import { submitPublicSubscriptionAt } from "./public-subscribe-request.mjs";
 import assert from "node:assert/strict";
 import { writeFile } from "node:fs/promises";
 import { openSubscriberManagementFixture, eventuallySubscriber } from "./subscriber-management-fixture.mjs";
@@ -14,14 +15,15 @@ export async function subscriberPublicConsentFlow() {
   const start = Date.now() + 60_000;
   const pendingAddress = address("pending"), activeAddress = address("active");
   const measurements = [];
-  const clock = async now => {
-    const response = await raw("/test/clock", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ now }) });
+  let now;
+  const clock = async time => {
+    const response = await raw("/test/clock", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ now: time }) });
     assert.equal(response.status, 204, await response.text());
+    now = time;
   };
   const subscribe = async email => {
-    // Deliberately send no Origin, Cookie, Authorization or form token. This
-    // request never loads a form or signs in on the public host beforehand.
-    const response = await raw(`${publicOrigin}/subscribe`, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ email }).toString() });
+    // The anonymous challenge needs no Origin, Cookie or Authorization.
+    const response = await submitPublicSubscriptionAt(raw, `${publicOrigin}/subscribe`, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ email }).toString() }, now);
     assert.equal(response.status, 202, await response.text());
     assert.equal(response.headers.get("set-cookie"), null, "public submission needs no ambient session");
   };

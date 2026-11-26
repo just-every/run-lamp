@@ -61,6 +61,10 @@ export async function withDeploymentSecrets(config, kept, action) {
     // Absent, it is left out rather than blanked: Wrangler keeps what the Worker holds.
     ...(config.oidcTransactionSecret ? { OIDC_TRANSACTION_SECRET: config.oidcTransactionSecret } : {}),
     SUBSCRIBER_TOKEN_SECRET: config.subscriberTokenSecret,
+    ...(config.turnstileSiteKey && config.turnstileSecretKey ? {
+      TURNSTILE_SITE_KEY: config.turnstileSiteKey,
+      TURNSTILE_SECRET_KEY: config.turnstileSecretKey,
+    } : {}),
     WEBHOOK_SIGNING_SECRET: config.webhookSigningSecret,
     RESEND_WEBHOOK_SECRET: config.resendWebhookSecret ?? "",
     MAIL_SECONDARY_API_KEY: config.mailSecondaryApiKey ?? "",

@@ -1,3 +1,4 @@
+import { submitPublicSubscription } from "./public-subscribe-request.mjs";
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { openFollowUpsRuntime, eventuallyFollowUp } from './follow-ups-runtime.mjs';
@@ -203,7 +204,7 @@ export async function socialPostsFlow(t) {
 
     t.diagnostic('INTEG-002 acceptance 4: X 503 receives five retries, then a failed row and one operator alert; public artifacts, email and the other accounts continue.');
     const email = 'synthetic-lamp-social@example.test';
-    const subscribed = await raw(`${publicOrigin}/subscribe`, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded', Origin: publicOrigin }, body: new URLSearchParams({ email, componentId: affected.id }).toString() });
+    const subscribed = await submitPublicSubscription(raw, `${publicOrigin}/subscribe`, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded', Origin: publicOrigin }, body: new URLSearchParams({ email, componentId: affected.id }).toString() });
     assert.equal(subscribed.status, 202, await subscribed.clone().text());
     const invitation = await eventuallyFollowUp(() => fixtureRuntime.messages.find(message => message.to.includes(email)), Boolean, 'subscriber confirmation mail is sent');
     const confirmation = invitation.text.match(/https?:\/\/\S+\/confirm-subscription\/\S+/)[0];

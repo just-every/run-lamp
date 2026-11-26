@@ -5,6 +5,7 @@ import { expect } from '@playwright/test';
 import { operatorHydrated } from './operator-hydrated.mjs';
 import { withDraftVersion } from '../draft-version-helper.mjs';
 import { providerSettingsGuideFlow } from './provider-settings-guide-flow.mjs';
+import { submitPublicSubscription } from './public-subscribe-request.mjs';
 
 /** Real local public/operator doors and silent development mail; no transport
  * fake and no direct subscriber-state mutation participates in this journey. */
@@ -75,10 +76,10 @@ export async function localSubscribersFlow({ browser, context, origin }) {
     await expect(follow).toHaveCount(0);
     await screens('local-incident-mail-off');
     // Preserve the native local-confirmation test for an incident follower.
-    const followedLocally = await context.request.post(publicOrigin + '/subscribe/incident', {
-      form: { incidentId: incident.id, channel: 'email', email: incidentEmail },
+    const followedLocally = await submitPublicSubscription(fetch, publicOrigin + '/subscribe/incident', {
+      method: 'POST', body: new URLSearchParams({ incidentId: incident.id, channel: 'email', email: incidentEmail }),
     });
-    assert.equal(followedLocally.status(), 202);
+    assert.equal(followedLocally.status, 202);
     assert.match(await followedLocally.text(), /No email was sent on this computer/);
     const subscribers = (await api('/api/app/subscribers')).subscribers.filter(row => [pageEmail, incidentEmail].includes(row.destination));
     assert.equal(subscribers.length, 2);

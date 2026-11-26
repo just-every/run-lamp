@@ -197,6 +197,9 @@ export function deploymentConfig(env = process.env, environment = "production", 
   }
   const mailProviderApiKey = ["none", "rer"].includes(mailProvider) ? undefined : secret(required(env, "MAIL_PROVIDER_API_KEY"), "MAIL_PROVIDER_API_KEY");
   const subscriberTokenSecret = secret(required(env, "SUBSCRIBER_TOKEN_SECRET"), "SUBSCRIBER_TOKEN_SECRET");
+  const turnstileSiteKey = optional(env.TURNSTILE_SITE_KEY);
+  const turnstileSecretKey = optional(env.TURNSTILE_SECRET_KEY);
+  if (Boolean(turnstileSiteKey) !== Boolean(turnstileSecretKey)) throw new Error("Configure both TURNSTILE_SITE_KEY and TURNSTILE_SECRET_KEY.");
   const webhookSigningSecret = secret(required(env, "WEBHOOK_SIGNING_SECRET"), "WEBHOOK_SIGNING_SECRET");
   const mailDkimSelector = ["none", "rer"].includes(mailProvider) ? undefined : required(env, "MAIL_DKIM_SELECTOR").toLowerCase();
   if (mailDkimSelector !== undefined && !/^[a-z0-9][a-z0-9-]{0,62}$/.test(mailDkimSelector)) throw new Error("MAIL_DKIM_SELECTOR must be a DNS label.");
@@ -249,6 +252,8 @@ export function deploymentConfig(env = process.env, environment = "production", 
     mailRecipients,
     sendGridWebhookPublicKey,
     subscriberTokenSecret,
+    turnstileSiteKey,
+    turnstileSecretKey,
     webhookSigningSecret,
     mailDkimSelector,
     resendWebhookSecret,

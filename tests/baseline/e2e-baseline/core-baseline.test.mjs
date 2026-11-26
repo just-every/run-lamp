@@ -10,6 +10,7 @@ import { chromium } from "playwright";
 import { baseline } from "./case.mjs";
 import { createBaselineFixture } from "./fixture.mjs";
 import { sessionCookieName } from "../../helpers/session-cookie.mjs";
+import { submitPublicSubscription } from "../../e2e/helpers/public-subscribe-request.mjs";
 
 let fixture;
 
@@ -20,14 +21,6 @@ before(async () => {
 after(async () => {
   await fixture?.dispose();
 });
-
-function publicWrite(path, body, send = fixture.fetch) {
-  return send(path, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams(body),
-  });
-}
 
 function componentInput(overrides = {}) {
   return {
@@ -70,9 +63,13 @@ baseline(["BASE-ACCESS-001","BASE-ACCESS-002","BASE-ACCESS-003","BASE-ACCESS-004
   {
   const reads = await Promise.all(Array.from({ length: 8 }, () => fixture.fetch("/")));
   assert.ok(reads.every((response) => response.status === 200), "PAGE-008 correctly supersedes read-path rate limiting only");
-  const writes = [];
-  for (let attempt = 0; attempt < 6; attempt += 1) writes.push(await publicWrite("/subscribe", { email: `reader-${attempt}@baseline.test` }));
-  assert.ok(writes.some(response => response.status === 429), "anonymous writes are rate-limited while public reads remain available");
+  const publicFetch = (url, init) => fixture.fetch(new URL(url).pathname, init);
+  const writes = await Promise.all(Array.from({ length: 16 }, (_, attempt) => submitPublicSubscription(publicFetch, `${fixture.pageUrl}/subscribe`, {
+    method: "POST", body: new URLSearchParams({ email: `reader-${attempt}@baseline.test` }),
+  })));
+  assert.ok(writes.some(response => response.status === 503), "eligible submissions reach the unconfigured sender");
+  assert.ok(writes.some(response => response.status === 202), "rate-limited submissions quietly skip the unconfigured sender");
+  assert.equal(fixture.sql("SELECT COUNT(*) AS n FROM subscribers WHERE destination LIKE 'reader-%@baseline.test'", true)[0].n, 0);
   assert.equal((await fixture.fetch("/not-a-public-path")).status, 404);
   assert.equal((await fixture.fetchApp("/api/app/components")).status, 401);
   }

@@ -1,3 +1,4 @@
+import { noScriptSubscribeLink, subscribeHoneypot } from "../../subscribers/public-subscribe-markup";
 import { emailSubscriptionsUnavailable } from "../../subscribers/public-subscription-channels";
 import { componentStateLabel } from "../../../shared/component-state-label";
 import { maintenanceNoticeBody } from "../record-markup";
@@ -47,7 +48,7 @@ export function tagline(model: PublicSnapshotModel) {
 export function subscribeForm(model: PublicSnapshotModel, id: string, className = "", placeholder = "Your email address") {
   if (model.prelaunch) return "";
   if (!model.subscriptionChannels.email) return emailSubscriptionsUnavailable;
-  return `<form class="tpl-subscribe${className ? ` ${className}` : ""}" method="post" action="/subscribe"><label class="sr-only" for="${id}">Email address</label><input id="${id}" name="email" type="email" autocomplete="email" required placeholder="${placeholder}"><button type="submit">Subscribe</button></form>`;
+  return `<form class="tpl-subscribe${className ? ` ${className}` : ""}" method="post" action="/subscribe" data-subscribe-check><label class="sr-only" for="${id}">Email address</label><input id="${id}" name="email" type="email" autocomplete="email" required placeholder="${placeholder}"><button type="submit">Subscribe</button>${subscribeHoneypot}</form>${noScriptSubscribeLink("subscribe", "Subscribe by email")}`;
 }
 
 export function feedLinks(className = "", label = "Status feeds") {

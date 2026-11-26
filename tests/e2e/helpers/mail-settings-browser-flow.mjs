@@ -1,3 +1,4 @@
+import { submitPublicSubscription } from "./public-subscribe-request.mjs";
 import { incidentBrowserReceiptKey } from './incident-follow-browser-lifecycle.mjs';
 import { incidentFollowBrowserFlow } from './incident-follow-browser-flow.mjs';
 import { smsBindings, smsProviderEdge } from './sms-subscriber-flow.mjs';
@@ -117,7 +118,7 @@ export async function mailSettingsBrowserFlow(t){
     const componentResponse=await post('/api/app/components',{groupId:null,name:'Synthetic Lamp UI API',description:'',internal:false,displayOrder:1,note:''});assert.equal(componentResponse.status,201,componentResponse.text);
     const component = componentResponse.body.component;
     const address = ['synthetic-lamp-ui-1', 'example.test'].join('@');
-    const subscribed=await runtime.dispatchFetch(`${pageOrigin}/subscribe`,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({email:address,componentId:component.id})});assert.equal(subscribed.status,202,await subscribed.text());
+    const subscribed=await submitPublicSubscription(runtime.dispatchFetch.bind(runtime), `${pageOrigin}/subscribe`,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({email:address,componentId:component.id})});assert.equal(subscribed.status,202,await subscribed.text());
     const invitationMail=messages.find(message=>message.to.includes(address)&&message.text.includes('/confirm-subscription/'));assert.ok(invitationMail);
     assert.equal((await runtime.dispatchFetch(invitationMail.text.match(/https?:\/\/\S+\/confirm-subscription\/\S+/)[0])).status,200);
     const subscribers = await api('/api/app/subscribers');

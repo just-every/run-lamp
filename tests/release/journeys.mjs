@@ -2,10 +2,12 @@ import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
 import { moveInDoor } from "../helpers/import-notifications.mjs";
+import { submitPublicSubscription } from "../e2e/helpers/public-subscribe-request.mjs";
 import {
   bindings,
   client,
   inventory,
+  page,
   publish,
   settle,
   signIn,
@@ -234,7 +236,8 @@ export async function upgradedJourneys(mf, data, before, current, mail) {
     (await c.public(`/incidents/${published.reference}`)).status,
     200,
   );
-  const response = await c.public("/subscribe", {
+  const publicFetch = (url, init) => c.public(new URL(url).pathname, init);
+  const response = await submitPublicSubscription(publicFetch, page + "/subscribe", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: "email=new-after-upgrade%40example.test",

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { submitPublicSubscriptionAt } from "./public-subscribe-request.mjs";
 import { openSubscriberManagementFixture } from "./subscriber-management-fixture.mjs";
 
 const HOUR = 3_600_000;
@@ -18,11 +19,11 @@ export async function subscriberExpiryFlow() {
     const result = await (await fixture.runtime.getWorker()).scheduled({ cron: "* * * * *", scheduledTime: now });
     assert.equal(result.outcome, "ok", "the native scheduled handler completes at the controlled instant");
   };
-  const subscribe = async number => {
+  const subscribe = async (number, now) => {
     const email = address(number);
-    const response = await raw(`${publicOrigin}/subscribe`, { method: "POST", headers: {
+    const response = await submitPublicSubscriptionAt(raw, `${publicOrigin}/subscribe`, { method: "POST", headers: {
       Origin: publicOrigin, "Content-Type": "application/x-www-form-urlencoded", "CF-Connecting-IP": `192.0.2.${number}`,
-    }, body: new URLSearchParams({ email }).toString() });
+    }, body: new URLSearchParams({ email }).toString() }, now);
     assert.equal(response.status, 202, await response.text());
     const subscriber = (await list()).find(row => row.destination === email);
     assert.ok(subscriber, "the operator inventory contains the publicly submitted address");
@@ -53,14 +54,14 @@ export async function subscriberExpiryFlow() {
     const to = new Date(Date.parse(from) + 4 * 24 * HOUR).toISOString().slice(0, 10);
     const reportPath = `/api/app/subscriber-reporting?from=${from}&to=${to}`;
     await clock(start);
-    const first = await subscribe(1);
-    const control = await subscribe(2);
+    const first = await subscribe(1, start);
+    const control = await subscribe(2, start);
     await fixture.confirm(control.destination);
     const confirmed = { ...control, state: "active" };
     const active = await persisted(confirmed.id);
     assert.equal(active.state, "active");
     await clock(start + 2 * HOUR);
-    const second = await subscribe(3);
+    const second = await subscribe(3, start + 2 * HOUR);
     assert.equal(Date.parse(first.createdAt), start);
     assert.equal(Date.parse(second.createdAt), start + 2 * HOUR, "each subscription has its own creation instant");
 

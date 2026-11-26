@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { submitPublicSubscriptionAt } from "./public-subscribe-request.mjs";
 import { openFollowUpsRuntime, eventuallyFollowUp, pageOrigin } from "./follow-ups-runtime.mjs";
 import { followUpsImport } from "./follow-ups-import.mjs";
 
@@ -40,7 +41,7 @@ export async function reportRemindersFlow(t) {
       assert.equal(connected.status, 201, connected.text);
     }
     const subscriber = ["synthetic-lamp-report-private", "example.test"].join("@");
-    const subscription = await fixture.raw(pageOrigin + "/subscribe", { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ email: subscriber, componentId: component.id }) });
+    const subscription = await submitPublicSubscriptionAt(fixture.raw, pageOrigin + "/subscribe", { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ email: subscriber, componentId: component.id }) }, startedAt);
     assert.equal(subscription.status, 202);
     const invitation = fixture.messages.find(message => message.to.includes(subscriber));
     assert.ok(invitation, "the subscriber's consent mail crosses the provider edge");

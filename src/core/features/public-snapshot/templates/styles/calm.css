@@ -71,6 +71,8 @@
   .calm-actions .tpl-subscribe input { width: 84px; height: 36px; border-bottom: 1px solid var(--line-strong); border-radius: 0; padding: 0 1px; }
   .calm-actions .tpl-subscribe::after { content: ""; order: 1; width: 1px; height: 26px; flex: none; margin: 0 8px; background: var(--line-strong); }
   .calm-actions .tpl-subscribe button { order: 2; height: 36px; padding: 0 12px; }
+  .calm-head:has([data-subscribe-status]:not(:empty), [data-subscribe-widget]) { grid-template-areas: "brand brand" "tagline tagline" "actions actions"; }
+  .calm-actions .tpl-subscribe:has([data-subscribe-status]:not(:empty), [data-subscribe-widget]) { flex: 1; }
   .calm-actions .tpl-feeds { display: none; }
   .calm-status { padding-top: 40px; }
   .calm-sentence { font-size: 31px; line-height: 1.2; }

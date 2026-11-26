@@ -1,3 +1,4 @@
+import { submitPublicSubscription, submitPublicSubscriptionAt } from './helpers/public-subscribe-request.mjs';
 import { completeRoute } from './helpers/complete-route.mjs';
 import assert from 'node:assert/strict';
 import { generateKeyPairSync, sign, createHmac, createHash, randomBytes } from 'node:crypto';
@@ -152,7 +153,7 @@ test('BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SU
         return Array.isArray(to) ? to.includes(email) : to === email;
       });
       const textFor = email => sentTo(email).map(row => wire(row.body).text).join('\n');
-      const subscribe = email => raw(pageOrigin + '/subscribe', { method: 'POST', headers: { Origin: pageOrigin, 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ email }).toString() });
+      const subscribe = email => submitPublicSubscription(raw, pageOrigin + '/subscribe', { method: 'POST', headers: { Origin: pageOrigin, 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ email }).toString() });
       const result = await call('/auth/magic-link', { email: owner });
       assert.equal(result.status, 202, await result.clone().text());
       assert.equal((await call('/auth/magic-link', { email: 'unknown@example.test' })).status, 202);
@@ -444,7 +445,11 @@ test('BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SU
         const beforeSuppressed = sentTo(pending).length; responseStatus = 202;
         await publish('No later send to the bounced reader.'); await tick();
         assert.equal(sentTo(pending).length, beforeSuppressed);
-        expiring = 'expiry@example.test'; assert.equal((await subscribe(expiring)).status, 202);
+        expiring = 'expiry@example.test';
+        const expirySubscription = await submitPublicSubscriptionAt(raw, pageOrigin + '/subscribe', {
+          method: 'POST', headers: { Origin: pageOrigin }, body: new URLSearchParams({ email: expiring }),
+        }, scheduledAt);
+        assert.equal(expirySubscription.status, 202);
       }
       const remaining = (await (await call('/api/app/subscribers')).json()).subscribers.find(row => row.destination === expiring);
       await db.prepare("UPDATE subscribers SET created_at='2000-01-01T00:00:00Z',updated_at='2000-01-01T00:00:00Z' WHERE id=?").bind(remaining.id).run();
@@ -523,7 +528,7 @@ test('Managed sender readiness clears an obsolete failure and enables subscriber
         assert.match(before.sender.message, /redeploy Lamp/i);
         assert.match(before.sender.message, provider === 'rer' ? /managed mail connection/i : /MAIL_PROVIDER_API_KEY/);
       }
-      const response = await runtime.dispatchFetch(pageOrigin + '/subscribe', { method: 'POST',
+      const response = await submitPublicSubscription(runtime.dispatchFetch.bind(runtime), pageOrigin + '/subscribe', { method: 'POST',
         headers: { Host: 'status.example.test', Origin: pageOrigin, Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({ email: reader }) });
       if (ready) {

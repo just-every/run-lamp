@@ -7,6 +7,7 @@ import calmSource from "./styles/calm.css?raw";
 import historyLedSource from "./styles/history-led.css?raw";
 import regionsSource from "./styles/regions.css?raw";
 import script from "./script.js?raw";
+import subscribeScript from "../../subscribers/public-subscribe-form.js?raw";
 import { localPublicPageFonts } from "../local-fonts";
 import { accentInk } from "../../../shared/accent-ink";
 import { historyLedStyles } from "./history-led";
@@ -25,4 +26,4 @@ export function templateStyles(template: TemplateName, model: PublicSnapshotMode
   return `${localPublicPageFonts}${foundation}${sharedSource}${subscriptionSource}${sources[template]}${generated}${themeStyles(model.theme, model.origin)}`;
 }
 
-export const templateScript = script;
+export const templateScript = script + subscribeScript;

@@ -4,7 +4,7 @@ This file records mechanism moved from the contract. The numbered acceptance poi
 
 ## Email subscription doors
 
-SUB-001 submits a standard POST without CSRF token or ambient session. A `Sec-Fetch-Site: cross-site` request returns 403. The subscriber confirmation policy extension is `subscriber.confirmation.v1`. A pending subscription expires 72 hours after creation. Tokens have at least 128 bits of entropy, identify only one subscription and travel in emailed token URLs. Token-addressed responses set `Referrer-Policy: no-referrer` and `X-Robots-Tag: noindex`. BASE-PUBLIC-001 supplies the cookie rule.
+SUB-001 submits a standard POST with a signed form token and no ambient session. Public forms that can send email share the same network allowance. A `Sec-Fetch-Site: cross-site` request returns 403. The subscriber confirmation policy extension is `subscriber.confirmation.v1`. A pending subscription expires 72 hours after creation. Emailed tokens have at least 128 bits of entropy and identify only one subscription. Token-addressed responses set `Referrer-Policy: no-referrer` and `X-Robots-Tag: noindex`. BASE-PUBLIC-001 supplies the cookie rule.
 
 SUB-006 notification mail carries `List-Unsubscribe` with both `mailto:` and `https:` values, `List-Unsubscribe-Post: List-Unsubscribe=One-Click`, and a visible body link. The web value accepts multipart/form-data or application/x-www-form-urlencoded with `List-Unsubscribe=One-Click`, returning 200 without redirect, cookie or further interaction. Both headers appear in DKIM's `h=` tag. The BASE-ACCESS-003 limiter is keyed per subscription token, never a mailbox provider's source IP.
 

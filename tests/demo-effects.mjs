@@ -1,3 +1,4 @@
+import { submitPublicSubscription } from "./e2e/helpers/public-subscribe-request.mjs";
 import assert from 'node:assert/strict';
 
 /** Exercise real operator/public routes and successful demo effects. */
@@ -26,7 +27,7 @@ export async function exerciseDemo({ origin, pageOrigin, key, cookie, fetch }) {
   const { live } = (await api('/api/app/overview/live')).body;
   assert.equal(live.subscribe?.ok, true, 'Lamp\'s own check reads the real public subscription form');
   assert.equal(live.sender.state, 'verified', 'the demo sender reads as a configured one\'s');
-  const subscription = await fetch(pageOrigin + '/subscribe', { method: 'POST', headers: { Origin: pageOrigin, 'x-rer-dev-key': key }, body: new URLSearchParams({ email: 'visitor@example.invalid' }) });
+  const subscription = await submitPublicSubscription(fetch, pageOrigin + '/subscribe', { method: 'POST', headers: { Origin: pageOrigin, 'x-rer-dev-key': key }, body: new URLSearchParams({ email: 'visitor@example.invalid' }) });
   assert.equal(subscription.status, 202);
   for (const [kind, url] of [['slack', 'https://hooks.slack.com/services/T0DEMO/B0DEMO/demonstration'], ['teams', 'https://demo.webhook.office.com/workflows/demo']]) {
     assert.equal((await api('/api/app/channels', { kind, name: `Demo ${kind}`, url, componentIds: [] })).status, 201);

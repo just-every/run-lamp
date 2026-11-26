@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { submitPublicSubscriptionAt } from "./public-subscribe-request.mjs";
 import { mkdir, writeFile } from 'node:fs/promises';
 import { chromium } from 'playwright';
 import { openStatusJourney, eventually } from './status-journey.mjs';
@@ -33,7 +34,7 @@ export async function maintenanceReminderTimingFlow() {
     const reader = ['synthetic-lamp-1', 'example.test'].join('@');
     const otherReader = ['synthetic-lamp-2', 'example.test'].join('@');
     for (const [email, selected] of [[reader, component], [otherReader, otherComponent]]) {
-      assert.equal((await j.raw(j.publicOrigin + '/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ email, componentId: selected.id }) })).status, 202);
+      assert.equal((await submitPublicSubscriptionAt(j.raw, j.publicOrigin + '/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ email, componentId: selected.id }) }, now)).status, 202);
       const confirmation = await eventually(() => j.messages.find(mail => mail.to.includes(email)), Boolean, 'reminder subscriber confirmation');
       assert.equal((await j.raw(confirmation.text.match(/https?:\/\/\S+\/confirm-subscription\/\S+/)[0])).status, 200);
     }
@@ -152,7 +153,7 @@ export async function maintenanceCancellationFlow() {
     await j.json('/api/app/page-settings', 'PUT', { pageName, tagline, accentColor, hostname, footerCreditEnabled, widgetAllowedOrigins, mailFromAddress, timezone: 'Australia/Brisbane' });
     const component = await j.component('Billing');
     const reader = 'synthetic-maintenance-reader@example.test';
-    assert.equal((await j.raw(j.publicOrigin + '/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ email: reader, componentId: component.id }) })).status, 202);
+    assert.equal((await submitPublicSubscriptionAt(j.raw, j.publicOrigin + '/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ email: reader, componentId: component.id }) }, now)).status, 202);
     const confirmation = await eventually(() => j.messages.find(mail => mail.to.includes(reader)), Boolean, 'subscriber confirmation');
     assert.equal((await j.raw(confirmation.text.match(/https?:\/\/\S+\/confirm-subscription\/\S+/)[0])).status, 200);
     browser = await chromium.launch({ headless: true, ...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH } : {}), args: ['--no-sandbox', '--use-mock-keychain', '--password-store=basic'] });

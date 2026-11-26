@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { submitPublicSubscriptionAt } from "./public-subscribe-request.mjs";
 import { createHmac } from 'node:crypto';
 import { createRequire } from 'node:module';
 const require=createRequire(import.meta.url);
@@ -113,7 +114,10 @@ export async function mailFailoverFlow({ t, vite, secondaryProvider='mailgun' })
     const componentResponse=await post('/api/app/components',{groupId:null,name:'Synthetic Lamp failover API',description:'',internal:false,displayOrder:0,note:''});
     assert.equal(componentResponse.status,201,componentResponse.text);
     const component=componentResponse.body.component;
-    const subscribed=await runtime.app.fetch(new Request(`${pageOrigin}/subscribe`,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({email:address,componentId:component.id})}),bindings,execution);
+    const publicFetch = (url, init) => runtime.app.fetch(new Request(url, init), bindings, execution);
+    const subscribed = await submitPublicSubscriptionAt(publicFetch, `${pageOrigin}/subscribe`, {
+      method: 'POST', body: new URLSearchParams({ email: address, componentId: component.id }),
+    }, Date.now(), time => t.mock.timers.setTime(time));
     assert.equal(subscribed.status,202,await subscribed.text());
     const confirmation=primary.find(row=>row.body.to.includes(address)&&row.body.text.includes('/confirm-subscription/'));
     assert.ok(confirmation,'the real primary adapter sent the public confirmation');

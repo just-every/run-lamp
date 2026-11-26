@@ -265,6 +265,17 @@
       ]
     },
     {
+      "id": "subscription-turnstile",
+      "required": false,
+      "why": "An installation can opt in to Cloudflare Turnstile for public email and incident-follow subscription forms. Lamp verifies the visitor's challenge at challenges.cloudflare.com. The application sends no subscriber address to this service.",
+      "data": [
+        "Public widget identifier and status page hostname",
+        "Visitor browser signals collected by the widget",
+        "Challenge response and the installation's validation credential"
+      ],
+      "adapters": []
+    },
+    {
       "id": "ai-provider",
       "required": false,
       "why": "DRAFT-001 only. Absent, the composer shows no suggestion control and no request is made (DRAFT-003). Internal notes are never sent (DRAFT-002).",
@@ -552,7 +563,19 @@
       "name": "SUBSCRIBER_TOKEN_SECRET",
       "required": true,
       "secret": true,
-      "why": "Signs the opaque subscriber tokens in SUB-005."
+      "why": "Signs the public form challenge in SUB-001 and opaque subscriber tokens in SUB-005."
+    },
+    {
+      "name": "TURNSTILE_SITE_KEY",
+      "required": false,
+      "secret": false,
+      "why": "Optional Turnstile widget identifier for the public status hostname; configure with TURNSTILE_SECRET_KEY."
+    },
+    {
+      "name": "TURNSTILE_SECRET_KEY",
+      "required": false,
+      "secret": true,
+      "why": "Verifies Turnstile responses for the optional subscription challenge; configure with TURNSTILE_SITE_KEY."
     },
     {
       "name": "WEBHOOK_SIGNING_SECRET",

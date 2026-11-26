@@ -1,3 +1,4 @@
+import { submitPublicSubscription } from "./public-subscribe-request.mjs";
 import assert from "node:assert/strict";
 
 const DAY = 86_400_000;
@@ -21,7 +22,7 @@ export async function incidentFollowConsentFlow(fixture, incident, other) {
   assert.equal((await subscribe(incident.id, { email: shared })).status, 202);
   await fixture.confirm(shared);
   const following = (await list()).find(row => row.destination === shared);
-  const pageSubscription = await raw(`${fixture.origin}/subscribe`, { method: "POST", headers: { Origin: fixture.origin, Accept: "text/html", "Content-Type": "application/x-www-form-urlencoded", "CF-Connecting-IP": "192.0.2.240" }, body: new URLSearchParams({ email: shared }).toString() });
+  const pageSubscription = await submitPublicSubscription(raw, `${fixture.origin}/subscribe`, { method: "POST", headers: { Origin: fixture.origin, Accept: "text/html", "Content-Type": "application/x-www-form-urlencoded", "CF-Connecting-IP": "192.0.2.240" }, body: new URLSearchParams({ email: shared }).toString() });
   assert.equal(pageSubscription.status, 202);
   const coexist = (await list()).filter(row => row.destination === shared);
   assert.equal(coexist.length, 2, "page and incident scopes can coexist at the same address");

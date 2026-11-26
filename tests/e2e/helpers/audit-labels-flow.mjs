@@ -1,3 +1,4 @@
+import { submitPublicSubscription } from "./public-subscribe-request.mjs";
 import assert from 'node:assert/strict';
 import { expect } from '@playwright/test';
 import { subscriberCsvRows } from './subscriber-management-fixture.mjs';
@@ -24,7 +25,7 @@ export async function auditLabelsFlow({ page, appUrl, pageUrl, appFetch, screens
   // The public subscribe door records mail as System, while CSV intake records
   // the importing operator. Both must resolve the same live directory identity.
   const destination = 'synthetic-lamp-audit-active@example.test';
-  const subscribed = await fetch(pageUrl + '/subscribe', { method: 'POST', headers: { Origin: pageUrl }, body: new URLSearchParams({ email: destination, componentId: component.id }) });
+  const subscribed = await submitPublicSubscription(fetch, pageUrl + '/subscribe', { method: 'POST', headers: { Origin: pageUrl }, body: new URLSearchParams({ email: destination, componentId: component.id }) });
   assert.equal(subscribed.status, 202);
   const subscriber = (await api('/api/app/subscribers')).subscribers.find(row => row.destination === destination);
   assert.ok(subscriber);

@@ -1,3 +1,4 @@
+import { subscribeBotcheckFlow } from './helpers/subscribe-botcheck-flow.mjs';
 import { internalStandingClaimSilenceFlow } from './helpers/component-notification-flow.mjs';
 import { subscriberPublicConsentFlow } from './helpers/subscriber-public-consent-flow.mjs';
 import { perUpdateChannelsFlow } from './helpers/per-update-channels-flow.mjs';
@@ -67,6 +68,8 @@ test('NOTIFY-002 — Every eligible capacity recipient reaches provider acceptan
 test('Failing subscriber destinations deactivate with reasons, alert the webhook contact and suppress queued and future notifications', { timeout: 300_000 }, t => subscriberFailuresFlow(t, assertDeliveryInventory));
 
 test('SUB-024 — A page that has not launched offers no subscription, sends nothing to strangers and stays out of search', { timeout: 300_000 }, prelaunchFlow);
+
+test('SUB-001 — Public subscribe screens mail before sending a confirmation', { timeout: 120_000 }, subscribeBotcheckFlow);
 
 test('SUB-001 — Generic public email consent preserves the daily allowance, pending silence and anonymous submission boundary', { timeout: 120_000 }, subscriberPublicConsentFlow);
 

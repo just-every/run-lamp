@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { submitPublicSubscriptionAt } from "./public-subscribe-request.mjs";
 import { mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import { chromium } from "playwright";
@@ -30,9 +31,9 @@ export async function subscriberOneClickFlow() {
     await clock(minute + 1_000);
     const component = await fixture.createComponent("Synthetic Lamp one-click component");
     for (const email of addresses) {
-      const response = await send(`${publicOrigin}/subscribe`, { method: "POST", headers: {
-        Origin: publicOrigin, "Content-Type": "application/x-www-form-urlencoded",
-      }, body: new URLSearchParams({ email, componentId: component.id }).toString() });
+      const response = await submitPublicSubscriptionAt(raw, `${publicOrigin}/subscribe`, { method: "POST", headers: {
+        ...network, Origin: publicOrigin, "Content-Type": "application/x-www-form-urlencoded",
+      }, body: new URLSearchParams({ email, componentId: component.id }).toString() }, minute + 1_000);
       assert.equal(response.status, 202, await response.text());
       await fixture.confirm(email);
     }

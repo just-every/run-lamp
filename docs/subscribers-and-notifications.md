@@ -47,6 +47,13 @@ missing managed-mail inputs. For an edition with a custom `mail.sender.v1`
 adapter, its author configures that adapter in `src/ext/index.server.ts`.
 Keep all credential values private; Notifications displays provider names only.
 
+Public email subscriptions and incident follows that send email use a built-in
+spam check and rate limits. To also require Cloudflare Turnstile, configure a
+widget for the public status hostname and set both `TURNSTILE_SITE_KEY` and
+`TURNSTILE_SECRET_KEY` in the private deploy inputs. This option needs JavaScript
+in the visitor's browser. Without Turnstile, visitors with JavaScript disabled
+can open **Subscribe by email** to use a native form.
+
 ## Connect SMS delivery
 
 SMS uses your Twilio account and a registered 10DLC campaign or verified toll-free

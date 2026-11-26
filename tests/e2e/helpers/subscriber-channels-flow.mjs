@@ -127,7 +127,9 @@ export async function subscriberChannelsFlow() {
     await offers(['/subscribe', '/subscribe/teams']);
     assert.deepEqual(await fixture.list(), [], 'unavailable and refused forms create no subscribers');
     const email = 'synthetic-lamp-channel-email@example.test';
+    await page.getByRole('link', { name: 'Subscribe by email', exact: true }).click();
     await page.locator('#email').fill(email);
+    await page.waitForTimeout(1_000);
     const emailResponse = page.waitForNavigation();
     await page.locator('form[action="/subscribe"] button[type="submit"]').click();
     assert.equal((await emailResponse).status(), 202, 'email can still subscribe through the script-free form');

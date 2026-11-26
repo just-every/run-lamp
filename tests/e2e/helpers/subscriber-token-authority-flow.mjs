@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash, createHmac } from "node:crypto";
 import { openSubscriberManagementFixture, pageOrigin } from "./subscriber-management-fixture.mjs";
+import { submitPublicSubscription } from "./public-subscribe-request.mjs";
 
 /** Exercise issued authority through anonymous HTTP, never service methods. */
 export async function subscriberTokenAuthorityFlow() {
@@ -10,10 +11,13 @@ export async function subscriberTokenAuthorityFlow() {
     const { raw, db } = fixture;
     const first = await fixture.createComponent("Synthetic Lamp token first component");
     const second = await fixture.createComponent("Synthetic Lamp token second component");
-    const form = (path, values) => raw(path, {
-      method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded", Origin: pageOrigin },
-      body: new URLSearchParams(values).toString(),
-    });
+    const form = (path, values) => {
+      const init = {
+        method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded", Origin: pageOrigin },
+        body: new URLSearchParams(values).toString(),
+      };
+      return new URL(path).pathname === "/subscribe" ? submitPublicSubscription(raw, path, init) : raw(path, init);
+    };
     const inventory = async () => ({
       listed: (await fixture.list()).sort((a, b) => a.id.localeCompare(b.id)),
       subscribers: (await db.prepare("SELECT * FROM subscribers ORDER BY id").all()).results,

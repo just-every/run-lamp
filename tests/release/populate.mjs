@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
 import { moveInDoor } from "../helpers/import-notifications.mjs";
+import { submitPublicSubscription } from "../e2e/helpers/public-subscribe-request.mjs";
 import {
   bindings,
   client,
@@ -58,17 +59,18 @@ export async function populate(mf, source, mail) {
   assert.equal(uploaded.status, 200, await uploaded.clone().text());
   const logoKey = (await uploaded.json()).settings.logoKey;
   const subscriptions = {};
+  const publicFetch = (url, init) => c.public(new URL(url).pathname, init);
   for (const [name, confirm] of [
     ["active", true],
     ["pending", false],
     ["deactivated", true],
   ]) {
     const email = `${name}@upgrade.example.test`;
-    const response = await c.public("/subscribe", {
+    const response = await submitPublicSubscription(publicFetch, page + "/subscribe", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({ email }).toString(),
-    });
+    }, { allowMissingChallenge: true });
     assert.equal(response.status, 202, await response.clone().text());
     const message = mail.findLast((m) => JSON.stringify(m.to).includes(email));
     assert.ok(message);

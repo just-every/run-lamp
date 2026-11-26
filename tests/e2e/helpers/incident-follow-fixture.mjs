@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { createHmac } from "node:crypto";
 import { openSubscriberManagementFixture, eventuallySubscriber } from "./subscriber-management-fixture.mjs";
+import { submitPublicSubscription } from "./public-subscribe-request.mjs";
 
 const receiptKey = Buffer.from("synthetic-lamp-subscriber-receipts");
 
@@ -22,12 +23,15 @@ export async function openIncidentFollowFixture({ receipts = true, ...options } 
   };
   let requestNumber = 0;
   const subscribe = async (incidentId, input, headers = {}) => {
-    const response = await raw(`${origin}/subscribe/incident`, {
+    const url = `${origin}/subscribe/incident`;
+    const init = {
       method: "POST",
       headers: { Origin: origin, Accept: "text/html", "Content-Type": "application/x-www-form-urlencoded",
         "CF-Connecting-IP": `192.0.2.${++requestNumber}`, ...headers },
       body: new URLSearchParams({ incidentId, channel: "email", ...input }).toString(),
-    });
+    };
+    const response = headers["Sec-Fetch-Site"] === "cross-site"
+      ? await raw(url, init) : await submitPublicSubscription(raw, url, init);
     return { status: response.status, text: await response.text(), headers: response.headers };
   };
   const create = async (component, title) => {

@@ -22,6 +22,11 @@ body { background: var(--paper); }
 .tpl-subscribe.on-dark button { background: var(--accent); color: var(--accent-ink); }
 .tpl-subscribe.on-dark button:hover { filter: brightness(.94); }
 .tpl-subscribe.on-dark button:focus-visible, .tpl-subscribe.on-dark input:focus-visible { outline-color: var(--accent); }
+.tpl-subscribe:has([data-subscribe-status]:not(:empty), [data-subscribe-widget]) { flex-wrap: wrap; border-radius: 16px; }
+.tpl-subscribe:has([data-subscribe-status]:not(:empty), [data-subscribe-widget]) > input[type=email] { flex-basis: 0; }
+.tpl-subscribe [data-subscribe-status], .tpl-subscribe [data-subscribe-widget] { flex: 0 0 100%; order: 3; margin: 0; padding: 6px 10px; }
+.tpl-subscribe [data-subscribe-status] { color: var(--ink); font-size: 13px; }
+.tpl-subscribe [data-subscribe-status]:empty { display: none; }
 
 .tpl-feeds { display: flex; align-items: center; gap: 4px 18px; font-size: 13px; }
 .tpl-feeds a { display: inline-flex; align-items: center; gap: 6px; min-height: 24px; color: var(--ink); text-underline-offset: 3px; }

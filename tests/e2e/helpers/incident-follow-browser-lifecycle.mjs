@@ -10,9 +10,11 @@ export async function incidentFollowBrowserLifecycle({page,pageOrigin,api,post,r
   const inbox=()=>messages.filter(message=>message.to.includes(recipient));
   const tick=async at=>assert.equal((await(await runtime.getWorker()).scheduled({cron:'* * * * *',scheduledTime:at??Date.now()})).outcome,'ok');
   await page.goto(`${pageOrigin}/incidents/${incident.reference}`);
+  await page.getByRole('link', { name: 'Get incident updates', exact: true }).click();
   const form=page.locator('form').filter({has:page.getByLabel('Email address',{exact:true})});
   await form.getByLabel('Email address',{exact:true}).fill(recipient);
   await form.getByRole('checkbox',{name:'Include the post-incident report',exact:true}).uncheck();
+  await page.waitForTimeout(1_000);
   const accepted=page.waitForResponse(response=>new URL(response.url()).pathname==='/subscribe/incident'&&response.request().method()==='POST');
   await form.getByRole('button',{name:'Get incident updates',exact:true}).click();assert.equal((await accepted).status(),202);
   const invitation=await eventuallySubscriber(()=>inbox().find(message=>message.text.includes('/confirm-subscription/')),Boolean,'the no-script lifetime recipient receives confirmation');

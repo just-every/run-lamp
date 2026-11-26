@@ -1,3 +1,4 @@
+import { submitPublicSubscription } from "./public-subscribe-request.mjs";
 import assert from "node:assert/strict";
 import { eventuallyFollowUp, pageOrigin } from "./follow-ups-runtime.mjs";
 import { assertOneOperatorEmail, settleOperatorEmails } from "./operator-email-proof.mjs";
@@ -27,7 +28,7 @@ export async function followUpsNotificationFlow({ fixture, component, createInci
   assert.ok(!(await fixture.api(endpoint)).body.followUps.some(row => row.id === channelEntry.id), "removing the failed channel resolves its obligation");
 
   const email = "synthetic-lamp-rejected@example.test";
-  const subscribed = await fixture.runtime.dispatchFetch(pageOrigin + "/subscribe", {
+  const subscribed = await submitPublicSubscription(fixture.raw, pageOrigin + "/subscribe", {
     method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded", Origin: pageOrigin },
     body: new URLSearchParams({ email, componentId: component.id }).toString(),
   });

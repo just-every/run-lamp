@@ -1,3 +1,4 @@
+import { submitPublicSubscription } from "./helpers/public-subscribe-request.mjs";
 import { completeRoute } from './helpers/complete-route.mjs';
 import { incidentSnapshot } from '../helpers/incident-snapshot.mjs';
 import assert from 'node:assert/strict';
@@ -314,7 +315,7 @@ test('SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOV
     const nativeIncident = await runtime.incident('Owner investigation kept in draft', [nativeComponent]);
     const { draft: nativeDraft } = await runtime.save(nativeIncident.id, { customerImpact: 'Owner wording kept private.' });
     const nativeAddress = ['synthetic-lamp-preview', 'example.test'].join('@');
-    const subscription = await fetch(publicOrigin + '/subscribe', {
+    const subscription = await submitPublicSubscription(fetch, publicOrigin + '/subscribe', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded', Origin: publicOrigin, Accept: 'text/html' },
       body: new URLSearchParams({ email: nativeAddress, componentId: nativeComponent.id }).toString(),
