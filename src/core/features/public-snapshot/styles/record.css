@@ -3,10 +3,9 @@
 .timeline-group { display: grid; gap: 12px; min-width: 0; }
 .timeline-group + .timeline-group { margin-top: 32px; }
 .timeline-group > h3 { margin: 0 0 2px; color: var(--ink-3); font-size: 12px; line-height: 1.3; letter-spacing: .12em; text-transform: uppercase; }
-.timeline-entry { min-width: 0; border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); box-shadow: var(--shadow-card); padding: 26px 28px; }
-/* Live work is ringed on all four sides, on white: the lamp's amber for an open incident, its own blue for maintenance in progress. */
-.timeline-incident { border-color: var(--amber); }
-.timeline-maintenance:has(.state-in-progress) { border-color: var(--maint); }
+.timeline-entry { min-width: 0; border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); box-shadow: var(--shadow-card); padding: 28px 32px; }
+/* Live work sits on the same white plate as everything else; its state pill and the newest update's dot carry its
+   state colour. */
 .resolved-list { min-width: 0; border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); box-shadow: var(--shadow-card); }
 .resolved-list .timeline-resolved { border: 0; border-radius: 0; background: none; box-shadow: none; padding: 20px 28px; }
 .resolved-list .timeline-resolved + .timeline-resolved { border-top: 1px solid var(--line); }
@@ -14,21 +13,22 @@
 .incident, .maintenance, .about, .report { min-width: 0; }
 .record-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px 16px; }
 .record-title { min-width: 0; }
-.section-kicker { margin: 0 0 4px; color: var(--ink-3); font-size: 13px; font-weight: 500; line-height: 1.4; }
+.section-kicker { width: fit-content; margin: 0 0 8px; border-radius: 999px; background: var(--accent-tint); padding: 3px 12px; color: var(--accent-text); font-size: 14px; font-weight: 600; line-height: 1.4; }
 .record-title h1, .record-title h3, .record-title h4 { margin: 0; font-size: 18px; line-height: 1.35; letter-spacing: -.012em; overflow-wrap: anywhere; }
 .record-title a { text-decoration: none; }
 .record-title a:hover { text-decoration: underline; }
+.timeline-incident .record-title h4, .timeline-maintenance .record-title h4 { font-size: 26px; font-weight: 700; line-height: 1.25; letter-spacing: -.02em; }
 .resolved-incident .record-title h4 { font-size: 16px; }
-.incident-meta, .maintenance-window { margin: 8px 0 0; color: var(--ink-2); font-size: 14px; overflow-wrap: anywhere; }
+.incident-meta, .maintenance-window { margin: 8px 0 0; color: var(--ink-2); font-size: 15px; overflow-wrap: anywhere; }
 .maintenance-window { color: var(--ink); }
 .overrun { display: inline-block; margin-left: 6px; border-radius: 999px; background: var(--amber-wash); padding: 1px 9px; color: var(--amber-ink); font-size: 13px; font-weight: 500; }
 .resolved-summary { margin: 8px 0 0; color: var(--ink); font-size: 14px; overflow-wrap: anywhere; }
 
 /* Updates: newest first along a quiet rail; the newest live one carries the amber dot. */
-.updates { display: grid; gap: 22px; min-width: 0; margin: 22px 0 0 5px; border-left: 2px solid var(--line); padding-left: 22px; }
+.updates { display: grid; gap: 22px; min-width: 0; margin: 22px 0 0 5px; border-left: 2px solid var(--line); padding-left: 24px; }
 .updates:empty { display: none; }
 .update { position: relative; min-width: 0; }
-.update::before { content: ""; position: absolute; top: 5px; left: -29px; width: 12px; height: 12px; border: 2px solid var(--card); border-radius: 50%; background: #cfd4cf; }
+.update::before { content: ""; position: absolute; top: 5px; left: -29px; width: 12px; height: 12px; border: 2px solid var(--card); border-radius: 50%; background: #c9d5dd; }
 .timeline-incident .update:first-child::before { background: var(--amber); }
 .timeline-maintenance:has(.state-in-progress) .update:first-child::before { background: var(--maint); }
 .update-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 12px; }
@@ -37,7 +37,7 @@
 .update-head span { color: var(--ink-3); font-size: 13px; }
 .update dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 28px; margin: 10px 0 0; }
 .update dt, .maintenance-notice dt { color: var(--ink-3); font-size: 13px; font-weight: 500; }
-.update dd, .maintenance-notice dd { margin: 2px 0 0; color: var(--ink); font-size: 14px; line-height: 1.55; overflow-wrap: anywhere; white-space: pre-wrap; }
+.update dd, .maintenance-notice dd { margin: 2px 0 0; color: var(--ink-2); font-size: 14px; line-height: 1.55; overflow-wrap: anywhere; white-space: pre-wrap; }
 .maintenance-notice dl { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; margin: 10px 0 0; }
 .maintenance-notice p { margin: 6px 0 0; color: var(--ink); font-size: 14px; overflow-wrap: anywhere; }
 .incident > .text-link { margin-top: 20px; }

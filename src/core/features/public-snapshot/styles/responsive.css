@@ -4,19 +4,27 @@
 }
 @media (max-width: 640px) {
   .page { padding: 0 16px 32px; }
-  .masthead { gap: 14px; padding: 24px 0 22px; }
-  .brand { font-size: 19px; }
+  :root { --band-overlap: 44px; }
+  .masthead { gap: 14px; margin-bottom: 28px; padding: 22px 0 26px; }
+  .masthead:has(+ .status-banner, + .subscriber-document) { padding-bottom: calc(26px + var(--band-overlap)); }
+  .brand { gap: 10px; font-size: 20px; }
   .brand-mark { width: 32px; height: 32px; border-radius: 9px; }
-  .tagline { margin-left: 0; margin-top: 10px; }
+  .brand-logo { height: 32px; }
+  .brand-logo + span { margin-inline-start: 4px; padding-inline-start: 14px; }
+  .tagline { margin-left: 0; margin-top: 8px; font-size: 14px; }
   .status-utilities { width: 100%; margin-left: -10px; }
-  .status-utilities a { padding-inline: 10px; }
+  .status-utilities a { padding-inline: 12px; }
   .status-utilities .subscribe-link { margin-left: auto; padding-inline: 16px; }
-  #status-live { border-radius: 18px; padding: 22px 20px; }
-  .status-summary { gap: 14px; }
-  .overall-status-icon { width: 46px; height: 46px; }
-  .overall-status-icon svg { width: 26px; height: 26px; }
-  .status-summary h1 { font-size: 26px; }
-  .status-live-update { margin-top: 18px; padding-top: 14px; }
+  .section-heading h2 { font-size: 24px; }
+  .status-banner { padding: 22px 20px 14px; }
+  .status-wave { display: none; }
+  .status-summary { gap: 16px; }
+  .overall-status-icon { width: 52px; height: 52px; }
+  .overall-status-icon svg { width: 28px; height: 28px; }
+  .status-summary h1 { font-size: 30px; }
+  .status-live-update { margin: 16px 0 0; }
+  #status-live { margin-bottom: 12px; padding-bottom: 18px; }
+  .timeline-incident .record-title h4, .timeline-maintenance .record-title h4 { font-size: 21px; }
   .component-health, .history-timeline { margin-top: 44px; }
   .component-group { padding: 0 16px; }
   .component-group > h3, .component-group > .group-head { margin-inline: -16px; padding-inline: 16px; }

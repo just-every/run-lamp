@@ -31,7 +31,8 @@
 
 /* Subscriber pages, reached from an emailed link: one centred plate under the business's mark. */
 .subscriber-document { max-width: 592px; margin-inline: auto; }
-.subscriber-document { border: 1px solid var(--line); border-radius: 20px; background: var(--card); box-shadow: var(--shadow-card); padding: 36px 40px; }
+.masthead + .subscriber-document { margin-top: calc(-1 * var(--band-overlap)); }
+.subscriber-document { position: relative; z-index: 1; border: 1px solid var(--line); border-radius: 20px; background: var(--card); box-shadow: var(--shadow-card); padding: 36px 40px; }
 .subscriber-document h1 { margin: 0 0 10px; font-size: 26px; line-height: 1.2; letter-spacing: -.02em; }
 .subscriber-document p { margin: 0 0 12px; color: var(--ink-2); }
 .subscriber-document ol { padding-left: 24px; }

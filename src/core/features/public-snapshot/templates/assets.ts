@@ -1,7 +1,6 @@
 import subscriptionSource from "../styles/subscription.css?raw";
 import { themeStyles } from "../theme-rendering";
 import type { PublicSnapshotModel } from "../renderer";
-import foundationSource from "../styles/foundation.css?raw";
 import sharedSource from "./styles/shared.css?raw";
 import calmSource from "./styles/calm.css?raw";
 import historyLedSource from "./styles/history-led.css?raw";
@@ -9,7 +8,7 @@ import regionsSource from "./styles/regions.css?raw";
 import script from "./script.js?raw";
 import subscribeScript from "../../subscribers/public-subscribe-form.js?raw";
 import { localPublicPageFonts } from "../local-fonts";
-import { accentInk } from "../../../shared/accent-ink";
+import { foundationStyles } from "../brand-tokens";
 import { historyLedStyles } from "./history-led";
 import { regionsMapStyles } from "./regions";
 import type { TemplateName } from "./parts";
@@ -21,9 +20,8 @@ const sources: Record<TemplateName, string> = { calm: calmSource, uptime: histor
  *  the page allows no inline style. */
 export function templateStyles(template: TemplateName, model: PublicSnapshotModel) {
   const { accentColor } = model.settings;
-  const foundation = foundationSource.replace("__LAMP_ACCENT_COLOR__", accentColor).replace("__LAMP_ACCENT_INK__", accentInk(accentColor));
   const generated = template === "regions" ? regionsMapStyles(model) : template === "uptime" ? historyLedStyles(model) : "";
-  return `${localPublicPageFonts}${foundation}${sharedSource}${subscriptionSource}${sources[template]}${generated}${themeStyles(model.theme, model.origin)}`;
+  return `${localPublicPageFonts}${foundationStyles(accentColor)}${sharedSource}${subscriptionSource}${sources[template]}${generated}${themeStyles(model.theme, model.origin)}`;
 }
 
 export const templateScript = script + subscribeScript;
