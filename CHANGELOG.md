@@ -3,10 +3,11 @@
 ## 1.11.45
 
 - **A request builds the stored page only when it safely can.** Cloudflare cancels a request's work when its client hangs up and ends it 30 seconds after its answer. A page build cancelled there kept its `building` record, and nothing else could publish the page until that record was five minutes old, logged as "Snapshot build lease expired before completion". 1.11.44 moved the `/health` build to the Queue. Now a pushed metric point and an Uptime timing also hand the due publication to the Queue, and an operator's save builds in its own request only while the page's last published build took under 10 seconds. A slower page is built by the Queue consumer, and the save answers at once. Cron publishes the change within a minute if the Queue cannot take the message. When publication is due and cannot start, Lamp logs the ID of the build that holds the page, when it started and when its claim is released.
+- **The public page's header takes the business's brand colour.** The saved accent colour fills a band across the top of every public page, with a soft wave shaded from the same colour, and the current-status card overlaps it. Header text is white, the page ink or black, whichever reads at 4.5:1 or better on that colour, and a white or black logo that would vanish into the band gets a thin outline. The rest of the page is white with cooler ink and no warm glow. Status colours are unchanged, and the update time and time details now sit inside the status card. Custom CSS that coloured the masthead is no longer needed and can be removed.
 
 ### Upgrading from 1.11.44
 
-Back up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.45`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release adds no migrations.
+Back up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.45`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release adds no migrations. The stored public page rebuilds once after the update.
 
 ## 1.11.44
 
