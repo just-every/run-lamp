@@ -120,7 +120,7 @@ async function assertNativeGenerationRevalidation(j, component, incident, initia
   console.info('PROBE PAGE-007 1: seven warmed public addresses after native publication -> superseded validators return 200 with current generation and expected content, current validators return empty 304');
 }
 
-test('Malformed retained build source hydrates public data during the same scheduled refresh', async () => {
+test('Cron recovers an interrupted build and hydrates public data when the retained source is malformed', async () => {
   const journey = await openStatusJourney({ workerEntry: 'tests/e2e/helpers/clocked-status-journey.worker.ts' });
   try {
     const component = await journey.component('Synthetic Lamp clock refresh service');
@@ -142,10 +142,16 @@ test('Malformed retained build source hydrates public data during the same sched
     const sourceKey = `snapshots/${initial.version}/build-source.json`;
     assert.ok(await bucket.get(sourceKey), 'the generation retains its source for scheduled refreshes');
     await bucket.put(sourceKey, '{unparseable retained source', { httpMetadata: { contentType: 'application/json' } });
+    // A terminated invocation leaves its started row without a result.
+    await journey.db.prepare(`INSERT INTO snapshot_builds(id,status,started_at,created_at,updated_at)
+      VALUES ('interrupted-fixture','building',?,?,?)`).bind(initial.generatedAt, initial.generatedAt, initial.generatedAt).run();
 
     const scheduledAt = Math.max(Date.now(), Date.parse(initial.generatedAt) + 5 * 60_000 + 1);
     await journey.json('/test/clock', 'PUT', { now: scheduledAt }, 204);
     await journey.tick(scheduledAt);
+    const interrupted = await journey.db.prepare("SELECT status, error FROM snapshot_builds WHERE id = 'interrupted-fixture'").first();
+    assert.equal(interrupted.status, 'failed');
+    assert.ok(interrupted.error);
 
     const refreshed = await eventually(
       currentPointer,

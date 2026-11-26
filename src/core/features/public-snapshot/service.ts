@@ -25,7 +25,7 @@ const RETRY_LEASE_MS = 2 * 60_000;
 const SNAPSHOT_REFRESH_MS = 5 * 60_000;
 const PUBLICATION_SURFACES = ["page.html", "feed.atom", "feed.rss", "widget.js", "embed/script.js"];
 const LOGO_CONTENT_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
-export const PUBLIC_SNAPSHOT_RENDERER_VERSION = "lamp-public-snapshot-v28";
+export const PUBLIC_SNAPSHOT_RENDERER_VERSION = "lamp-public-snapshot-v29";
 
 interface SnapshotPointer {
   version: string;
@@ -190,16 +190,27 @@ export function createPublicSnapshotService(
   }
 
   async function rebuildOne(revision: number, clockSource?: SnapshotPointer) {
+    const startedAt = performance.now();
     const timestamp = nowIso();
     const buildId = createUlid();
     let started = false;
     let attempts = 0;
     let lastError: unknown;
+    let step = "reserve generation";
+    let stepStartedAt = startedAt;
+    const stepMs: Record<string, number> = {};
+    function nextStep(next: string) {
+      const now = performance.now();
+      stepMs[step] = (stepMs[step] ?? 0) + Math.round(now - stepStartedAt);
+      step = next;
+      stepStartedAt = now;
+    }
     try {
       // The bucket pointer and the retained replica outlive the database (a reset or a
       // previous preview's database restarts the counter): both refuse a generation that
       // is not above their own, so the new one is reserved above whichever is higher.
-      const stored = Math.max((await readPointer())?.generation ?? 0, (await retained?.generation()) ?? 0);
+      const [pointer, replica] = await Promise.all([readPointer(), retained?.generation()]);
+      const stored = Math.max(pointer?.generation ?? 0, replica ?? 0);
       const generation = await repository.reserveGeneration(timestamp, stored);
       if (clockSource) {
         // Check after reserving the generation. A concurrent source edit
@@ -219,17 +230,21 @@ export function createPublicSnapshotService(
         updatedAt: timestamp,
       });
       started = true;
+      console.info("Lamp public snapshot build started.", { buildId, revision, generation, timedRefresh: Boolean(clockSource) });
       async function prepare() {
         const generatedAt = nowIso();
+        nextStep("load build source");
         // A backup/restore can reuse revision numbers under a retained bucket.
         // Reuse inputs only when their publication also exists in this D1.
-        const previous = clockSource?.buildId && await repository.hasPublishedBuild?.(clockSource.buildId, clockSource.version)
+        const saved = clockSource?.buildId && await repository.hasPublishedBuild?.(clockSource.buildId, clockSource.version)
           ? await readBuildSource(blobs, clockSource.version, generatedAt, repository.sourceConfiguration)
           : null;
+        const previous = saved?.source.reliabilityHistory ? saved : null;
         // Metric points change every minute without a source revision. A timed
         // refresh carries the saved inputs forward with the current series.
         if (previous && repository.loadMetrics) previous.source = { ...previous.source, metrics: await repository.loadMetrics() };
         const input = previous ?? await loadBuildSource(repository, generatedAt);
+        nextStep("render snapshot");
         const { source, feed, incidents, maintenance } = buildSources(input, generatedAt, protectedSnapshot || await readPrelaunch(blobs));
         const iconAsset = (JSON.parse(source.settings.themeAssets ?? "{}") as ThemeAssets).icon;
         const [logo, icon] = await Promise.all([
@@ -277,39 +292,45 @@ export function createPublicSnapshotService(
       while (attempts < 3) {
         attempts += 1;
         try {
-        // Retry storage/replica/pointer delivery with identical generation bytes.
-        const { version, rendered, bundle, source, input } = prepared;
-        // Keep a small sequence fence even if delivery stops partway through.
-        await blobs.putText(`snapshots/${version}/generation.json`, JSON.stringify({ version, generation }), "application/json");
-        await writeBuildSource(blobs, version, input);
-        // Cold historical pages use this generation's public presentation data.
-        // They are independently cached, never added to its retained bundle.
-        await blobs.putText(`snapshots/${version}/archive-context.json`, JSON.stringify({ ...source, history: [], corrections: [], metrics: [] }), "application/json");
-        await Promise.all(rendered.artifacts.map(artifact => artifact.encoding === "base64"
-          ? blobs.putBytes(`snapshots/${version}/${artifact.key}`, Uint8Array.from(atob(artifact.body), character => character.charCodeAt(0)).buffer, artifact.contentType)
-          : blobs.putText(`snapshots/${version}/${artifact.key}`, artifact.body, artifact.contentType)));
-        // Artifacts are complete before the conditional pointer change. A
-        // superseded build deliberately leaves its revision pending: a later
-        // cron pass rereads D1 rather than assuming the winner saw this write.
-        if (retained) await blobs.putText(`snapshots/${version}/retained.json`, bundle, "application/json");
-        // Retention must be acknowledged before the R2 selector can expose
-        // this generation. A failed replica write leaves the prior pointer.
-        if (retained) await retained.write(bundle);
-        const replicaGeneration = retained ? await retained.generation() : generation;
-        const { advanced, previous } = replicaGeneration === generation
-          ? await advancePointer({ version, buildId, generatedAt: rendered.generatedAt, generation, sourceRevision: revision, rendererVersion: PUBLIC_SNAPSHOT_RENDERER_VERSION, releaseIdentity, prelaunch: rendered.artifacts.some(artifact => artifact.key === PRELAUNCH_ROBOTS_KEY) })
-          : { advanced: false, previous: null };
-        const finishedAt = nowIso();
-        await repository.finishBuild({ id: buildId, status: "published", version, error: advanced ? null : "Superseded by a newer public snapshot generation.", attempts, finishedAt, updatedAt: finishedAt });
-        const selected = await readPointer();
-        if (selected?.version === version && !clockSource) await repository.completeWork(revision, finishedAt);
-        if (!advanced) return;
-        await events.snapshotPublished({ version, generatedAt: rendered.generatedAt });
-        if (selected?.version === version && previous) {
-          try { await pruneSnapshotVersions(blobs, version, previous); }
-          catch { console.warn("Public snapshot retention deferred until the next successful publication."); }
-        }
-        return;
+          // Keep the sequence fence ahead of the independent generation writes.
+          const { version, rendered, bundle, source, input } = prepared;
+          nextStep("upload generation");
+          await blobs.putText(`snapshots/${version}/generation.json`, JSON.stringify({ version, generation }), "application/json");
+          const { reliabilityHistory: _history, ...presentation } = source;
+          const uploads = await Promise.allSettled([
+            writeBuildSource(blobs, version, input),
+            blobs.putText(`snapshots/${version}/archive-context.json`, JSON.stringify({ ...presentation, history: [], corrections: [], metrics: [] }), "application/json"),
+            ...(retained ? [blobs.putText(`snapshots/${version}/retained.json`, bundle, "application/json")] : []),
+            ...rendered.artifacts.map(artifact => artifact.encoding === "base64"
+              ? blobs.putBytes(`snapshots/${version}/${artifact.key}`, Uint8Array.from(atob(artifact.body), character => character.charCodeAt(0)).buffer, artifact.contentType)
+              : blobs.putText(`snapshots/${version}/${artifact.key}`, artifact.body, artifact.contentType)),
+          ]);
+          const failedUpload = uploads.find(result => result.status === "rejected");
+          if (failedUpload) throw failedUpload.reason;
+          // Retention must be acknowledged before the R2 selector can expose
+          // this generation. A failed replica write leaves the prior pointer.
+          nextStep("replicate generation");
+          if (retained) await retained.write(bundle);
+          const replicaGeneration = retained ? await retained.generation() : generation;
+          nextStep("advance pointer");
+          const { advanced, previous } = replicaGeneration === generation
+            ? await advancePointer({ version, buildId, generatedAt: rendered.generatedAt, generation, sourceRevision: revision, rendererVersion: PUBLIC_SNAPSHOT_RENDERER_VERSION, releaseIdentity, prelaunch: rendered.artifacts.some(artifact => artifact.key === PRELAUNCH_ROBOTS_KEY) })
+            : { advanced: false, previous: null };
+          const finishedAt = nowIso();
+          nextStep("finish build");
+          await repository.finishBuild({ id: buildId, status: "published", version, error: advanced ? null : "Superseded by a newer public snapshot generation.", attempts, finishedAt, updatedAt: finishedAt });
+          const selected = await readPointer();
+          if (selected?.version === version && !clockSource) await repository.completeWork(revision, finishedAt);
+          nextStep("after publication");
+          const elapsedMs = Math.round(performance.now() - startedAt);
+          if (elapsedMs >= 10_000) console.warn("Lamp public snapshot build was slow.", { buildId, revision, elapsedMs, stepMs });
+          if (!advanced) return;
+          await events.snapshotPublished({ version, generatedAt: rendered.generatedAt });
+          if (selected?.version === version && previous) {
+            try { await pruneSnapshotVersions(blobs, version, previous); }
+            catch { console.warn("Public snapshot retention deferred until the next successful publication."); }
+          }
+          return;
         } catch (cause) {
           lastError = cause;
         }
@@ -318,6 +339,9 @@ export function createPublicSnapshotService(
       throw new Error(`Public snapshot build failed after ${attempts} attempts: ${message}`);
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : "Unknown snapshot build failure.";
+      console.error("Lamp public snapshot build failed.", {
+        buildId, revision, step, attempts, elapsedMs: Math.round(performance.now() - startedAt), stepMs, message,
+      });
       if (started) {
         try {
           await repository.finishBuild({ id: buildId, status: "failed", version: null, error: message, attempts, finishedAt: nowIso(), updatedAt: nowIso() });
@@ -485,7 +509,12 @@ export function createPublicSnapshotService(
         const now = new Date();
         const nowText = now.toISOString();
         const staleBefore = new Date(now.getTime() - STALE_BUILD_MS).toISOString();
-        await repository.markInterruptedBuilds(nowText, staleBefore);
+        const interrupted = await repository.markInterruptedBuilds(nowText, staleBefore);
+        for (const build of interrupted) {
+          console.error("Lamp public snapshot build lease expired without a completion record.", {
+            buildId: build.id, startedAt: build.startedAt, elapsedMs: now.getTime() - Date.parse(build.startedAt),
+          });
+        }
         let work = await repository.currentWork();
         let clockSource: SnapshotPointer | undefined;
         if (work.completedRevision >= work.requestedRevision) {

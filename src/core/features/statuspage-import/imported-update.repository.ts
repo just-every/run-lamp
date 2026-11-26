@@ -1,4 +1,4 @@
-import { loadPlans } from "../../../../modules/import-kit/src/d1/plans";
+import { readPublicPlans } from "./public-plan-reader";
 import { canonicalJson, sha256 } from "../../../../modules/import-kit/src/d1/index";
 import type { Json } from "../../../../modules/import-kit/src/types";
 import { moveInPlan } from "./door-plan";
@@ -41,7 +41,7 @@ function retainedBodies(namespace: string, sourceId: string, raw: Record<string,
  * retains the source message without that bound, including after a conditional
  * undo preserves an owner's incident. Only unchanged imported updates receive
  * that read projection; this never changes native rows or sealed undo values. */
-export async function projectImportedIncidentUpdates<T extends UpdateWording>(db: D1Database, updates: T[]): Promise<T[]> {
+export async function projectImportedIncidentUpdates<T extends UpdateWording>(db: D1Database, updates: T[], readPlans = readPublicPlans): Promise<T[]> {
   const ids = [...new Set(updates.filter(update => update.isRetroactive).map(update => update.incidentId))];
   if (!ids.length) return updates;
   const applied = (await db.prepare(`SELECT p.job_id,p.ordinal,p.target_id
@@ -52,7 +52,7 @@ export async function projectImportedIncidentUpdates<T extends UpdateWording>(db
   if (!applied.length) return updates;
   // Load each journal once: many incidents can belong to one chunked plan.
   const jobs = (await db.prepare("SELECT id,plan_json FROM ik_jobs WHERE id IN (SELECT value FROM json_each(?))").bind(JSON.stringify([...new Set(applied.map(row => row.job_id))])).all<{ id: string; plan_json: string }>()).results;
-  const plans = new Map([...(await loadPlans(jobs, db as never))].map(([id, plan]) => [id, moveInPlan(plan)]));
+  const plans = new Map([...(await readPlans(db, jobs))].map(([id, plan]) => [id, moveInPlan(plan)]));
   const bodies = new Map<string, { body: string; expected: Row; incidentId: string }>();
   for (const row of applied) {
     const entry = plans.get(row.job_id)?.entries[row.ordinal];

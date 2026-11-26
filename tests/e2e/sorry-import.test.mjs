@@ -409,7 +409,7 @@ test('MAINT-015 — Sorry maintenance labels use authored source states and keep
 });
 
 test('UPTIME-012 MOVE-001 — a Sorry history moved in counts toward each component and group all-history reliability, an open incident up to now', { timeout: 120_000 }, async () => {
-  const runtime = await openStatusJourney();
+  const runtime = await openStatusJourney({ workerEntry: 'tests/e2e/helpers/clocked-status-journey.worker.ts' });
   try {
     const api = async (path, body, headers, method = body === undefined ? 'GET' : 'POST') => {
       const response = await runtime.request(path, { method, ...(body === undefined ? {} : { body: JSON.stringify(body) }), headers });
@@ -428,15 +428,33 @@ test('UPTIME-012 MOVE-001 — a Sorry history moved in counts toward each compon
     assert.equal(review.status, 200, JSON.stringify(review.body));
     assert.equal((await moveIn.apply(review.body)).status, 200);
     const html = await runtime.visible('/', 'All time');
-    const bar = subject => html.match(new RegExp(`<div class="reliability[^"]*"><p class="reliability-number">([\\s\\S]*?)</p><div class="reliability-marks" role="list" aria-label="All-history reliability by month for ${subject}">([\\s\\S]*?)</div>`, 'u'));
-    for (const subject of ['Billing API', 'the Customer services group']) {
-      const [, figure, marks] = bar(subject) ?? assert.fail(`${subject} shows its all-history reliability`);
+    const bar = (page, subject) => page.match(new RegExp(`<div class="reliability[^"]*"><p class="reliability-number">([\\s\\S]*?)</p><div class="reliability-marks" role="list" aria-label="All-history reliability by month for ${subject}">([\\s\\S]*?)</div>`, 'u'));
+    const subjects = ['Billing API', 'the Customer services group'];
+    const readDowntime = (page, subject) => [...bar(page, subject)[2].matchAll(/aria-label="[^"]*downtime ([\d.]+) minutes/gu)]
+      .reduce((sum, match) => sum + Number(match[1]), 0);
+    for (const subject of subjects) {
+      const [, figure, marks] = bar(html, subject) ?? assert.fail(`${subject} shows its all-history reliability`);
       // Degraded performance counts half a downtime minute per minute, from the start of the record to now.
       assert.match(figure, /50\.00%/u, `${subject}: the open incident has counted since it began`);
       assert.match(figure, /since Apr 2025/u);
       const labels = [...marks.matchAll(/aria-label="([^"]+)"/gu)].map(match => match[1]);
       assert.match(labels[0], /^Apr 2025: 50\.00%, downtime [\d.]+ minutes/u);
       assert.ok(labels.length > 1 && labels.every(label => label.includes('downtime')), `${subject}: every month since the incident began carries its downtime`);
+    }
+    const initial = await runtime.publicResponse('/');
+    const version = initial.headers.get('x-lamp-snapshot-version');
+    await eventually(() => runtime.db.prepare('SELECT requested_revision, completed_revision FROM public_snapshot_work').first(),
+      row => row.requested_revision === row.completed_revision, 'the initial publication settled');
+    const nextTick = Date.parse(initial.headers.get('x-lamp-snapshot-generated-at')) + 20 * 60_000;
+    await runtime.json('/test/clock', 'PUT', { now: nextTick }, 204);
+    await runtime.tick(nextTick);
+    const response = await runtime.publicResponse('/');
+    assert.equal(response.status, 200);
+    assert.notEqual(response.headers.get('x-lamp-snapshot-version'), version);
+    const refreshed = await response.text();
+    for (const subject of subjects) {
+      assert.match(bar(refreshed, subject)[1], /50\.00%/u);
+      assert.ok(readDowntime(refreshed, subject) > readDowntime(html, subject), `${subject}: the open incident continues accruing downtime after Cron refreshes the stored page`);
     }
   } finally { await runtime.close(); }
 });

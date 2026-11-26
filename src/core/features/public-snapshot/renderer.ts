@@ -32,7 +32,7 @@ import { renderPublicApi } from "./public-api";
 import { publicComponentResources } from "./component-address";
 import { incidentMarkup, maintenanceMarkup, resolvedMarkup, statePill, type PublicIncident, type PublicMaintenance } from "./record-markup";
 import { DAY, REPORTING_DAYS, durationText, escapeHtml, stateClass, timestamp, timestampDetails, timezoneLabel } from "./format";
-import { computeUptime, type Uptime, uptimeMarkup } from "./uptime";
+import { computeUptime, reportingDays, type Uptime, uptimeMarkup } from "./uptime";
 import { uptimeMethod } from "./uptime-method";
 import { computeReliability } from "./reliability";
 import { reliabilityMarkup, reliabilityMethod } from "./reliability-markup";
@@ -71,17 +71,22 @@ function toPublicModel(source: PublicSnapshotSource, generatedAt: string, polici
   const claims = new Map<string, ComponentState[]>();
   for (const claim of source.claims) claims.set(claim.componentId, [...(claims.get(claim.componentId) ?? []), claim.state]);
   const now = new Date(generatedAt).getTime();
+  const windowStart = now - theme.historyDays * DAY;
+  const uptimeWindow = theme.historyDays === REPORTING_DAYS ? undefined : { startsAt: windowStart, endsAt: now };
+  const calendar = includeUptime ? reportingDays(windowStart, uptimeWindow ? now - 1 : now, source.settings.timezone) : undefined;
   const components: PublicComponent[] = source.components.map((component) => ({
     ...component,
     // COMP-006 fixes individual component derivation. The rollup policy is
     // deliberately only for the single overall page status.
     state: mostSevereState(claims.get(component.id) ?? []),
     hideUptime: theme.hiddenUptimeComponentIds.includes(component.id),
-    uptime: includeUptime ? computeUptime(source, component.id, now, source.settings.timezone, policies, component.uptimeStartDate, theme.historyDays === 90 ? undefined : { startsAt: now - theme.historyDays * DAY, endsAt: now }) : { percentage: null, trackingSince: null, coverageDays: 0, coverageMinutes: 0, marks: [] },
+    uptime: includeUptime ? computeUptime(source, component.id, now, source.settings.timezone, policies, component.uptimeStartDate, uptimeWindow, calendar) : { percentage: null, trackingSince: null, coverageDays: 0, coverageMinutes: 0, marks: [] },
   }));
   if (theme.historyDays !== REPORTING_DAYS) for (const component of components) component.uptime.marks = component.uptime.marks.slice(-theme.historyDays);
   const visibleComponents = components.filter(isPublicComponentShown);
-  const reliability = computeReliability(source.reliability, source.components, now, source.settings.timezone, policies);
+  const reliability = includeUptime
+    ? computeReliability(source.reliabilityHistory ?? {}, source.components, now, source.settings.timezone, policies)
+    : { components: new Map(), groups: new Map() };
   const hiddenIds = new Set(components.filter(component => !isPublicComponentShown(component)).map(component => component.id));
   const attachedIncidentIds = new Set(source.incidentComponents.map(component => component.incidentId));
   const attachedMaintenanceIds = new Set(source.maintenanceComponents.map(component => component.maintenanceId));

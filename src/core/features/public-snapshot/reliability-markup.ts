@@ -1,11 +1,13 @@
 import { componentStateLabel } from "../../shared/component-state-label";
-import { escapeHtml } from "./format";
+import { escapeHtml, zonedFormatter } from "./format";
 import type { Reliability, ReliabilityMark } from "./reliability";
 
-const monthName = (key: string) => new Intl.DateTimeFormat("en-US", { timeZone: "UTC", month: "short", year: "numeric" }).format(new Date(`${key}-15T00:00:00Z`));
+const monthFormatter = zonedFormatter("en-US", { month: "short", year: "numeric" });
+const monthName = (key: string) => monthFormatter("UTC").format(new Date(`${key}-15T00:00:00Z`));
+const sinceFormatter = zonedFormatter("en-US", { month: "short", year: "numeric" });
 
 function sinceText(since: string, timezone: string) {
-  return new Intl.DateTimeFormat("en-US", { timeZone: timezone, month: "short", year: "numeric" }).format(new Date(since));
+  return sinceFormatter(timezone).format(new Date(since));
 }
 
 function minutesText(minutes: number) {

@@ -1,4 +1,4 @@
-import { loadPlans } from "../../../../modules/import-kit/src/d1/plans";
+import { readPublicPlans } from "../statuspage-import/public-plan-reader";
 import { stableId } from "../statuspage-import/rows";
 
 /** A Statuspage import: one made before the import door, or a door import of the Statuspage source. */
@@ -6,12 +6,14 @@ const statuspageJob = "(j.namespace='statuspage' OR EXISTS(SELECT 1 FROM ik_door
 
 /** Original public identifiers come from the retained import journal, never a
  * guessed reverse mapping. Only the renderer's public records use this map. */
-export async function loadPublicApiIds(db: D1Database): Promise<Record<string, string>> {
-  const rows = (await db.prepare(`SELECT DISTINCT j.id,j.plan_json FROM ik_jobs j JOIN ik_provenance p ON p.job_id=j.id WHERE ${statuspageJob} AND j.destination='lamp' AND p.reversed=0`).all<{ id: string; plan_json: string }>()).results;
-  const plans = await loadPlans(rows, db as never);
-  const applied = (await db.prepare(`SELECT p.job_id,p.ordinal,p.target_id FROM ik_provenance p JOIN ik_jobs j ON j.id=p.job_id WHERE ${statuspageJob} AND p.destination='lamp' AND p.reversed=0`).all<{ job_id: string; ordinal: number; target_id: string }>()).results;
+export async function loadPublicApiIds(db: D1Database, readPlans = readPublicPlans): Promise<Record<string, string>> {
+  const [jobs, applied] = await db.batch<{ id: string; plan_json: string } | { job_id: string; ordinal: number; target_id: string }>([
+    db.prepare(`SELECT DISTINCT j.id,j.plan_json FROM ik_jobs j JOIN ik_provenance p ON p.job_id=j.id WHERE ${statuspageJob} AND j.destination='lamp' AND p.reversed=0`),
+    db.prepare(`SELECT p.job_id,p.ordinal,p.target_id FROM ik_provenance p JOIN ik_jobs j ON j.id=p.job_id WHERE ${statuspageJob} AND p.destination='lamp' AND p.reversed=0`),
+  ]);
+  const plans = await readPlans(db, jobs!.results as Array<{ id: string; plan_json: string }>);
   const ids: Record<string, string> = {};
-  for (const row of applied) {
+  for (const row of applied!.results as Array<{ job_id: string; ordinal: number; target_id: string }>) {
     const entry = plans.get(row.job_id)?.entries[row.ordinal];
     if (!entry || entry.erased) continue;
     if (/^[a-z0-9]{12}$/.test(entry.source.sourceId)) ids[row.target_id] = entry.source.sourceId;

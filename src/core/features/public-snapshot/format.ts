@@ -4,6 +4,23 @@ export const MINUTE = 60_000;
 export const DAY = 86_400_000;
 export const REPORTING_DAYS = 90;
 
+export function zonedFormatter(locale: string, options: Intl.DateTimeFormatOptions) {
+  let zone: string | undefined;
+  let formatter: Intl.DateTimeFormat | undefined;
+  return (timezone: string) => {
+    if (!formatter || zone !== timezone) {
+      formatter = new Intl.DateTimeFormat(locale, { ...options, timeZone: timezone });
+      zone = timezone;
+    }
+    return formatter;
+  };
+}
+
+const dateTimeFormatter = zonedFormatter("en-US", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+const dateLabelFormatter = zonedFormatter("en-US", { month: "short", day: "numeric" });
+const dayKeyFormatter = zonedFormatter("en-CA", { year: "numeric", month: "2-digit", day: "2-digit" });
+const midnightFormatter = zonedFormatter("en-US", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+
 export function escapeHtml(value: string) {
   return value.replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character] ?? character);
 }
@@ -42,7 +59,7 @@ function validDate(value: string) {
 // writes "Oct 9, 2026, 13:12", Safari's WebKit "Oct 9, 2026 at 13:12"), and the same instant must read the same
 // wherever it is formatted, or a page rendered on the server and hydrated in a browser no longer matches itself.
 function dateTimeText(date: Date, timezone: string) {
-  const parts = new Intl.DateTimeFormat("en-US", { timeZone: timezone, year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(date);
+  const parts = dateTimeFormatter(timezone).formatToParts(date);
   const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((entry) => entry.type === type)?.value;
   return `${part("month")} ${part("day")}, ${part("year")}, ${part("hour")}:${part("minute")}`;
 }
@@ -71,7 +88,7 @@ export function timestamp(value: string, timezone: string) {
 }
 
 export function dateLabel(value: string, timezone: string) {
-  return new Intl.DateTimeFormat("en-US", { timeZone: timezone, month: "short", day: "numeric" }).format(validDate(value));
+  return dateLabelFormatter(timezone).format(validDate(value));
 }
 
 export function durationText(startsAt: string, endsAt: string) {
@@ -85,7 +102,7 @@ export function stateClass(state: string) {
 }
 
 export function dayKey(value: number, timezone: string) {
-  const parts = new Intl.DateTimeFormat("en-CA", { timeZone: timezone, year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date(value));
+  const parts = dayKeyFormatter(timezone).formatToParts(value);
   const part = (kind: string) => parts.find((entry) => entry.type === kind)?.value ?? "00";
   return `${part("year")}-${part("month")}-${part("day")}`;
 }
@@ -98,7 +115,7 @@ export function addCalendarDays(day: string, amount: number) {
 export function localMidnight(day: string, timezone: string) {
   const [year, month, date] = day.split("-").map(Number);
   const approximate = Date.UTC(year, month - 1, date);
-  const parts = new Intl.DateTimeFormat("en-US", { timeZone: timezone, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date(approximate));
+  const parts = midnightFormatter(timezone).formatToParts(approximate);
   const part = (kind: string) => Number(parts.find((entry) => entry.type === kind)?.value ?? 0);
   return approximate + (approximate - Date.UTC(part("year"), part("month") - 1, part("day"), part("hour"), part("minute")));
 }

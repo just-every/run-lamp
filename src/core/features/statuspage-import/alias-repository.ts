@@ -1,12 +1,12 @@
 import { moveInPlan } from './door-plan';
-import { loadPlans } from "../../../../modules/import-kit/src/d1/plans";
+import { readPublicPlans } from "./public-plan-reader";
 import type { ImportedPublicRecord } from "./public-addresses";
 
 /** Read-only projection of the original journal, including conditional undo's
  * preserved records. No native target shape or old expected value is changed. */
-export async function readImportedPublicRecords(db: D1Database): Promise<ImportedPublicRecord[]> {
+export async function readImportedPublicRecords(db: D1Database, readPlans = readPublicPlans): Promise<ImportedPublicRecord[]> {
   const rows = (await db.prepare("SELECT DISTINCT j.id,j.plan_json FROM ik_jobs j JOIN ik_provenance p ON p.job_id=j.id JOIN statuspage_import_targets t ON t.kind=p.target_kind AND t.id=p.target_id WHERE p.reversed=0 AND j.destination='lamp' AND (j.namespace IN ('statuspage','betterstack','instatus','sorry') OR EXISTS(SELECT 1 FROM ik_door_plans d WHERE d.job_id=j.id AND d.namespace IN ('statuspage','betterstack','instatus','sorry'))) AND p.target_kind IN ('incident','maintenance') AND (EXISTS(SELECT 1 FROM incidents WHERE id=p.target_id AND deleted_at IS NULL) OR EXISTS(SELECT 1 FROM maintenance WHERE id=p.target_id))").all<{ id: string; plan_json: string }>()).results;
-  const plans = await loadPlans(rows, db as never);
+  const plans = await readPlans(db, rows);
   const applied = (await db.prepare("SELECT p.job_id,p.ordinal,p.target_kind,p.target_id FROM ik_provenance p JOIN statuspage_import_targets t ON t.kind=p.target_kind AND t.id=p.target_id WHERE p.reversed=0 AND p.destination='lamp' AND p.target_kind IN ('incident','maintenance') AND (EXISTS(SELECT 1 FROM incidents WHERE id=p.target_id AND deleted_at IS NULL) OR EXISTS(SELECT 1 FROM maintenance WHERE id=p.target_id))").all<{ job_id: string; ordinal: number; target_kind: string; target_id: string }>()).results;
   return applied.flatMap((row) => {
     const plan = plans.get(row.job_id);
