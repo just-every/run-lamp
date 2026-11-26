@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.11.43
+
+- **The owner can sign in by email while every other email stays off.** Set the new deploy input `MAIL_RECIPIENTS=owner` with a mail provider (`MAIL_PROVIDER`, `MAIL_FROM_ADDRESS`, `MAIL_DKIM_SELECTOR`, `MAIL_PROVIDER_API_KEY`). Lamp then behaves exactly as with email off: no invitations, subscriber or operator email, and Settings reports email as off. The provider sends one message only: the sign-in link the installation owner asks for on the staff sign-in page. The owner is the active Owner account created by the setup claim, at its current address. Any other address, known or not, gets the same answer on the page and no mail. The link is single use and expires after 20 minutes. The sign-in page says the email links go to the owner only. The default, `any`, keeps ordinary email. The deploy refuses `MAIL_RECIPIENTS=owner` with `MAIL_PROVIDER=none`. See [Or send only the owner's sign-in link](docs/deploy.md#or-send-only-the-owners-sign-in-link).
+
+### Upgrading from 1.11.42
+
+Back up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.43`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release adds no migrations. Existing installations keep ordinary email behaviour unless you add `MAIL_RECIPIENTS=owner` to the input file.
+
 ## 1.11.42
 
 - **Each component and group shows its reliability over all history.** Under the 90-day record, the public page shows an **All time** figure and a compact monthly bar for every component and group, on every layout, and states the method. Lamp works it out from stored incidents. Each public incident counts from its start to its resolution, or up to now while it is open, on the components it affected, at the downtime weight of its impact. Overlapping incidents count once, at the most severe. A component's record starts at its uptime start date, or else at its creation or its first incident, whichever is earlier. A group combines its components' downtime over their tracked time. History moved in through **Settings › Move in** counts, including an incident still open. Lamp computes the figures when it builds the stored page, with one query per build, so page views read nothing from the database. In a local test, a build with 7 incidents read 43 D1 rows for them.
