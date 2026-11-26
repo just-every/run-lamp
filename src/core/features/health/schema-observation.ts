@@ -28,6 +28,15 @@ export async function observeSchema(database?: D1Database): Promise<SchemaObserv
   return observation;
 }
 
+async function available(inventory: string, completeCount: number, partialCount = 0): Promise<SchemaObservation> {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(inventory));
+  const inventorySha256 = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
+  return {
+    version: 1, ledger: "rer_migrations", binding: "DB", observedAt: new Date().toISOString(),
+    state: "available", completeCount, inventorySha256, partialCount, reason: null,
+  };
+}
+
 async function readSchema(database?: D1Database): Promise<SchemaObservation> {
   const unavailable = (reason: Reason): SchemaObservation => ({
     version: 1, ledger: "rer_migrations", binding: "DB", observedAt: new Date().toISOString(),
@@ -38,6 +47,28 @@ async function readSchema(database?: D1Database): Promise<SchemaObservation> {
       // Ask SQLite for this table's metadata without reading the schema catalogue.
       const table = await database.prepare("PRAGMA main.table_list('rer_migrations')").first<{ name: string; type: string }>();
       if (table?.name !== "rer_migrations" || table.type === "view") return unavailable("ledger_missing");
+      // Native deploys have a ledger of complete ASCII migration paths. Let
+      // SQLite order and encode that inventory so a cold probe receives one
+      // row. The general path below still validates partial and non-ASCII rows.
+      const packed = await database.prepare(`
+        WITH inventory AS (
+          SELECT substr(name,1,1025) AS name, substr(sha256,1,65) AS sha256
+          FROM rer_migrations LIMIT 2049
+        ), checked AS (
+          SELECT name,sha256,
+            typeof(name)='text' AND length(name)<=128 AND name GLOB '?*.sql'
+            AND name NOT GLOB '*[^-a-zA-Z0-9_./]*' AND instr(name,char(0))=0
+            AND typeof(sha256)='text' AND length(sha256)=64
+            AND sha256 NOT GLOB '*[^0-9a-fA-F]*' AND instr(sha256,char(0))=0 AS ordinary
+          FROM inventory
+        )
+        SELECT count(*) AS total, count(DISTINCT name) AS names, count(*) FILTER (WHERE ordinary) AS complete,
+          json_group_array(json_array(name,lower(sha256)) ORDER BY name COLLATE BINARY) FILTER (WHERE ordinary) AS inventory
+        FROM checked`).first<{ total: number; names: number; complete: number; inventory: string }>();
+      if (packed && packed.total > ROW_LIMIT) return unavailable("row_limit");
+      if (packed && packed.total === packed.complete && packed.total === packed.names) {
+        return available(packed.inventory, packed.total);
+      }
       // Bound both row count and returned field sizes. An oversized value stays
       // invalid, never silently becomes a truncated successful inventory.
       const result = await database.prepare("SELECT substr(name, 1, 1025) AS name, substr(sha256, 1, 65) AS sha256 FROM rer_migrations LIMIT 2049").all<{ name: unknown; sha256: unknown }>();
@@ -61,13 +92,7 @@ async function readSchema(database?: D1Database): Promise<SchemaObservation> {
         else return unavailable("malformed_rows");
       }
       complete.sort(([left], [right]) => left < right ? -1 : left > right ? 1 : 0);
-      const bytes = new TextEncoder().encode(JSON.stringify(complete));
-      const digest = await crypto.subtle.digest("SHA-256", bytes);
-      const inventorySha256 = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
-      return {
-        version: 1, ledger: "rer_migrations", binding: "DB", observedAt: new Date().toISOString(),
-        state: "available", completeCount: complete.length, inventorySha256, partialCount, reason: null,
-      };
+      return available(JSON.stringify(complete), complete.length, partialCount);
     } catch {
       return unavailable("read_error");
     }

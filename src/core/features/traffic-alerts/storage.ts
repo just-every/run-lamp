@@ -108,6 +108,45 @@ export function createTrafficStorage(bucket: R2Bucket) {
     } while (cursor);
     return rows;
   }
+  function signals(surface: TrafficSurface) {
+    const hours = new Map<number, Promise<Counter[]>>();
+    const baselines = new Map<number, Promise<number | null>>();
+    let earliest: Promise<R2Objects> | undefined;
+    const countsFor = (hour: number) => {
+      let pending = hours.get(hour);
+      if (!pending) {
+        pending = counters(surface, hour);
+        hours.set(hour, pending);
+      }
+      return pending;
+    };
+    async function baselineFor(hour: number) {
+      // A younger surface has no seven-day baseline. Find that out before
+      // asking R2 for its seven historical buckets.
+      earliest ??= bucket.list({ prefix: `traffic/counts/${surface}/`, limit: 1 });
+      const firstKey = (await earliest).objects[0]?.key;
+      const firstHour = firstKey ? Number(firstKey.split('/')[3]) : Infinity;
+      const coverageHour = hour - 7 * 24;
+      if (firstHour > coverageHour) return null;
+      const firstRows = await countsFor(firstHour);
+      if (!firstRows.some(row => row.minute <= coverageHour * 60)) return null;
+      const history = await Promise.all(Array.from({ length: 7 }, (_, day) => countsFor(hour - (day + 1) * 24)));
+      const count = history.reduce((total, rows) => rows.reduce((sum, row) => sum + row.count, total), 0);
+      return count > 0 ? count / (7 * 60) : null;
+    }
+    return async (minute: number, includeEmptyBaseline = true): Promise<TrafficSignal> => {
+      const hour = Math.floor(minute / 60);
+      const current = await countsFor(hour);
+      const count = current.reduce((sum, row) => row.minute === minute ? sum + row.count : sum, 0);
+      if (!count && !includeEmptyBaseline) return { surface, minute, count, baseline: null };
+      let baseline = baselines.get(hour);
+      if (!baseline) {
+        baseline = baselineFor(hour);
+        baselines.set(hour, baseline);
+      }
+      return { surface, minute, count, baseline: await baseline };
+    };
+  }
   return {
     increment(surface: TrafficSurface, at: number): Promise<void> {
       shard ??= crypto.randomUUID();
@@ -132,20 +171,8 @@ export function createTrafficStorage(bucket: R2Bucket) {
       await controlWrite('traffic/settings.json', () => bucket.put('traffic/settings.json', JSON.stringify(settings), { httpMetadata: { contentType: 'application/json' } }));
       return settings;
     },
-    async signal(surface: TrafficSurface, minute: number): Promise<TrafficSignal> {
-      const hour = Math.floor(minute / 60);
-      const [current, earliest, ...history] = await Promise.all([
-        counters(surface, hour), bucket.list({ prefix: `traffic/counts/${surface}/`, limit: 1 }),
-        ...Array.from({ length: 7 }, (_, day) => counters(surface, hour - (day + 1) * 24)),
-      ]);
-      const earliestHour = earliest.objects.length ? Number(earliest.objects[0].key.split('/')[3]) : null;
-      const firstRows = earliestHour === null ? [] : earliestHour === hour - 7 * 24 ? history[6] : await counters(surface, earliestHour);
-      // Coverage begins with the first observed request. After seven complete
-      // days, missing same-hour buckets are genuine zero-traffic hours.
-      const covered = firstRows.some(row => row.minute <= (hour - 7 * 24) * 60);
-      const baseline = covered ? history.flat().reduce((sum, row) => sum + row.count, 0) / (7 * 60) : null;
-      return { surface, minute, count: current.filter(row => row.minute === minute).reduce((sum, row) => sum + row.count, 0), baseline: baseline && baseline > 0 ? baseline : null };
-    },
+    signals,
+    signal: (surface: TrafficSurface, minute: number) => signals(surface)(minute),
     state: (surface: TrafficSurface) => read<TrafficState>(`traffic/state/${surface}.json`),
     saveState: (surface: TrafficSurface, state: TrafficState, etag: string | null) => replace(`traffic/state/${surface}.json`, state, etag),
   };

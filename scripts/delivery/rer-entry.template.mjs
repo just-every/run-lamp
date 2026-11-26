@@ -50,7 +50,7 @@ export default {
   },
   async scheduled(controller, env, ctx) {
     if (env.RER_PREVIEW_TOKEN) return;
-    if (worker.scheduled) return worker.scheduled(controller, env, ctx);
+    if (worker.scheduled) return worker.scheduled(controller, { ...env, LAMP_QUEUE_SCHEDULED: "1" }, ctx);
   },
   async queue(batch, env, ctx) {
     if (!worker.queue) throw new Error('Worker has no queue handler');
