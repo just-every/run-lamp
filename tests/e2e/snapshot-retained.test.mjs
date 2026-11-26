@@ -9,6 +9,7 @@ import { test } from 'node:test';
 import { parse } from 'parse5';
 import { addStatusPage, privateStatusUrl } from './helpers/audience-pages-flow.mjs';
 import { openStatusJourney, eventually } from './helpers/status-journey.mjs';
+import { hungUpPublication } from './helpers/hung-up-publication-flow.mjs';
 import { Miniflare, retainedSnapshotOptions } from './helpers/retained-snapshot-runtime.mjs';
 
 const descendants = node => [node, ...(node.childNodes ?? []).flatMap(descendants)];
@@ -119,6 +120,8 @@ async function assertNativeGenerationRevalidation(j, component, incident, initia
   }
   console.info('PROBE PAGE-007 1: seven warmed public addresses after native publication -> superseded validators return 200 with current generation and expected content, current validators return empty 304');
 }
+
+test('PAGE-005 — a client that hangs up on /health, a metric push or a save on a slow page leaves no build claimed and unrun', { timeout: 120_000 }, hungUpPublication);
 
 test('Cron recovers an interrupted build and hydrates public data when the retained source is malformed', async () => {
   const trafficEdge = 'https://traffic.example.test';

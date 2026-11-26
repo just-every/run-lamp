@@ -407,6 +407,23 @@ it under the same lease as Cron. A preview runs that publication job, including 
 initial migrated state, although its Cron and other queued effects are off. A failed
 build leaves its work pending for Cron and does not change the `/health` answer.
 This step does not dispatch scheduled incidents, maintenance or mail.
+
+A request builds the stored page itself only when it safely can. Cloudflare cancels
+a request's work when its client hangs up and ends it 30 seconds after its answer;
+a build cancelled there keeps its `snapshot_builds` row at `building`, and nothing
+else can publish the page until that row is five minutes old. So a pushed metric
+point and an Uptime timing never build: they hand the due publication to the Queue.
+An operator's save builds in its own request while the page's last published build
+took under 10 seconds; on a slower page the save answers at once and the Queue
+consumer, which has minutes, builds it. The change is already recorded in D1, so
+Cron publishes it within a minute if the Queue cannot take the message. Three log
+lines carry the build ID: `Lamp public snapshot build started.` in the invocation
+that claimed it; `Lamp public page publication is waiting: another build holds the
+page and has not finished.` each time Cron or the Queue cannot start because of it,
+with when it started and when its claim is released; and `Lamp public snapshot
+build never finished: the request or run that started it ended first.` when that
+claim is released. Find the first line's invocation in Workers Logs to see which
+request or run took a claim it did not finish.
 A Cloudflare-wide outage needs separately operated hosting; this release does not
 provision an independent standby or make that deployment claim.
 

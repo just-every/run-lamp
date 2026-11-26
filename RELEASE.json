@@ -1,8 +1,8 @@
 {
-  "version": "1.11.44",
-  "previousVersion": "1.11.43",
+  "version": "1.11.45",
+  "previousVersion": "1.11.44",
   "date": "2026-11-26",
-  "publicReleaseNotes": "- **`/health` answers without waiting on a page build.** On a new Worker isolate, `/health` used to rebuild the stored public page before answering when work was pending or the page came from another release. On a large page that took 30 to 50 seconds, so uptime monitors timed out after 8 to 10 seconds. The cancelled build then held the page for five minutes, logged as \"Snapshot build lease expired before completion\". `/health` now answers from the database and bindings only and hands that publication to the Queue, which builds it under the same lease as Cron. A workers.dev installation's app and page Workers now share one release identity (the deploy fingerprint), so neither rebuilds the page the other built. Previews still publish their own page through their Queue; their other queued effects stay off.\n- **The public page names what each history date is.** Under the components, the page says availability is counted since the earliest visible component's recorded start. When incident and maintenance records begin later, it also says when they begin. It no longer shows one \"History since\" date taken from a moved-in component's creation. The Statuspage-compatible scheduled-maintenances API now lists the updates of maintenance windows carried over by **Settings › Move in**, the same messages their permalinks show. Their status is the source lifecycle, or null where the source kept none.\n\n### Upgrading from 1.11.43\n\nBack up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.44`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release adds no migrations. The stored public page rebuilds once after the update.",
+  "publicReleaseNotes": "- **A request builds the stored page only when it safely can.** Cloudflare cancels a request's work when its client hangs up and ends it 30 seconds after its answer. A page build cancelled there kept its `building` record, and nothing else could publish the page until that record was five minutes old, logged as \"Snapshot build lease expired before completion\". 1.11.44 moved the `/health` build to the Queue. Now a pushed metric point and an Uptime timing also hand the due publication to the Queue, and an operator's save builds in its own request only while the page's last published build took under 10 seconds. A slower page is built by the Queue consumer, and the save answers at once. Cron publishes the change within a minute if the Queue cannot take the message. When publication is due and cannot start, Lamp logs the ID of the build that holds the page, when it started and when its claim is released.\n\n### Upgrading from 1.11.44\n\nBack up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.45`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release adds no migrations.",
   "contractChanges": {},
   "proseChanges": [
     {
@@ -10,22 +10,13 @@
       "section": "Dependency failure",
       "change": "changed",
       "date": "2026-11-26",
-      "summary": "/health never waits on a page build; it hands due publication to the Queue after answering.",
-      "was": "/health published a configured page's first snapshot, or rebuilt a page from another release, before reporting readiness, and a failed snapshot build returned 503.",
-      "now": "/health answers from D1 and the bindings. Once per Worker isolate, after answering, it hands a first snapshot, pending work or another release's page to the Queue, which builds it under Cron's lease; previews run that job too. A failed build leaves its work pending for Cron."
-    },
-    {
-      "document": "docs/public-page.md",
-      "section": "Read history and uptime",
-      "change": "changed",
-      "date": "2026-11-26",
-      "summary": "The page names what each history date is.",
-      "was": "The page showed one History since date, taken from the earliest component state row.",
-      "now": "The page says availability is counted since the earliest visible component's recorded start and, when they begin later, incident and maintenance records since the oldest stored public record."
+      "summary": "A request builds the stored page only when it safely can; metric points and saves on a slow page hand the build to the Queue.",
+      "was": "A pushed metric point, an Uptime timing and every operator save ran the due page build in their own request.",
+      "now": "A pushed metric point and an Uptime timing hand the due publication to the Queue. An operator's save builds in its request only while the page's last published build took under 10 seconds; a slower page is built by the Queue consumer, and Cron publishes it if the Queue cannot take the message. Lamp logs the ID of a build that keeps publication from starting."
     }
   ],
   "extensionPointChanges": [],
   "migrations": [],
   "breaking": false,
-  "agentUpdateInstructions": "Back up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.44`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release adds no migrations. The stored public page rebuilds once after the update. After deploying, read `/health` on the app and page hosts a few times over several minutes and check that each answers within 2 seconds. Then check that `snapshot_builds` records no new \"Snapshot build lease expired before completion\" failures."
+  "agentUpdateInstructions": "Back up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.45`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release adds no migrations. After deploying, check over an hour that `snapshot_builds` records no new \"Snapshot build lease expired before completion\" failures. If one appears, search Workers Logs for its build ID: the `Lamp public snapshot build started.` line is in the request or run that claimed it."
 }

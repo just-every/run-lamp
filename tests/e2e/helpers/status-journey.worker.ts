@@ -25,7 +25,23 @@ function namedRowBindings(env: Parameters<typeof worker.fetch>[1]) {
 
 let paused = false;
 let heldSelector: string | null = null;
-const executionBindings = (env: Parameters<typeof worker.fetch>[1]) => paused ? { ...env, EFFECTS_PAUSED: '1' } : env;
+// Local workerd never cancels a request whose client has gone; Cloudflare does, and nothing the request
+// awaits resumes. A journey models that at its own network edge: every selector write first asks the
+// edge, naming the entry point that runs it, and the journey leaves a hung-up request's ask unanswered.
+function cancellable(env: Parameters<typeof worker.fetch>[1], entry: 'request' | 'background') {
+  const edge = (env as unknown as Record<string, string>).LAMP_TEST_CANCEL_EDGE;
+  if (!edge) return env;
+  const SNAPSHOTS = new Proxy(env.SNAPSHOTS, { get(target, key) {
+    const value = Reflect.get(target, key);
+    if (typeof value !== 'function') return value;
+    return async (...args: unknown[]) => {
+      if (key === 'put' && args[0] === 'snapshots/current.json') await fetch(`${edge}?entry=${entry}`);
+      return Reflect.apply(value, target, args);
+    };
+  } });
+  return { ...env, SNAPSHOTS };
+}
+const executionBindings = (env: Parameters<typeof worker.fetch>[1], entry: 'request' | 'background' = 'background') => cancellable(paused ? { ...env, EFFECTS_PAUSED: '1' } : env, entry);
 
 // Request-local provider observations let the retained-read journey prove that
 // public reads ignore an unavailable D1 and anonymous reads never open R2.
@@ -93,7 +109,7 @@ export default {
     Object.assign(lampServerExtensions.policies, {
       'update.review.v1': { requiresReview: () => (env as unknown as Record<string, string>).LAMP_TEST_REQUIRE_REVIEW === 'true' },
     });
-    const bindings = executionBindings(env);
+    const bindings = executionBindings(env, 'request');
     if ((env as unknown as Record<string, string>).LAMP_TEST_AUDIENCE_READS === 'true') {
       return observeAudienceReads(request, bindings, context);
     }

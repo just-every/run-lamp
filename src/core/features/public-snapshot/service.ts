@@ -21,6 +21,10 @@ const CURRENT_POINTER_KEY = "snapshots/current.json";
 const STALE_MARKER_KEY = "snapshots/stale.json";
 const STALE_BUILD_MS = 5 * 60_000;
 const RETRY_LEASE_MS = 2 * 60_000;
+// Cloudflare ends a request's work 30 seconds after its answer or its client's hang-up, and a build
+// it ends stays `building` until STALE_BUILD_MS. A page whose last build ran longer than this is
+// built by the Queue consumer or Cron, which have minutes.
+const REQUEST_BUILD_MS = 10_000;
 // A healthy minute scheduler publishes a fresh timestamp and rolling windows.
 const SNAPSHOT_REFRESH_MS = 5 * 60_000;
 const PUBLICATION_SURFACES = ["page.html", "feed.atom", "feed.rss", "widget.js", "embed/script.js"];
@@ -79,6 +83,10 @@ export interface PublicSnapshotService {
   /** When the page customers see now was published; null before the first snapshot. */
   publishedAt(): Promise<string | null>;
   retryPendingBuild(): Promise<boolean>;
+  /** Whether this page's last published build ran longer than a request can be trusted to hold one. Reads one build row. */
+  outlastsRequest(): Promise<boolean>;
+  /** Records that the page must be rebuilt although no source row changed, for whichever run builds it next. */
+  requestRebuild(): Promise<void>;
   /** Whether the stored page was built by other code than the running release, by another renderer version, or has work still pending. Reads the pointer and the work row only. */
   needsRebuild(): Promise<boolean>;
 }
@@ -505,6 +513,8 @@ export function createPublicSnapshotService(
       } catch { return false; }
     },
     latestBuild: () => repository.latestBuild(),
+    async outlastsRequest() { return (await repository.lastPublishedBuildMs?.() ?? 0) > REQUEST_BUILD_MS; },
+    async requestRebuild() { await repository.requestWork(nowIso()); },
     async publishedAt() {
       try { return (await readPointer())?.generatedAt ?? null; }
       catch { return null; /* An unreadable pointer reads as not yet published. */ }
@@ -516,7 +526,7 @@ export function createPublicSnapshotService(
         const staleBefore = new Date(now.getTime() - STALE_BUILD_MS).toISOString();
         const interrupted = await repository.markInterruptedBuilds(nowText, staleBefore);
         for (const build of interrupted) {
-          console.error("Lamp public snapshot build lease expired without a completion record.", {
+          console.error("Lamp public snapshot build never finished: the request or run that started it ended first. Its claim on the page is released.", {
             buildId: build.id, startedAt: build.startedAt, elapsedMs: now.getTime() - Date.parse(build.startedAt),
           });
         }
@@ -537,7 +547,15 @@ export function createPublicSnapshotService(
           } else await repository.requestWork(nowText);
         }
         const leaseId = createUlid();
-        if (!(await repository.claimPendingWork({ leaseId, now: nowText, leaseUntil: new Date(now.getTime() + RETRY_LEASE_MS).toISOString(), staleBefore, refreshRevision: clockSource?.sourceRevision }))) return false;
+        if (!(await repository.claimPendingWork({ leaseId, now: nowText, leaseUntil: new Date(now.getTime() + RETRY_LEASE_MS).toISOString(), staleBefore, refreshRevision: clockSource?.sourceRevision }))) {
+          // Publication is due and cannot start. Name the build that holds the page, so a claim nothing runs can be traced to the request that took it.
+          const holder = await repository.buildInFlight?.(staleBefore);
+          if (holder) console.warn("Lamp public page publication is waiting: another build holds the page and has not finished.", {
+            buildId: holder.id, startedAt: holder.startedAt, heldMs: now.getTime() - Date.parse(holder.startedAt),
+            releasedAt: new Date(Date.parse(holder.startedAt) + STALE_BUILD_MS).toISOString(),
+          });
+          return false;
+        }
         try {
           work = await repository.currentWork();
           if (work.completedRevision < work.requestedRevision) await rebuildOne(work.requestedRevision);

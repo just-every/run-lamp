@@ -1958,3 +1958,27 @@ round trip and names the failed dependency; the cron heartbeat runs the same che
 live, so a storage or Queue outage still stops the heartbeat and shows on the deep
 address. A monitor that must follow storage or Queue reachability points at
 `/health/deep`.
+
+## A request builds the stored page only when it safely can — Run Edit Run fleet, 26 November 2026
+
+After 1.11.43, ChargeDesk's stored page still failed every other build with "Snapshot build
+lease expired before completion": 10 failed and 7 published in the hour after the roll. Every
+failed row started inside a `GET /health` from the company's uptime monitor. On a new isolate
+that request claimed the build and ran it in the request; the monitor hung up after ten
+seconds, Cloudflare cancelled the request (`clientDisconnected` at 9.6 to 9.8 seconds of wall
+time, once per failed row), and the row stayed `building`, which kept Cron from publishing
+until it was five minutes old. The builds were not slow. Nothing ran them. 1.11.44 moved
+`/health`'s build to the Queue.
+
+The same loss was open to every other request that builds. A pushed metric point and an
+Uptime timing ran the due publication in the request of a machine that does not wait for a
+page build. An operator's save builds in its request or after its answer, where Cloudflare
+allows 30 seconds; ChargeDesk's page takes 17 to 40. So a request now builds the page itself
+only when the page's last published build took under 10 seconds, and a metric point or timing
+never does: the work goes to the Queue consumer, which has minutes, and Cron publishes it if
+the Queue cannot take the message. A fast page still publishes inside the save, as PAGE-007
+asks. When publication is due and cannot start, Lamp logs the ID of the build that holds the
+page, when it started and when its claim is released. The five-minute release of a claim
+nothing finished is unchanged: it is the recovery for a run Cloudflare ends, not the fix.
+`tests/e2e/snapshot-retained.test.mjs` hangs up on `/health`, a metric push and a save on a
+slow page, and checks that each is answered and no build is left claimed.

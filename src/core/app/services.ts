@@ -1,5 +1,6 @@
 import { createStatusPageRepository } from "../features/page-settings/status-page.repository";
 import { createScopedSnapshots } from "../features/public-snapshot/scoped-service";
+import { createRequestPublication } from "../features/public-snapshot/request-publication";
 import { createRuleGuardRepository } from "../features/intake/rule-guard.repository";
 import { createDependenciesService } from "../features/dependencies/service";
 import { createRuleWorkRepository } from "../features/intake/rule-work.repository";
@@ -90,9 +91,12 @@ export function createAppServices(bindings: AppBindings, blobs: BlobStore, execu
   }), blobs, extensions.publicSnapshotPolicies, extensions.publicSnapshotEvents, extensions.slots, createRetainedSnapshotCache(bindings), runningReleaseIdentity(bindings));
   const statusPages = createStatusPageRepository(bindings.DB);
   const scopedSnapshots = createScopedSnapshots(bindings, blobs, statusPages, extensions.publicSnapshotPolicies);
+  const requestPublication = createRequestPublication(primarySnapshot, bindings.JOBS);
   const publicSnapshots = {
     ...primarySnapshot,
     async rebuild(force?: boolean) {
+      // Cron and the Queue consumer build the page themselves; a request does only when it safely can.
+      if (execution !== "background" && await requestPublication.rebuildElsewhere(force)) return;
       await primarySnapshot.rebuild(force);
       await scopedSnapshots.forEach(snapshot => snapshot.rebuild());
     },
@@ -101,7 +105,8 @@ export function createAppServices(bindings: AppBindings, blobs: BlobStore, execu
       return await scopedSnapshots.forEach(snapshot => snapshot.retryPendingBuild()) || primaryChanged;
     },
   };
-  const metrics = createMetricsService(bindings.DB, async()=>{await publicSnapshots.retryPendingBuild();}, { webhookSecret: bindings.WEBHOOK_SIGNING_SECRET, effectsPaused: bindings.EFFECTS_PAUSED === "1" });
+  // Metric points arrive from machines that do not wait for a page build.
+  const metrics = createMetricsService(bindings.DB, requestPublication.publishPending, { webhookSecret: bindings.WEBHOOK_SIGNING_SECRET, effectsPaused: bindings.EFFECTS_PAUSED === "1" });
   const incidentImpact = createIncidentImpactService(createIncidentImpactRepository(bindings.DB), publicSnapshots.rebuild);
   const pageSettings = createPageSettingsService(createPageSettingsRepository(bindings.DB), publicSnapshots.rebuild, blobs, bindings.MAIL_FROM_ADDRESS, bindings.MAIL_PROVIDER !== "rer");
   const configuredFromAddress = async () => (await pageSettings.get())?.mailFromAddress ?? bindings.MAIL_FROM_ADDRESS;

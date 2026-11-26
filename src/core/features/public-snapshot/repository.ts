@@ -43,6 +43,10 @@ export interface SnapshotRepository {
   finishBuild(input: { id: string; status: "published" | "failed"; version: string | null; error: string | null; attempts: number; finishedAt: string; updatedAt: string }): Promise<void>;
   hasPublishedBuild?(id: string, version: string): Promise<boolean>;
   latestBuild(): Promise<typeof snapshotBuilds.$inferSelect | null>;
+  /** How long this page's newest published build ran, from its start to its completion record; null before the first. */
+  lastPublishedBuildMs?(): Promise<number | null>;
+  /** The build still marked `building` that keeps another from starting: one started after `staleBefore`. */
+  buildInFlight?(staleBefore: string): Promise<{ id: string; startedAt: string } | null>;
   /** The next generation, strictly above `atLeast` (the generation already published elsewhere). */
   reserveGeneration(now: string, atLeast: number): Promise<number>;
   requestWork(now: string): Promise<number>;
@@ -310,6 +314,13 @@ export function createSnapshotRepository(
     },
     async latestBuild() {
       return (await database.select().from(snapshotBuilds).where(eq(snapshotBuilds.pagePath, path)).orderBy(desc(snapshotBuilds.startedAt)).limit(1).get()) ?? null;
+    },
+    async lastPublishedBuildMs() {
+      const build = await binding.prepare("SELECT started_at AS startedAt, finished_at AS finishedAt FROM snapshot_builds WHERE status = 'published' AND page_path = ? ORDER BY started_at DESC LIMIT 1").bind(path).first<{ startedAt: string; finishedAt: string | null }>();
+      return build?.finishedAt ? Date.parse(build.finishedAt) - Date.parse(build.startedAt) : null;
+    },
+    async buildInFlight(staleBefore) {
+      return await binding.prepare("SELECT id, started_at AS startedAt FROM snapshot_builds INDEXED BY snapshot_builds_in_flight WHERE page_path = ? AND status = 'building' AND started_at > ? ORDER BY started_at DESC LIMIT 1").bind(path, staleBefore).first<{ id: string; startedAt: string }>();
     },
     async reserveGeneration(now, atLeast) {
       const result = await binding.prepare(`UPDATE snapshot_build_control SET next_generation = MAX(next_generation, ?) + 1, updated_at = ? WHERE id = 'default' RETURNING next_generation AS generation`).bind(atLeast, now).first<{ generation: number }>();

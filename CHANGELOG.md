@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.11.45
+
+- **A request builds the stored page only when it safely can.** Cloudflare cancels a request's work when its client hangs up and ends it 30 seconds after its answer. A page build cancelled there kept its `building` record, and nothing else could publish the page until that record was five minutes old, logged as "Snapshot build lease expired before completion". 1.11.44 moved the `/health` build to the Queue. Now a pushed metric point and an Uptime timing also hand the due publication to the Queue, and an operator's save builds in its own request only while the page's last published build took under 10 seconds. A slower page is built by the Queue consumer, and the save answers at once. Cron publishes the change within a minute if the Queue cannot take the message. When publication is due and cannot start, Lamp logs the ID of the build that holds the page, when it started and when its claim is released.
+
+### Upgrading from 1.11.44
+
+Back up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.45`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release adds no migrations.
+
 ## 1.11.44
 
 - **`/health` answers without waiting on a page build.** On a new Worker isolate, `/health` used to rebuild the stored public page before answering when work was pending or the page came from another release. On a large page that took 30 to 50 seconds, so uptime monitors timed out after 8 to 10 seconds. The cancelled build then held the page for five minutes, logged as "Snapshot build lease expired before completion". `/health` now answers from the database and bindings only and hands that publication to the Queue, which builds it under the same lease as Cron. A workers.dev installation's app and page Workers now share one release identity (the deploy fingerprint), so neither rebuilds the page the other built. Previews still publish their own page through their Queue; their other queued effects stay off.

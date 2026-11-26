@@ -1,6 +1,6 @@
 {
   "name": "lamp",
-  "version": "1.11.44",
+  "version": "1.11.45",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.12.4",
