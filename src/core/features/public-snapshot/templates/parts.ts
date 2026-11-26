@@ -21,6 +21,7 @@ export interface TemplateParts {
   slot(id: "status-page.header.after.v1" | "status-page.components.after.v1" | "status-page.footer.before.v1"): string;
   incidentSlot(incident: PublicIncident): string;
   footerResources: string;
+  signIn: string;
   otherSubscriptions: string;
 }
 
@@ -28,7 +29,7 @@ export function templateShell(template: TemplateName, model: PublicSnapshotModel
   const { settings, overall } = model;
   const title = /\bstatus\s*$/i.test(settings.pageName.trim()) ? settings.pageName : `${settings.pageName} status`;
   const website = model.websiteUrl ? new URL(model.websiteUrl) : null;
-  const meta = `<p class="tpl-foot-meta">${website ? `<a href="${escapeHtml(website.href)}">${escapeHtml(website.hostname)}</a>` : ""}<span class="host" data-timezone-label data-timezone="${escapeHtml(settings.timezone)}" data-zone-name="${escapeHtml(timezoneLabel(settings.timezone))}">Times shown in ${escapeHtml(timezoneLabel(settings.timezone))}</span><a data-lamp-signin href="/signin">Sign in</a></p>`;
+  const meta = `<p class="tpl-foot-meta">${website ? `<a href="${escapeHtml(website.href)}">${escapeHtml(website.hostname)}</a>` : ""}<span class="host" data-timezone-label data-timezone="${escapeHtml(settings.timezone)}" data-zone-name="${escapeHtml(timezoneLabel(settings.timezone))}">Times shown in ${escapeHtml(timezoneLabel(settings.timezone))}</span><a data-lamp-signin href="${escapeHtml(parts.signIn)}">Sign in</a></p>`;
   const credit = settings.footerCreditEnabled ? `<p class="tpl-credit">${template === "calm" ? "" : lampMark()}<span>Powered by <span class="tpl-credit-name">Lamp</span></span></p>` : "";
   const footer = `<footer class="tpl-foot"><div class="wrap">${themeChrome(model.theme, "footer")}${parts.slot("status-page.footer.before.v1")}<div class="tpl-foot-row">${credit}${meta}</div>${parts.footerResources}</div></footer>`;
   const otherSubscriptions = parts.otherSubscriptions ? `<div class="wrap">${parts.otherSubscriptions}</div>` : "";

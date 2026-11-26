@@ -69,29 +69,31 @@ export function createHostDispatch(bindings: HostDispatchBindings) {
     throw new Error("LAMP_PAGE_HOST and LAMP_APP_HOST must be different hostnames: each serves its own home page at /.");
   }
 
-  return {
-    surfaceFor(request: Request, { allowDevelopmentAssets = false }: { allowDevelopmentAssets?: boolean } = {}): LampSurface | null {
-      const requestHost = new URL(request.url).hostname.toLowerCase();
-      const pathname = new URL(request.url).pathname;
+  function surfaceForUrl(method: string, url: URL, { allowDevelopmentAssets = false } = {}): LampSurface | null {
+    const { hostname: requestHost, pathname } = url;
 
-      if (protectedPageAddress(pathname)) return requestHost === appHost ? "protected-page" : null;
-      if (pathname === "/") {
-        if (requestHost === pageHost) return "page";
-        if (requestHost === appHost) return "app";
-        return null;
-      }
-      // Both hosts have a robots.txt: the page host's is the snapshot's, the app host's exists only while pre-launch is on.
-      if (pathname === "/robots.txt") return requestHost === pageHost ? "page" : requestHost === appHost ? "app" : null;
-      // The page host answers the same /health as the app host: it is one Worker, and the answer holds no
-      // secret (ok, the last check time, and the deployment's source, fingerprint and version ids).
-      if (pathname === "/health" && requestHost === pageHost) return "page";
-      if (matches(pathname, pageExactPaths, pagePathPrefixes)) {
-        return requestHost === pageHost ? "page" : null;
-      }
-      if (matches(pathname, appExactPaths, appPathPrefixes) || (allowDevelopmentAssets && isDevelopmentAppPath(pathname))) {
-        return requestHost === appHost ? "app" : null;
-      }
-      return requestHost === pageHost && (request.method === "GET" || request.method === "HEAD") && isImportAliasPath(pathname) ? "page" : null;
-    },
+    if (protectedPageAddress(pathname)) return requestHost === appHost ? "protected-page" : null;
+    if (pathname === "/") {
+      if (requestHost === pageHost) return "page";
+      if (requestHost === appHost) return "app";
+      return null;
+    }
+    // Both hosts have a robots.txt: the page host's is the snapshot's, the app host's exists only while pre-launch is on.
+    if (pathname === "/robots.txt") return requestHost === pageHost ? "page" : requestHost === appHost ? "app" : null;
+    // The page host answers the same /health as the app host: it is one Worker, and the answer holds no
+    // secret (ok, the last check time, and the deployment's source, fingerprint and version ids).
+    if (pathname === "/health" && requestHost === pageHost) return "page";
+    if (matches(pathname, pageExactPaths, pagePathPrefixes)) {
+      return requestHost === pageHost ? "page" : null;
+    }
+    if (matches(pathname, appExactPaths, appPathPrefixes) || (allowDevelopmentAssets && isDevelopmentAppPath(pathname))) {
+      return requestHost === appHost ? "app" : null;
+    }
+    return requestHost === pageHost && (method === "GET" || method === "HEAD") && isImportAliasPath(pathname) ? "page" : null;
+  }
+
+  return {
+    surfaceForUrl,
+    surfaceFor: (request: Request, options?: { allowDevelopmentAssets?: boolean }) => surfaceForUrl(request.method, new URL(request.url), options),
   };
 }

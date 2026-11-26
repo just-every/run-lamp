@@ -42,6 +42,16 @@
       "binding": "SNAPSHOT_CACHE",
       "className": "SnapshotCache",
       "storage": "sqlite"
+    },
+    {
+      "binding": "MOVE_IN_WORKER",
+      "className": "MoveInWorker",
+      "storage": "sqlite"
+    },
+    {
+      "binding": "HEALTH_WORKER",
+      "className": "HealthWorker",
+      "storage": "sqlite"
     }
   ],
   "secrets": [
@@ -146,6 +156,7 @@
     "LAMP_RESOURCE_PREFIX"
   ],
   "vars": {
+    "LAMP_QUEUE_SCHEDULED": "1",
     "MAIL_PROVIDER": "none",
     "LAMP_RESOURCE_PREFIX": ""
   }

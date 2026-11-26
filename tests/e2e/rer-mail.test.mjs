@@ -707,6 +707,8 @@ test('The built hosted mail-off owner signs in, finishes native first-run after 
             assert.ok(['www.example.com', 'status.example.com', 'status.example.test'].includes(url.host), 'setup sends no provider request');
             return new Response('<!doctype html><html><head><title>Synthetic company</title><meta name="description" content="Synthetic service updates"></head><body><h1>Synthetic company</h1></body></html>', { headers: { 'Content-Type': 'text/html' } });
           } }, ...externalWorkers] }));
+      const requestsLifetime = new AbortController();
+      const inFlight = new Set();
       const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
       try {
         const db = await runtime.getD1Database('DB');
@@ -729,11 +731,21 @@ test('The built hosted mail-off owner signs in, finishes native first-run after 
           assert.equal(refused.status, 302, await refused.clone().text()); assert.equal(new URL(refused.headers.get('location')).pathname, '/signin');
           assert.equal(refused.headers.has('set-cookie'), false);
         }
-        await context.route('**/*', async route => {
+        const serveRequest = async route => {
           const request = route.request();
-          const response = await raw(request.url(), { method: request.method(), headers: await request.allHeaders(), body: request.postDataBuffer() ?? undefined });
-          const body = Buffer.from(await response.arrayBuffer());
-          await completeRoute(() => route.fulfill({ status: response.status, headers: Object.fromEntries(response.headers), body }));
+          const { signal } = requestsLifetime;
+          try {
+            const response = await raw(request.url(), { method: request.method(), headers: await request.allHeaders(), body: request.postDataBuffer() ?? undefined, signal });
+            const body = Buffer.from(await response.arrayBuffer());
+            await completeRoute(() => route.fulfill({ status: response.status, headers: Object.fromEntries(response.headers), body }));
+          } catch (error) {
+            if (!signal.aborted) throw error;
+          }
+        };
+        await context.route('**/*', route => {
+          const serving = serveRequest(route);
+          inFlight.add(serving);
+          return serving.finally(() => inFlight.delete(serving));
         });
         const page = await context.newPage(); await page.goto(appOrigin + '/signin');
         if (provider === 'none') {
@@ -839,9 +851,11 @@ test('The built hosted mail-off owner signs in, finishes native first-run after 
           }
         }
       } finally {
-        // Browser close does not wait for route callbacks that still use Miniflare.
-        await context.unrouteAll({ behavior: 'wait' });
+        // Stop browser requests, then drain the callbacks that use Miniflare.
+        requestsLifetime.abort();
+        await context.unrouteAll({ behavior: 'ignoreErrors' });
         await context.close();
+        await Promise.allSettled(inFlight);
         await runtime.dispose();
       }
     }

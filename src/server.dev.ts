@@ -12,7 +12,7 @@ import { admitsPasskeys, passkeyDoor, passkeyResponse } from './core/platform/au
 import { addPasskeySignIn, passkeyEnrollment } from './core/platform/auth/local-passkey/pages';
 import { admitsDevelopmentRequest } from './core/platform/development/access';
 import type { AppBindings } from './core/app/types';
-export { SnapshotCache } from './server';
+export { HealthWorker, MoveInWorker, SnapshotCache } from './server';
 const devBindings = (env: AppBindings) => ({...env,AUTH_ORIGIN:env.RER_DEV_ORIGIN||env.AUTH_ORIGIN||env.LAMP_LOCAL_ORIGIN,AUTH_LOCAL:'true'});
 const development = withDevIdentity<AppBindings,typeof worker>({
   ...worker,

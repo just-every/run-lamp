@@ -35,6 +35,16 @@
     "producers": [{ "binding": "JOBS", "queue": "lamp-local-jobs" }],
     "consumers": [{ "queue": "lamp-local-jobs", "max_batch_size": 10, "max_batch_timeout": 5, "max_retries": 5 }]
   },
-  "durable_objects": { "bindings": [{ "name": "SNAPSHOT_CACHE", "class_name": "SnapshotCache" }] },
-  "migrations": [{ "tag": "snapshot-cache-v1", "new_sqlite_classes": ["SnapshotCache"] }]
+  "durable_objects": {
+    "bindings": [
+      { "name": "SNAPSHOT_CACHE", "class_name": "SnapshotCache" },
+      { "name": "MOVE_IN_WORKER", "class_name": "MoveInWorker" },
+      { "name": "HEALTH_WORKER", "class_name": "HealthWorker" }
+    ]
+  },
+  "migrations": [
+    { "tag": "snapshot-cache-v1", "new_sqlite_classes": ["SnapshotCache"] },
+    { "tag": "move-in-worker-v1", "new_sqlite_classes": ["MoveInWorker"] },
+    { "tag": "health-worker-v1", "new_sqlite_classes": ["HealthWorker"] }
+  ]
 }

@@ -19,7 +19,6 @@ import { registerAuditLogRoutes } from "../features/audit-log/routes";
 import { createAuditLogRepository } from "../features/audit-log/repository";
 import { registerIncidentImpactRoutes } from "../features/incident-impact";
 import { registerSetupRoutes } from "../features/setup/routes";
-import { createSetupRepository } from "../features/setup/repository";
 import { authResponse } from "../platform/auth/http";
 import { Hono } from "hono";
 import { publicPageOrigin } from "./public-origin";
@@ -28,15 +27,13 @@ import type { AppBindings, AppEnv } from "./types";
 import { isLocalMailExecution, type MailExecution } from "./mail";
 import { createAppServices } from "./services";
 import { createSnapshotBlobStore } from "../platform/blobs/r2";
-import { createDependencyProber } from "../platform/health";
 import { createPublicWriteRateLimiter } from "../platform/security/rate-limiter";
 import { registerComponentRoutes } from "../features/components";
 import { registerCatalogueRoutes } from "../features/components/catalogue-routes";
 import { registerMailSettings } from "../features/deliveries/mail-settings";
 import { registerDeliveryRoutes } from "../features/deliveries";
-import { createHealthRepository } from "../features/health/repository";
+import { healthServiceFor } from "../features/health/endpoint";
 import { registerHealthRoutes } from "../features/health/routes";
-import { createHealthService } from "../features/health/service";
 import { registerIncidentRoutes } from "../features/incidents";
 import { registerIntakeRoutes } from "../features/intake";
 import { registerMaintenanceRoutes } from "../features/maintenance";
@@ -66,15 +63,7 @@ export function createApp(bindings: AppBindings, execution?: MailExecution) {
   const app = new Hono<AppEnv>();
   const authorizedReads = new WeakMap<Request, OperatorReadSession>();
   const services = createAppServices(bindings, createSnapshotBlobStore(bindings), execution);
-  // A deploy that changed the code leaves the previous page in storage, and a configured page
-  // may have no snapshot yet: the queue consumer builds it from this release, as Cron would.
-  const healthService = createHealthService(createHealthRepository(bindings.DB), createDependencyProber(bindings.SNAPSHOTS, bindings.JOBS), async () => {
-    if (await services.publicSnapshots.hasCurrentSnapshot()) {
-      if (!await services.publicSnapshots.needsRebuild()) return true;
-    } else if (!await createSetupRepository(bindings.DB).pageConfigured()) return false;
-    await bindings.JOBS.send({ type: "public-snapshot-publish" });
-    return true;
-  });
+  const healthService = healthServiceFor(bindings);
   const publicWriteLimiter = createPublicWriteRateLimiter(bindings.DB);
   // Before every route that subscribes someone or sends a message.
   const snapshotBlobs = createSnapshotBlobStore(bindings);

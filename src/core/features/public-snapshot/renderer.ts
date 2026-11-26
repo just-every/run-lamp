@@ -132,22 +132,23 @@ function incidentSlotMarkup(slots: LampServerSlots, incident: PublicIncident, mo
   return markup ?? "";
 }
 
-function footerResources(model: PublicSnapshotModel) {
+function footerResources(model: PublicSnapshotModel, signIn?: string) {
+  const vpat = signIn ? new URL("/docs/accessibility/vpat", signIn).href : "/docs/accessibility/vpat";
   const components = model.visibleComponents.map(component => {
     const resources = publicComponentResources(component);
     return `<li>${escapeHtml(component.name)}: <a href="${resources.atom}">Atom</a> · <a href="${resources.rss}">RSS</a> · <a href="${resources.badge}">Status badge</a> · <a href="${resources.uptime}">Uptime badge</a></li>`;
   }).join("");
-  return `<details class="footer-resources"><summary>Feeds and badges</summary><p><a href="/feed.atom">Atom feed</a> · <a href="/feed.rss">RSS feed</a> · <a href="/maintenance.ics">Maintenance calendar</a> · <a data-lamp-vpat href="/docs/accessibility/vpat">Accessibility (VPAT)</a> · <a href="/badge.svg">Status badge</a></p>${components ? `<ul>${components}</ul>` : ""}</details>`;
+  return `<details class="footer-resources"><summary>Feeds and badges</summary><p><a href="/feed.atom">Atom feed</a> · <a href="/feed.rss">RSS feed</a> · <a href="/maintenance.ics">Maintenance calendar</a> · <a data-lamp-vpat href="${escapeHtml(vpat)}">Accessibility (VPAT)</a> · <a href="/badge.svg">Status badge</a></p>${components ? `<ul>${components}</ul>` : ""}</details>`;
 }
 
-function pageShell(title: string, body: string, model: ReturnType<typeof toPublicModel>, slots: LampServerSlots, current: "root" | "history" | "other") {
+function pageShell(title: string, body: string, model: ReturnType<typeof toPublicModel>, slots: LampServerSlots, current: "root" | "history" | "other", signIn?: string) {
   const { settings, overall } = model;
   const publicOrigin = model.origin;
   const masthead = publicMasthead(settings.pageName, current === "root" ? "status" : current === "history" ? "history" : undefined, settings.tagline, !model.prelaunch, Boolean(settings.logoKey));
   const website = model.websiteUrl ? new URL(model.websiteUrl) : null;
   const websiteLink = website ? `<a href="${escapeHtml(website.href)}">← ${escapeHtml(website.hostname)}</a>` : "";
   const meta = `<p class="page-meta">${websiteLink}<span class="host" data-timezone-label data-timezone="${escapeHtml(settings.timezone)}" data-zone-name="${escapeHtml(timezoneLabel(settings.timezone))}">Times shown in ${escapeHtml(timezoneLabel(settings.timezone))}</span></p>`;
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><meta name="description" content="${escapeHtml(settings.tagline)}"><meta property="og:title" content="${escapeHtml(`${settings.pageName}: ${componentStateLabel(overall)}`)}"><meta property="og:image" content="${escapeHtml(`${publicOrigin}/assets/og.svg`)}"><meta property="og:image:alt" content="${escapeHtml(`${settings.pageName}: ${componentStateLabel(overall)}`)}"><title>${escapeHtml(title)}</title><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/status-page.css"></head><body class="lamp-public"><main class="page${current === "root" ? " root-page" : ""}">${themeChrome(model.theme, "header")}${masthead}${slotMarkup(slots, "status-page.header.after.v1", model)}${body}${meta}<footer>${themeChrome(model.theme, "footer")}${slotMarkup(slots, "status-page.footer.before.v1", model)}${footerResources(model)}<a data-lamp-signin href="/signin">Sign in</a>${settings.footerCreditEnabled ? " · Powered by Lamp" : ""}</footer></main><script src="/assets/status-page.js" defer></script></body></html>`;
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><meta name="description" content="${escapeHtml(settings.tagline)}"><meta property="og:title" content="${escapeHtml(`${settings.pageName}: ${componentStateLabel(overall)}`)}"><meta property="og:image" content="${escapeHtml(`${publicOrigin}/assets/og.svg`)}"><meta property="og:image:alt" content="${escapeHtml(`${settings.pageName}: ${componentStateLabel(overall)}`)}"><title>${escapeHtml(title)}</title><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/status-page.css"></head><body class="lamp-public"><main class="page${current === "root" ? " root-page" : ""}">${themeChrome(model.theme, "header")}${masthead}${slotMarkup(slots, "status-page.header.after.v1", model)}${body}${meta}<footer>${themeChrome(model.theme, "footer")}${slotMarkup(slots, "status-page.footer.before.v1", model)}${footerResources(model, signIn)}<a data-lamp-signin href="${escapeHtml(signIn ?? "/signin")}">Sign in</a>${settings.footerCreditEnabled ? " · Powered by Lamp" : ""}</footer></main><script src="/assets/status-page.js" defer></script></body></html>`;
 }
 
 function componentMarkup(component: PublicComponent & { hideUptime?: boolean }, model: PublicSnapshotModel) {
@@ -224,12 +225,13 @@ function timelineMarkup(model: ReturnType<typeof toPublicModel>, slots: LampServ
   return { active: "", rest: `<section id="incidents" class="history-timeline" aria-labelledby="timeline-title"><header class="section-heading"><h2 id="timeline-title">Incidents and maintenance</h2></header>${groups}</section>` };
 }
 
-function renderPage(model: ReturnType<typeof toPublicModel>, slots: LampServerSlots) {
+function renderPage(model: ReturnType<typeof toPublicModel>, slots: LampServerSlots, signIn?: string) {
   const template = effectiveTemplate(model);
   if (template !== "default") return renderTemplatePage(template, model, {
     slot: (id) => slotMarkup(slots, id, model),
     incidentSlot: (incident) => incidentSlotMarkup(slots, incident, model),
-    footerResources: footerResources(model),
+    footerResources: footerResources(model, signIn),
+    signIn: signIn ?? "/signin",
     otherSubscriptions: subscriptionMarkup(model, false),
   });
   const { settings, incidents, overall, generatedAt } = model;
@@ -238,7 +240,7 @@ function renderPage(model: ReturnType<typeof toPublicModel>, slots: LampServerSl
   const status = `<section class="status-banner ${stateClass(overall)}" aria-labelledby="overall-status"><svg class="status-wave" viewBox="0 0 250 62" aria-hidden="true" focusable="false"><path d="M6 46c34 10 58 4 86-16 30-22 60-26 92-10 22 11 40 22 60 26"/></svg><div id="status-live" role="status" aria-live="polite" aria-atomic="true"><div class="status-summary">${publicIcon(statusIcon, "overall-status-icon")}<div><p class="eyebrow">Current status</p><h1 id="overall-status" data-overall>${escapeHtml(componentStateLabel(overall))}</h1></div></div><p class="status-live-update" data-newest-update>${escapeHtml(newest ? updateSummary(newest.incident, newest.update) : "There are no open incidents.")}</p></div><p class="status-generated" data-generated-at>Updated ${timestamp(generatedAt, settings.timezone)}.</p><div data-generation-details>${timestampDetails(settings.timezone, ["Updated", generatedAt])}</div></section>`;
   const pageTitle = /\bstatus\s*$/i.test(settings.pageName.trim()) ? settings.pageName : `${settings.pageName} status`;
   const timeline = timelineMarkup(model, slots);
-  return pageShell(pageTitle, `${status}${timeline.active}${componentHealthMarkup(model)}<div class="component-extension">${slotMarkup(slots, "status-page.components.after.v1", model)}</div>${timeline.rest}${subscriptionMarkup(model)}`, model, slots, "root");
+  return pageShell(pageTitle, `${status}${timeline.active}${componentHealthMarkup(model)}<div class="component-extension">${slotMarkup(slots, "status-page.components.after.v1", model)}</div>${timeline.rest}${subscriptionMarkup(model)}`, model, slots, "root", signIn);
 }
 
 function renderIncidentPage(incident: PublicIncident, model: ReturnType<typeof toPublicModel>, slots: LampServerSlots) {
@@ -261,7 +263,7 @@ function renderHistory(model: ReturnType<typeof toPublicModel>, slots: LampServe
   return pageShell(`${month ?? "History"} · ${model.settings.pageName}`, `${renderHistoryContent(model, month)}`, model, slots, "history");
 }
 
-export function renderPublicSnapshot(source: PublicSnapshotSource, generatedAt = new Date().toISOString(), policies: PublicSnapshotPolicies = defaultPublicSnapshotPolicies, branding: { logoDataUrl: string | null; iconDataUrl?: string | null } = { logoDataUrl: null }, slots: LampServerSlots = {}): RenderedSnapshot {
+export function renderPublicSnapshot(source: PublicSnapshotSource, generatedAt = new Date().toISOString(), policies: PublicSnapshotPolicies = defaultPublicSnapshotPolicies, branding: { logoDataUrl: string | null; iconDataUrl?: string | null } = { logoDataUrl: null }, slots: LampServerSlots = {}, signIn?: string): RenderedSnapshot {
   const model = toPublicModel(source, generatedAt, policies);
   const dependencies = source.dependencies ?? [];
   const vendorMarkup = dependencies.length ? `<section class="history" aria-label="Upstream providers"><h2>Upstream providers</h2><p>Vendor reports are separate from buyer incidents.</p>${dependencies.map(row => {
@@ -274,7 +276,7 @@ export function renderPublicSnapshot(source: PublicSnapshotSource, generatedAt =
   const feeds = renderFeeds(model, source);
   const protectedPrefix = source.protectedPage ? statusPagePrefix(source.protectedPage) : "";
   const artifacts: SnapshotArtifact[] = [
-    { key: "page.html", body: renderPage(model, slots).replace("<footer", vendorMarkup + publicMetricsSection(model.metrics, model.visibleComponents, model.generatedAt, model.settings.timezone) + "<footer"), contentType: "text/html; charset=utf-8" },
+    { key: "page.html", body: renderPage(model, slots, signIn).replace("<footer", vendorMarkup + publicMetricsSection(model.metrics, model.visibleComponents, model.generatedAt, model.settings.timezone) + "<footer"), contentType: "text/html; charset=utf-8" },
     ...feeds,
     { key: "maintenance.ics", body: renderMaintenanceCalendar(model), contentType: "text/calendar; charset=utf-8" },
     ...(model.prelaunch ? [{ key: PRELAUNCH_ROBOTS_KEY, body: PRELAUNCH_ROBOTS_TXT, contentType: "text/plain; charset=utf-8" }] : []),
