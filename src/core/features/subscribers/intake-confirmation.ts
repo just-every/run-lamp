@@ -2,6 +2,7 @@ import { isMailPreparationError, type MailMessage, type MailSender } from "../..
 import { hashOpaqueToken } from "../../platform/security/opaque-tokens";
 import type { SubscriberRepository } from "./repository";
 import type { SubscriberTokenScope } from "./tokens";
+import { confirmationAllowanceKey } from "./destination";
 
 /** Native CSV/operator intake shares public confirmation tokens and one durable
  * address allowance. Preparation precedes the claim; transport follows it. */
@@ -23,7 +24,7 @@ export function createIntakeConfirmationSender(repository:SubscriberRepository,o
     const confirm=await options.issue(subscriberId,"confirm",deadline);
     const unsubscribe=await options.issue(subscriberId,"unsubscribe",null);
     const manage=await options.issue(subscriberId,"manage",null);
-    const emailHash=await hashOpaqueToken(`confirmation-address:${recipient.trim().toLowerCase()}`);
+    const emailHash=await hashOpaqueToken(confirmationAllowanceKey(recipient));
     const now=new Date().toISOString();
     if(!await repository.intake.claimInvitation(subscriberId,emailHash,now,actor,ownerOnly,tokenId))return false;
     try {

@@ -1,5 +1,6 @@
 import { hashOpaqueToken } from '../../platform/security/opaque-tokens';
 import type { D1Sql } from '../../../../modules/import-kit/src/d1/index';
+import { confirmationAllowanceKey } from '../subscribers/destination';
 
 interface InvitationClaim { id: string; jobId: string; destination: string; at: string; fence: D1Sql }
 const eligible = "s.state='pending' AND s.channel='email' AND julianday(s.created_at)>julianday('now','-72 hours') AND NOT EXISTS(SELECT 1 FROM incident_subscriptions f WHERE f.subscriber_id=s.id AND (f.ended_at IS NOT NULL OR f.resolution_at IS NOT NULL))";
@@ -7,7 +8,7 @@ const eligible = "s.state='pending' AND s.channel='email' AND julianday(s.create
 /** The invitation and shared daily address allowance are claimed together.
  * Suppressed scopes keep sent_at NULL so a later explicit action can try them. */
 export async function claimImportInvitation(db: D1Database, input: InvitationClaim): Promise<boolean> {
-  const allowance = await hashOpaqueToken(`confirmation-address:${input.destination}`);
+  const allowance = await hashOpaqueToken(confirmationAllowanceKey(input.destination));
   const cutoff = new Date(Date.parse(input.at) - 24 * 60 * 60 * 1000).toISOString();
   const due = `EXISTS(SELECT 1 FROM statuspage_import_invites i JOIN subscribers s ON s.id=i.subscriber_id JOIN subscriber_directory d ON d.id=s.id
     WHERE i.subscriber_id=? AND i.job_id=? AND i.sent_at IS NULL AND d.destination=? AND ${eligible})
@@ -33,7 +34,7 @@ export async function claimImportInvitation(db: D1Database, input: InvitationCla
 
 /** Release only a claim whose transport preparation proves nothing was sent. */
 export async function releaseImportInvitation(db: D1Database, input: Omit<InvitationClaim, 'fence'>) {
-  const allowance = await hashOpaqueToken(`confirmation-address:${input.destination}`);
+  const allowance = await hashOpaqueToken(confirmationAllowanceKey(input.destination));
   await db.batch([
     db.prepare('UPDATE statuspage_import_invites SET sent_at=NULL WHERE subscriber_id=? AND job_id=? AND sent_at=?').bind(input.id, input.jobId, input.at),
     db.prepare('DELETE FROM subscriber_confirmation_attempts WHERE email_hash=? AND last_sent_at=? AND changes()=1').bind(allowance, input.at),

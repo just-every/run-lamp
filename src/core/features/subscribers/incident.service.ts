@@ -5,7 +5,7 @@ import type { MailSender, MailMessage } from "../../platform/mail";
 import type { SubscriberRepository } from "./repository";
 import type { SubscriberConfirmationPolicy } from "./policies";
 import type { SubscriberTokenScope } from "./tokens";
-import { hasSafeWebhookDestination, normalizeEmail } from "./destination";
+import { confirmationAllowanceKey, hasSafeWebhookDestination, normalizeEmail } from "./destination";
 import { IncidentSubscriptionUnavailableError } from "./incident.repository";
 
 export type IncidentFollowInput = {includeReport?:boolean} & (
@@ -61,7 +61,7 @@ export function createIncidentSubscriptionService(repository:SubscriberRepositor
       const now=nowIso();
       const key=wasActive
         ? `management-subscription:${subscriber.id}:${subscriber.createdAt}`
-        : `confirmation-address:${recipient}`;
+        : confirmationAllowanceKey(recipient);
       if(!await repository.recordConfirmationSendIfAllowed(await hashOpaqueToken(key),new Date(Date.now()-24*60*60*1000).toISOString(),now))return followed;
       const manage=await options.issue(row.id,"manage",null);
       const unsubscribe=await options.issue(row.id,"unsubscribe",null);

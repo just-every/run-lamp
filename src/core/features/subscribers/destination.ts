@@ -1,5 +1,16 @@
 export function normalizeEmail(email: string) { return email.trim().toLowerCase(); }
 
+/** The 24-hour confirmation allowance belongs to a mailbox, not to a spelling of
+ * it: a +tag, and dots in a Gmail address, reach the same inbox (SUB-001). */
+export function confirmationAllowanceKey(email: string) {
+  const address = normalizeEmail(email), at = address.lastIndexOf("@");
+  if (at < 1) return `confirmation-address:${address}`;
+  let local = address.slice(0, at).split("+")[0] || address.slice(0, at), domain = address.slice(at + 1);
+  if (domain === "googlemail.com") domain = "gmail.com";
+  if (domain === "gmail.com") local = local.replaceAll(".", "") || local;
+  return `confirmation-address:${local}@${domain}`;
+}
+
 /** Expand a URL-canonical IPv6 literal (lower-case, compressed, no zone) into eight 16-bit words. */
 function ipv6Words(literal: string): number[] | null {
   if (!/^[0-9a-f:]+$/.test(literal) || !literal.includes(":")) return null;

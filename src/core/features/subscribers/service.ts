@@ -14,7 +14,7 @@ import { defaultSubscriberEvents, type SubscriberEvents } from "./events";
 import { defaultSubscriberConfirmationPolicy, type SubscriberConfirmationPolicy } from "./policies";
 import type { StoredSubscriber, StoredSubscriberComponent, SubscriberRepository, SubscriptionMailKind } from "./repository";
 import { SubscriberTokenCodec, type SubscriberTokenScope } from "./tokens";
-import { hasSafeWebhookDestination, normalizeEmail } from "./destination";
+import { confirmationAllowanceKey, hasSafeWebhookDestination, normalizeEmail } from "./destination";
 import { createSubscriberIntakeService, type SmsIntake } from "./intake.service";
 import { createIntakeConfirmationSender } from "./intake-confirmation";
 import type { AddedBy } from "./intake.repository";
@@ -273,7 +273,7 @@ export function createSubscribersService(
       // The conditional upsert is the anti-bomb gate: concurrent submits let
       // exactly one sender reserve the 24-hour confirmation slot.
       const allowed = await repository.recordConfirmationSendIfAllowed(
-        await hashOpaqueToken(`confirmation-address:${email}`),
+        await hashOpaqueToken(confirmationAllowanceKey(email)),
         new Date(Date.now() - CONFIRMATION_WINDOW_MS).toISOString(),
         timestamp,
       );
@@ -337,7 +337,7 @@ export function createSubscribersService(
       // re-subscribe gets a fresh confirmation instead of silence.
       const incidentContact = matched.subscriber.channel === "webhook" && await repository.incidents.get(matched.subscriber.id) ? matched.subscriber.contactEmail : null;
       const confirmationAddress = matched.subscriber.channel === "email" ? matched.subscriber.destination : incidentContact;
-      const allowance = confirmationAddress ? await hashOpaqueToken(`confirmation-address:${normalizeEmail(confirmationAddress)}`) : null;
+      const allowance = confirmationAddress ? await hashOpaqueToken(confirmationAllowanceKey(confirmationAddress)) : null;
       if (!await repository.unsubscribeSubscriber({ subscriberId: matched.subscriber.id, tokenHash: matched.token.tokenHash }, timestamp, allowance)) return false;
       await emitAfterCommit(() => events.subscriberDeactivated({ subscriberId: matched.subscriber.id, channel: matched.subscriber.channel, occurredAt: timestamp, reason: "unsubscribed" }));
       return true;
