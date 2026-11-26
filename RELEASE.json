@@ -1,11 +1,22 @@
 {
-  "version": "1.11.43",
-  "previousVersion": "1.11.42",
+  "version": "1.11.44",
+  "previousVersion": "1.11.43",
   "date": "2026-11-26",
-  "publicReleaseNotes": "- **Stored public pages rebuild faster.** Lamp batches database reads, shares imported history across snapshot inputs and reuses prepared reliability history during timed refreshes. Cron publishes the page independently of traffic analysis. Failed builds log the step and error so operators can tell where they stopped.\n\n### Upgrading from 1.11.42\n\nBack up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.43`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release adds no migrations.",
+  "publicReleaseNotes": "- **`/health` answers without waiting on a page build.** On a new Worker isolate, `/health` used to rebuild the stored public page before answering when work was pending or the page came from another release. On a large page that took 30 to 50 seconds, so uptime monitors timed out after 8 to 10 seconds. The cancelled build then held the page for five minutes, logged as \"Snapshot build lease expired before completion\". `/health` now answers from the database and bindings only and hands that publication to the Queue, which builds it under the same lease as Cron. A workers.dev installation's app and page Workers now share one release identity (the deploy fingerprint), so neither rebuilds the page the other built. Previews still publish their own page through their Queue; their other queued effects stay off.\n\n### Upgrading from 1.11.43\n\nBack up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.44`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release adds no migrations. The stored public page rebuilds once after the update.",
   "contractChanges": {},
+  "proseChanges": [
+    {
+      "document": "OPERATIONS.md",
+      "section": "Dependency failure",
+      "change": "changed",
+      "date": "2026-11-26",
+      "summary": "/health never waits on a page build; it hands due publication to the Queue after answering.",
+      "was": "/health published a configured page's first snapshot, or rebuilt a page from another release, before reporting readiness, and a failed snapshot build returned 503.",
+      "now": "/health answers from D1 and the bindings. Once per Worker isolate, after answering, it hands a first snapshot, pending work or another release's page to the Queue, which builds it under Cron's lease; previews run that job too. A failed build leaves its work pending for Cron."
+    }
+  ],
   "extensionPointChanges": [],
   "migrations": [],
   "breaking": false,
-  "agentUpdateInstructions": "Back up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.43`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release adds no migrations. Check the rebuilt public page after upgrading and confirm that scheduled refreshes complete."
+  "agentUpdateInstructions": "Back up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.44`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release adds no migrations. The stored public page rebuilds once after the update. After deploying, read `/health` on the app and page hosts a few times over several minutes and check that each answers within 2 seconds. Then check that `snapshot_builds` records no new \"Snapshot build lease expired before completion\" failures."
 }
