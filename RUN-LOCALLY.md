@@ -55,12 +55,17 @@ The local addresses serve three different purposes:
 - For the business's public status page, use `localhost` with the same app port.
   For example, if `RER_READY` is `http://127.0.0.1:8899`, open
   `http://localhost:8899/` for the public page.
-  With `rer dev --host localhost --port 8899`, the app uses `localhost` and
-  the public page uses `http://status.localhost:8899/`. Lamp prints both addresses.
+  With the host set to `localhost` (`rer setup --host localhost --port 8899`; see
+  below), the app uses `localhost` and the public page uses
+  `http://status.localhost:8899/`. Lamp prints both addresses.
 - `RER_SITE` names a separate preview of Lamp's static run site: the product
   homepage and Run page. It uses the first free port above the app's port.
   It does not show the business's live public status page. Use the exact
   `RER_SITE` address printed by `rer dev`.
+
+Set the host once with `rer setup --host <127.0.0.1|localhost|::1>`; plain `rer dev`
+then follows the saved address, so `--host` is not needed on each start. Stop dev
+first. Moving to another host later keeps the data.
 
 `rer dev --stop` stops development, including its run-site preview.
 `rer preview --stop` stops the fixed production app preview. If a port is
@@ -87,9 +92,10 @@ When `rer setup` asks, use the Owner's current sign-in email in the archive.
 After an import, run setup before restarting Lamp so its local private settings
 match that restored owner.
 
-Local passkeys must be enrolled again after restoring an archive. Start Lamp
-with `rer dev --host localhost`, open the private `RER_OPEN` link as the owner,
-and choose **Settings → Sign-in → Set up a local passkey**.
+Local passkeys must be enrolled again after restoring an archive. Run
+`rer setup --host localhost` once (it keeps the restored data), start Lamp with
+`rer dev`, open the private `RER_OPEN` link as the owner, and choose
+**Settings → Sign-in → Set up a local passkey**.
 
 To move the archive to a fresh checkout, stop the source server before exporting.
 Copy the archive into the destination checkout at `exports/lamp.rer` (create the
