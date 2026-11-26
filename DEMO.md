@@ -49,8 +49,9 @@ ordinary Worker bundle, with SQLite facets for `DB` and `SnapshotCache`, the
 batches and the every-minute cron delivered by alarm. Static files are served
 at the edge. A copy ends after 60 minutes, 15 idle minutes or sign-out, and its
 storage is erased. `rer deploy --demo --dry-run` builds `.rer/demo-host/`
-without contacting a provider. `run-demo.yml` is dispatched by hand and deploys
-from the `run-demo` environment to the RunEditRun account.
+without contacting a provider. `run-demo.yml` deploys each published release at
+its tag (or a hand dispatch) from the `run-demo` environment to the RunEditRun
+account; its trigger is a recorded adaptation of Base's template.
 
 The declared secondary host `page.demo.run-lamp.com`
 (`container.hostVariables` in `deploy.json`) is a second custom domain on the
