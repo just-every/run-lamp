@@ -3,6 +3,7 @@
 ## 1.11.44
 
 - **`/health` answers without waiting on a page build.** On a new Worker isolate, `/health` used to rebuild the stored public page before answering when work was pending or the page came from another release. On a large page that took 30 to 50 seconds, so uptime monitors timed out after 8 to 10 seconds. The cancelled build then held the page for five minutes, logged as "Snapshot build lease expired before completion". `/health` now answers from the database and bindings only and hands that publication to the Queue, which builds it under the same lease as Cron. A workers.dev installation's app and page Workers now share one release identity (the deploy fingerprint), so neither rebuilds the page the other built. Previews still publish their own page through their Queue; their other queued effects stay off.
+- **The public page names what each history date is.** Under the components, the page says availability is counted since the earliest visible component's recorded start. When incident and maintenance records begin later, it also says when they begin. It no longer shows one "History since" date taken from a moved-in component's creation. The Statuspage-compatible scheduled-maintenances API now lists the updates of maintenance windows carried over by **Settings › Move in**, the same messages their permalinks show. Their status is the source lifecycle, or null where the source kept none.
 
 ### Upgrading from 1.11.43
 
