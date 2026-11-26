@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.11.44
+
+- **`/health` answers without waiting on a page build.** On a new Worker isolate, `/health` used to rebuild the stored public page before answering when work was pending or the page came from another release. On a large page that took 30 to 50 seconds, so uptime monitors timed out after 8 to 10 seconds. The cancelled build then held the page for five minutes, logged as "Snapshot build lease expired before completion". `/health` now answers from the database and bindings only and hands that publication to the Queue, which builds it under the same lease as Cron. A workers.dev installation's app and page Workers now share one release identity (the deploy fingerprint), so neither rebuilds the page the other built. Previews still publish their own page through their Queue; their other queued effects stay off.
+
+### Upgrading from 1.11.43
+
+Back up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.44`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release adds no migrations. The stored public page rebuilds once after the update.
+
 ## 1.11.43
 
 - **Stored public pages rebuild faster.** Lamp batches database reads, shares imported history across snapshot inputs and reuses prepared reliability history during timed refreshes. Cron publishes the page independently of traffic analysis. Failed builds log the step and error so operators can tell where they stopped.
