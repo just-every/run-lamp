@@ -7200,7 +7200,7 @@
       "executable": false
     },
     "src/core/platform/auth/mail-sender.ts": {
-      "sha256": "b4f64667f6121164b0ed6a6b98fcb49dc03e42149030df052fb924fa1799c91f",
+      "sha256": "390f4fb2ba11cf3cb164c8fea175fa463e2a2b446e2573bca767e2a94b258b98",
       "executable": false
     },
     "src/core/platform/auth/owner-email-change.repository.ts": {
@@ -7332,7 +7332,7 @@
       "executable": false
     },
     "src/core/platform/mail/rer.ts": {
-      "sha256": "c1f6f75a416238acc329eb6cb20283ff0f122eb8033c06e8cd278cc4654a8ed7",
+      "sha256": "81c53bfc3f2ad9248ac5345045b3295051a89a8931da8f347f60722108968049",
       "executable": false
     },
     "src/core/platform/mail/resend-webhooks.ts": {
