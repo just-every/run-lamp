@@ -121,7 +121,20 @@ async function assertNativeGenerationRevalidation(j, component, incident, initia
 }
 
 test('Cron recovers an interrupted build and hydrates public data when the retained source is malformed', async () => {
-  const journey = await openStatusJourney({ workerEntry: 'tests/e2e/helpers/clocked-status-journey.worker.ts' });
+  const trafficEdge = 'https://traffic.example.test';
+  const trafficRead = Promise.withResolvers();
+  const releaseTraffic = Promise.withResolvers();
+  let cron;
+  const journey = await openStatusJourney({
+    workerEntry: 'tests/e2e/helpers/clocked-status-journey.worker.ts',
+    extraBindings: { LAMP_TEST_TRAFFIC_EDGE: trafficEdge },
+    async providerEdge(request) {
+      if (new URL(request.url).origin !== trafficEdge) return;
+      trafficRead.resolve();
+      await releaseTraffic.promise;
+      return new Response(null, { status: 204 });
+    },
+  });
   try {
     const component = await journey.component('Synthetic Lamp clock refresh service');
     const incident = await journey.incident('Synthetic Lamp clock refresh publication', [component]);
@@ -148,16 +161,17 @@ test('Cron recovers an interrupted build and hydrates public data when the retai
 
     const scheduledAt = Math.max(Date.now(), Date.parse(initial.generatedAt) + 5 * 60_000 + 1);
     await journey.json('/test/clock', 'PUT', { now: scheduledAt }, 204);
-    await journey.tick(scheduledAt);
-    const interrupted = await journey.db.prepare("SELECT status, error FROM snapshot_builds WHERE id = 'interrupted-fixture'").first();
-    assert.equal(interrupted.status, 'failed');
-    assert.ok(interrupted.error);
+    cron = journey.tick(scheduledAt);
+    await Promise.race([trafficRead.promise, cron.then(() => assert.fail('Cron did not read traffic storage.'))]);
 
     const refreshed = await eventually(
       currentPointer,
       pointer => pointer?.version && pointer.version !== initial.version,
       'the same scheduled refresh hydrates a new generation from the repository',
     );
+    const interrupted = await journey.db.prepare("SELECT status, error FROM snapshot_builds WHERE id = 'interrupted-fixture'").first();
+    assert.equal(interrupted.status, 'failed');
+    assert.ok(interrupted.error);
     assert.equal(refreshed.sourceRevision, initial.sourceRevision, 'the clock refresh hydrates without a new source edit');
     const response = await journey.publicResponse('/');
     assert.equal(response.status, 200, await response.clone().text());
@@ -170,7 +184,11 @@ test('Cron recovers an interrupted build and hydrates public data when the retai
     const hydratedSource = await bucket.get(`snapshots/${refreshed.version}/build-source.json`);
     assert.ok(hydratedSource, 'the successful generation retains its hydrated source');
     assert.ok(JSON.parse(await hydratedSource.text()).source.incidents.some(row => row.title === incident.title));
+    releaseTraffic.resolve();
+    await cron;
   } finally {
+    releaseTraffic.resolve();
+    await cron?.catch(() => {});
     await journey.close();
   }
 });

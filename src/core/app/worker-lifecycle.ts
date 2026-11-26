@@ -31,13 +31,15 @@ export async function runScheduled(bindings: AppBindings, executionContext: Exec
     // Requests leave due work to Cron once it has recorded a recent run.
     // A failed marker only lets requests keep helping; it must not stop this run.
     await createOverviewRepository(bindings.DB).record(CRON_EVIDENCE_STEP, "cron").catch((cause) => console.error("Lamp could not record its Cron run.", cause));
+    // Catching up traffic counters can require many serial R2 reads. It can
+    // queue mail, but it never changes the public snapshot's source.
+    const traffic = Promise.allSettled([runtime.services.trafficAlerts.run(scheduledAt)]);
     // State changes and operator reminders first, at the trigger's own time,
     // so the mail they queue goes out in this same run.
     const changes = await Promise.allSettled([
       runtime.services.dependencies.runDue(scheduledAt),
       runtime.services.alertRules.processPending(scheduledAt),
       runtime.services.metrics.runDue(scheduledAt),
-      runtime.services.trafficAlerts.run(scheduledAt),
       runtime.services.subscribers.expirePending(scheduledAt),
       expireHeldSorrySubscribers(bindings.DB, scheduledAt),
       runtime.services.pageExport.expireHeld(scheduledAt),
@@ -47,7 +49,7 @@ export async function runScheduled(bindings: AppBindings, executionContext: Exec
       runtime.services.reports.remindDue(new Date(scheduledAt).toISOString()),
     ]);
     const deliveries = await Promise.allSettled([
-      notificationOrigin(bindings).then((origin) => runtime.services.deliveries.dispatchDue(origin)),
+      traffic.then(() => notificationOrigin(bindings)).then((origin) => runtime.services.deliveries.dispatchDue(origin)),
       runtime.services.publicSnapshots.retryPendingBuild(),
       runtime.services.channels.dispatchPending(),
       runtime.services.social.dispatchPending(),
@@ -57,7 +59,7 @@ export async function runScheduled(bindings: AppBindings, executionContext: Exec
       runtime.services.overview.live.checkSenderIfDue(),
     ]);
     // Every failed step is reported, not only the first.
-    const failures = [...changes, ...deliveries].filter((result): result is PromiseRejectedResult => result.status === "rejected").map((result) => result.reason);
+    const failures = [...changes, ...await traffic, ...deliveries].filter((result): result is PromiseRejectedResult => result.status === "rejected").map((result) => result.reason);
     if (failures.length === 1) throw failures[0];
     if (failures.length) throw new AggregateError(failures, `Lamp's scheduled run had ${failures.length} failed steps.`);
     await pingExternalHeartbeat(bindings, runtime, scheduledAt);

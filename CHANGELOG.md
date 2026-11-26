@@ -2,7 +2,7 @@
 
 ## 1.11.43
 
-- **Stored public pages rebuild faster.** Lamp batches database reads, shares imported history across snapshot inputs and reuses prepared reliability history during timed refreshes. Failed builds log the step and error so operators can tell where they stopped.
+- **Stored public pages rebuild faster.** Lamp batches database reads, shares imported history across snapshot inputs and reuses prepared reliability history during timed refreshes. Cron publishes the page independently of traffic analysis. Failed builds log the step and error so operators can tell where they stopped.
 
 ### Upgrading from 1.11.42
 

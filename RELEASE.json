@@ -2,7 +2,7 @@
   "version": "1.11.43",
   "previousVersion": "1.11.42",
   "date": "2026-11-26",
-  "publicReleaseNotes": "- **Stored public pages rebuild faster.** Lamp batches database reads, shares imported history across snapshot inputs and reuses prepared reliability history during timed refreshes. Failed builds log the step and error so operators can tell where they stopped.\n\n### Upgrading from 1.11.42\n\nBack up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.43`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release adds no migrations.",
+  "publicReleaseNotes": "- **Stored public pages rebuild faster.** Lamp batches database reads, shares imported history across snapshot inputs and reuses prepared reliability history during timed refreshes. Cron publishes the page independently of traffic analysis. Failed builds log the step and error so operators can tell where they stopped.\n\n### Upgrading from 1.11.42\n\nBack up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.43`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release adds no migrations.",
   "contractChanges": {},
   "extensionPointChanges": [],
   "migrations": [],

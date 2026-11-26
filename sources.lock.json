@@ -496,7 +496,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "0778fed6549a52d57319e07ac26726375867e2082a916409f57448fe8d4288d3",
+      "sha256": "393c71ba9bf82449cbf619c02ec269ef672cde1bffc69cd23dc8773873dcbdb6",
       "executable": false
     },
     "CLAUDE.md": {
@@ -3152,7 +3152,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "468a0b43f1aefb47e690752a0a5ae92034132a9bf6cea0cf5c7dd5a974a71956",
+      "sha256": "f8b5cd97a724e11f4f2b8aa1fe3274d2b53fb63a32bced306785d70fb96828df",
       "executable": false
     },
     "rer-packaging.json": {
@@ -4656,7 +4656,7 @@
       "executable": false
     },
     "src/core/app/worker-lifecycle.ts": {
-      "sha256": "c959fac2f75ad439f5d52f3856083ebb9f4d61f485f88c1194d16632523355b2",
+      "sha256": "4974879d7eb9880eb9035308f7fd03067dac5cae5cee76a79c1742350c9e09c2",
       "executable": false
     },
     "src/core/features/ai/customer-text.ts": {
@@ -6240,7 +6240,7 @@
       "executable": false
     },
     "src/core/features/public-snapshot/repository.ts": {
-      "sha256": "72839b026fe5cef54423b4e6d4565a0c9b21021fcd6834f6fa9b8bb1078903c4",
+      "sha256": "f9338a2610943310b08694e40ab753e176fd0cd7a4999c5b1c9607ab8d03fb1b",
       "executable": false
     },
     "src/core/features/public-snapshot/retention.ts": {
@@ -8552,7 +8552,7 @@
       "executable": false
     },
     "tests/e2e/helpers/clocked-status-journey.worker.ts": {
-      "sha256": "d79dff3def9bb8b0b0ae11c9585df9f60d6b934f75014edce2148ea118ec587d",
+      "sha256": "3016c9b617cd3c6bbcffb41fc02c7b14dac5d4279af0858cec2e4b720ffdb349",
       "executable": false
     },
     "tests/e2e/helpers/complete-route.mjs": {
@@ -9196,7 +9196,7 @@
       "executable": false
     },
     "tests/e2e/snapshot-retained.test.mjs": {
-      "sha256": "6cc67c71e7c394dc72f163ba56e4b8d4c59eaa23696c871ee3ebb64b7c834b60",
+      "sha256": "373cbc90a094a05e04cac95b874417420b0b3b736a4ac5952060dda11e1d79ce",
       "executable": false
     },
     "tests/e2e/snapshot-retained.worker.ts": {
