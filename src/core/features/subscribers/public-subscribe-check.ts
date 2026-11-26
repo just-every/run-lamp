@@ -20,7 +20,7 @@ function network(request: Request) {
   return request.headers.get("CF-Connecting-IP")?.trim().slice(0, 64) || "unknown-network";
 }
 
-function rateBucket(request: Request) {
+function rateBucket(request: Request, groups = 4) {
   const address = network(request).toLowerCase();
   if (!address.includes(":")) return address;
   // A client can rotate addresses within a typical IPv6 allocation.
@@ -28,7 +28,7 @@ function rateBucket(request: Request) {
   const first = left ? left.split(":") : [];
   const last = right ? right.split(":") : [];
   const prefix = right === undefined ? first : [...first, ...Array(Math.max(0, 8 - first.length - last.length)).fill("0"), ...last];
-  return `${prefix.slice(0, 4).map(part => part.replace(/^0+(?=.)/, "")).join(":")}::/64`;
+  return `${prefix.slice(0, groups).map(part => part.replace(/^0+(?=.)/, "")).join(":")}::/${groups * 16}`;
 }
 
 async function signature(secret: string, request: Request, payload: string) {
@@ -79,11 +79,14 @@ export function createPublicSubscribeCheck(settings: Settings, limiter: PublicWr
     if (age < minAgeMs || age >= maxAgeMs || !constantTimeEqual(signed, await signature(secret, request, `${issued}.${nonce}`))) return false;
 
     const subject = await hmacSha256(secret, `lamp-subscribe-network.v1.${rateBucket(request)}`);
+    // A free tunnel broker hands out a /48: 65,536 separate /64 allowances.
+    const site = network(request).includes(":") ? await hmacSha256(secret, `lamp-subscribe-network.v1.${rateBucket(request, 3)}`) : undefined;
     try {
       // Both public forms share the same IP allowance. The subscriber service
       // separately reserves the 24-hour confirmation slot for the address.
       if (!await limiter.allow({ scope: "subscription-email-minute", subject, limit: 5 })) return false;
       if (!await limiter.allow({ scope: "subscription-email-hour", subject, limit: 10, windowMs: 3_600_000 })) return false;
+      if (site && !await limiter.allow({ scope: "subscription-email-site-hour", subject: site, limit: 30, windowMs: 3_600_000 })) return false;
       if (!await limiter.consume("subscription-form", nonce, Number(issued) + maxAgeMs)) return false;
     } catch {
       // With no durable reservation, the public request cannot send mail.
