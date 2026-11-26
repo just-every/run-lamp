@@ -8356,7 +8356,7 @@
       "executable": false
     },
     "tests/auth-adoption/owner-signin-mail.test.mjs": {
-      "sha256": "ce4afce86f46e993265c2a010cb6f8cbd521ffde1351566829ddd19d9ffb81be",
+      "sha256": "0e49d910f1ac41014ad35bb40ee5365bb7c06cd984886239fc2d5e193a03dc4a",
       "executable": false
     },
     "tests/auth-adoption/portability.test.mjs": {
