@@ -10,6 +10,8 @@ export interface SenderCheckOptions {
   postmarkAccountApiKey?: string;
   mailgunRegion?: "us" | "eu";
   mail: MailSender;
+  /** MAIL_RECIPIENTS=owner and the owner sign-in transport works: Lamp mails the owner's own sign-in link and nothing else. */
+  ownerOnly?: boolean;
   fetcher?: typeof fetch;
   /** A disposable demo: the provider read is a Base demoEffect answering as verified. */
   demo?: boolean;

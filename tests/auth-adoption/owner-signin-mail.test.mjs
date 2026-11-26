@@ -61,6 +61,11 @@ test('ACCESS-001 MAIL_RECIPIENTS=owner mails the sign-in link to the owner only,
 
     // Product mail stays off: no provider is reported to the app.
     assert.equal((await (await call('/api/app/mail-settings', { cookie })).json()).primaryProvider, null);
+
+    // The screens follow the sender: owner-only mail with a working sender is its own state, not a missing key.
+    const { live } = await (await call('/api/app/overview/live', { cookie })).json();
+    assert.equal(live.sender.state, 'owner-only');
+    assert.equal(live.subscribe, null, 'no subscribe form is expected while subscriber mail is off');
   } finally {
     globalThis.fetch = originalFetch;
     await cache.dispose?.(); await storage.runtime.dispose();

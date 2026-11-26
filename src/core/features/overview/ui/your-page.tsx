@@ -15,7 +15,7 @@ export function YourPageFacts({ live, pageName, accentColor, components }: { liv
   const relativeTime = useRelativeTime();
   const origin = live.publicOrigin;
   const host = new URL(origin).host;
-  const emailAvailable = live.sender.state !== "off" && live.sender.state !== "local";
+  const emailAvailable = live.sender.state !== "off" && live.sender.state !== "owner-only" && live.sender.state !== "local";
   return <div className="your-page-grid">
     <div className="data-card your-page-preview">
       <PagePreview size="large" pageName={pageName} accentColor={accentColor} markSrc={`/api/app/page-settings/brand/mark?v=${encodeURIComponent(live.publishedAt ?? "")}`} components={components} address={host} />
@@ -27,7 +27,7 @@ export function YourPageFacts({ live, pageName, accentColor, components }: { liv
           <Fact ok={live.publishedAt ? true : null} label={live.preview ? "Preview published" : "Page published"} detail={live.publishedAt ? relativeTime(live.publishedAt) : "Publishing now"} />
           <Fact ok={live.page ? live.page.ok : null} label="Address answering" detail={live.page?.reason ?? host} />
           {emailAvailable ? <Fact ok={live.subscribe ? live.subscribe.ok : null} label="Subscribe form working" detail={live.subscribe?.reason ?? (live.subscribe ? `checked ${relativeTime(live.subscribe.checkedAt)}` : "Checking soon")} /> : null}
-          {live.sender.state === "local" ? null : <Fact ok={live.sender.state === "off" || live.sender.state === "verified" ? true : live.sender.state === "failed" ? false : null} label="Mail sender" detail={live.sender.message ?? (live.sender.state === "verified" ? "Verified by your mail provider" : "Checking soon")} />}
+          {live.sender.state === "local" ? null : <Fact ok={live.sender.state === "off" || live.sender.state === "owner-only" || live.sender.state === "verified" ? true : live.sender.state === "failed" ? false : null} label="Mail sender" detail={live.sender.message ?? (live.sender.state === "verified" ? "Verified by your mail provider" : "Checking soon")} />}
         </ul>
         <p className="checked-note">Lamp checks these every minute and says so here if one stops working.</p>
       </section>

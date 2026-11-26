@@ -4,7 +4,7 @@ import { checkSender, senderEvidenceKey, MANAGED_SENDER_NOTICE, type SenderCheck
 
 /** One check Lamp ran on its own. reason is a short sentence with the one thing to do; null when it passed. */
 export interface LiveCheck { ok: boolean; checkedAt: string; reason: string | null }
-export interface SenderStatus { state: 'local' | 'off' | 'verified' | 'failed' | 'unchecked'; message: string | null; checkedAt: string | null }
+export interface SenderStatus { state: 'local' | 'off' | 'owner-only' | 'verified' | 'failed' | 'unchecked'; message: string | null; checkedAt: string | null }
 export interface LiveStatus {
   preview: boolean;
   publicOrigin: string;
@@ -27,6 +27,7 @@ export interface LiveStatusService {
 }
 
 const PAGE_STEP = 'page-check';
+export const OWNER_ONLY_SENDER_NOTICE = 'Email goes to the owner only: the owner\'s sign-in link. Subscriber and incident email is off.';
 const SENDER_FAILED_STEP = 'sender-failed';
 const PAGE_CHECK_MAX_AGE_MS = 2 * 60_000;
 const SENDER_CHECK_MAX_AGE_MS = 24 * 60 * 60_000;
@@ -42,7 +43,7 @@ export function createLiveStatusService(repository: OverviewRepository, settings
   sender: SenderCheckOptions;
   fetcher?: typeof fetch;
 }): LiveStatusService {
-  const subscribeExpected = !options.sender.local && options.sender.provider !== 'none';
+  const subscribeExpected = !options.sender.local && !options.sender.ownerOnly && options.sender.provider !== 'none';
 
   async function runChecks() {
     // Nothing is published before first-run setup; there is nothing to check yet.
@@ -72,7 +73,7 @@ export function createLiveStatusService(repository: OverviewRepository, settings
   }
 
   async function checkSenderIfDue(operatorEmail = '') {
-    if (options.sender.local || options.sender.provider === 'none') return;
+    if (options.sender.local || options.sender.ownerOnly || options.sender.provider === 'none') return;
     const value = await settings.get();
     if (!value) return;
     const key = await senderEvidenceKey(value.mailFromAddress, options.sender);
@@ -92,6 +93,7 @@ export function createLiveStatusService(repository: OverviewRepository, settings
   async function sender(): Promise<SenderStatus> {
     if (options.sender.provider === 'none') return { state: 'off', message: 'Email is off for this installation', checkedAt: null };
     if (options.sender.local) return { state: 'local', message: null, checkedAt: null };
+    if (options.sender.ownerOnly) return { state: 'owner-only', message: OWNER_ONLY_SENDER_NOTICE, checkedAt: null };
     const value = await settings.get();
     if (!value) return { state: 'unchecked', message: null, checkedAt: null };
     const key = await senderEvidenceKey(value.mailFromAddress, options.sender);
