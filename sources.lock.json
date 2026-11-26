@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "parent": null,
   "edition": "just-every/lamp",
-  "manifest": "51998d443156db109f672a88207bfe0d668cb3fa79853caaa473d205df03ffbf",
+  "manifest": "c1c8cbde71e797fb2ccd0842016774ea0aacf96256a9eb347d85c50ddea1c145",
   "toolchain": {
     "id": "runeditrun/edition-authoring",
     "version": "1.1.0",
@@ -124,7 +124,7 @@
         ],
         "origin": {
           "repository": "https://github.com/runeditrun/base.git",
-          "revision": "d320c1436aaeb95d2485c1a0e69afa00ac8fb51a",
+          "revision": "89286ad9506d78936935a6e665d7de92ffcb1508",
           "path": ".",
           "paths": [
             "modules/mail"
@@ -138,9 +138,9 @@
         ]
       },
       "baseline": {
-        "key": "1819eadb65f150a83c278e40d6bfed5fcaedb73c6dd4bd90fdc0e51f793c57da",
-        "digest": "46a03caacf8a447bc02c53ec4105c682cd95335c901967341b4b0cfea84c0d34",
-        "sha256": "027cd909b0ae8dc4bd8f575adf8d82d03d8bc07d6c7cbd9866e22d4d8836cf4a"
+        "key": "c27bb0bc654b920c5e84d0793f86a2e8ca75c711c52751295e467b29d6af179b",
+        "digest": "71828607ab8036001b36d8bb908f82567848f94052e590ae613a0b070b57fdd7",
+        "sha256": "b9353525f89d08a98669fe964ce0689a08fbec8a443443c63b00798fb82808cc"
       }
     },
     {
@@ -488,7 +488,7 @@
       "executable": false
     },
     "base-copies.json": {
-      "sha256": "854d53ecdf1627034c7cd76aa2dedcf1826e513d0028c435b1cabc93bee5b9e4",
+      "sha256": "6e9a6c77210812c844b06896da9b4017e0acafad95e71f0694325b011f9818dd",
       "executable": false
     },
     "BASELINE.md": {
@@ -708,7 +708,7 @@
       "executable": false
     },
     "edition.json": {
-      "sha256": "51998d443156db109f672a88207bfe0d668cb3fa79853caaa473d205df03ffbf",
+      "sha256": "c1c8cbde71e797fb2ccd0842016774ea0aacf96256a9eb347d85c50ddea1c145",
       "executable": false
     },
     "HANDOVER.md": {
@@ -716,7 +716,7 @@
       "executable": false
     },
     "hosted-check-managed.json": {
-      "sha256": "ffb356bb8b114e41603721ec62ab091043e03ae5d7f8794b50e6a42d8918f761",
+      "sha256": "21f54ef0faa3ddac32d9ec1a5f146e27ba78d1068c44c82321ca7765a1373fd6",
       "executable": false
     },
     "hosted-check.json": {
@@ -2196,7 +2196,7 @@
       "executable": false
     },
     "modules/mail/index.mjs": {
-      "sha256": "c0501b55f9ba53796926bed1abb22c8690ad2a66b03e09407a84a632c5a4a0c0",
+      "sha256": "1828d6ddff3456c49114498b722ae884da1736f6181858c1607568bf8b659bd0",
       "executable": false
     },
     "modules/mail/LICENSE": {
@@ -2204,7 +2204,7 @@
       "executable": false
     },
     "modules/mail/README.md": {
-      "sha256": "00154803c5caf2fa952b4b1a26f849dc44fd9fbbc23db18a5715eb592f63fef9",
+      "sha256": "43f04ee71fb003affbe706640ef60d8a716ba48827a6eec1adfa1ec60145f3b0",
       "executable": false
     },
     "modules/mail/src/adapters/cloudflare/headers.mjs": {
@@ -2261,6 +2261,10 @@
     },
     "modules/mail/src/adapters/rer/list-headers.mjs": {
       "sha256": "2ee80e4fa4e9185efebc5ce02fca2f777dfce7b423f31d6a1ede5a19f411195b",
+      "executable": false
+    },
+    "modules/mail/src/adapters/rer/owner.mjs": {
+      "sha256": "2bc6966d74ea883f7b5f42616e8ec932f4166b1367d4c778e93b14b47dcfe6de",
       "executable": false
     },
     "modules/mail/src/adapters/resend/index.mjs": {
@@ -4636,7 +4640,7 @@
       "executable": false
     },
     "src/core/app/mail.ts": {
-      "sha256": "2ee2e9ad1047c412578d314b6b2d4457902e21073be5d66deb710cef3ecd3da7",
+      "sha256": "f63f9f6854f4169e6d853e8979e307de1af93eaea178e9c12de9a27aac839cf5",
       "executable": false
     },
     "src/core/app/page-data.ts": {
@@ -7168,7 +7172,7 @@
       "executable": false
     },
     "src/core/platform/auth/index.ts": {
-      "sha256": "eb1282c1dd0afac455e43ed4ac47267a3be295f601dbcbf92f0455c959474402",
+      "sha256": "865faf9d5b66ab5bafae1426306c2b1f6874d77cd732deab97795bf46194f2fa",
       "executable": false
     },
     "src/core/platform/auth/installation-presentation.ts": {
@@ -7220,7 +7224,7 @@
       "executable": false
     },
     "src/core/platform/auth/owner-signin-mail.ts": {
-      "sha256": "e6c2531f0f40f5f95ff61954ce9f4d32160d8891d57ebd144551dcfcba3435f1",
+      "sha256": "e5f1cc635db110292cba9c988a3adec0fda5066b08f357d5adc3995b69b824d1",
       "executable": false
     },
     "src/core/platform/auth/owner-signin-return.ts": {
@@ -7296,7 +7300,7 @@
       "executable": false
     },
     "src/core/platform/mail/base-mail.d.ts": {
-      "sha256": "a439bc0c8f338568cf393a393532a7804f0726bafdef40fb8a9159c431b06bfa",
+      "sha256": "df12fdfb89935c625ee7a06c841a7e65c019220c5135d2a64dd2e6568602f460",
       "executable": false
     },
     "src/core/platform/mail/development.ts": {
@@ -7332,7 +7336,7 @@
       "executable": false
     },
     "src/core/platform/mail/rer.ts": {
-      "sha256": "c1f6f75a416238acc329eb6cb20283ff0f122eb8033c06e8cd278cc4654a8ed7",
+      "sha256": "1798a5379b91d3ef548afa384f480b7df990eab03d9b8c2ccee2c4a37e5dee3a",
       "executable": false
     },
     "src/core/platform/mail/resend-webhooks.ts": {
@@ -8352,7 +8356,7 @@
       "executable": false
     },
     "tests/auth-adoption/owner-signin-mail.test.mjs": {
-      "sha256": "727fc86b823f268c33d43a73f73947169094ec26cb98e8536ab19e54cb89eefd",
+      "sha256": "0e49d910f1ac41014ad35bb40ee5365bb7c06cd984886239fc2d5e193a03dc4a",
       "executable": false
     },
     "tests/auth-adoption/portability.test.mjs": {

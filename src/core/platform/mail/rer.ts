@@ -1,4 +1,4 @@
-import { createMailSender } from '../../../../modules/mail/index.mjs';
+import { createMailSender, createOwnerRelaySender } from '../../../../modules/mail/index.mjs';
 import { MailPreparationError, MailUnavailableError, type MailMessage, type MailSender, type SentMail } from './sender';
 import type { MailSendRepository } from './repository';
 
@@ -11,7 +11,7 @@ const failure = (message: string, retryable = false, providerMessageId?: string)
 /** Base owns the relay wire contract; Lamp keeps its durable delivery policy. */
 export class RerMailSender implements MailSender {
   readonly configured: boolean;
-  constructor(private readonly configuration: { apiKey?: string; fromAddress?: string; relayUrl?: string }, private readonly repository: MailSendRepository) {
+  constructor(private readonly configuration: { apiKey?: string; fromAddress?: string; relayUrl?: string; ownerEmail?: string }, private readonly repository: MailSendRepository) {
     this.configured = Boolean(configuration.apiKey && configuration.fromAddress && configuration.relayUrl);
   }
 
@@ -34,7 +34,10 @@ export class RerMailSender implements MailSender {
       text: message.text, ...(message.html ? { html: message.html } : {}), headers: Object.fromEntries(Object.entries(headers).map(([name, value]) =>
         [name, /^list-(archive|help)$/i.test(name) ? `<${value}>` : /^list-unsubscribe$/i.test(name) ? value.replace(/(<mailto:[^>?]+)\?subject=unsubscribe>/g, '$1>') : value])) };
     try {
-      sender = createMailSender({ provider: 'rer', mode: 'production', apiKey: this.configuration.apiKey!, relayUrl: this.configuration.relayUrl! });
+      const { apiKey, relayUrl, ownerEmail } = this.configuration;
+      sender = ownerEmail === undefined
+        ? createMailSender({ provider: 'rer', mode: 'production', apiKey: apiKey!, relayUrl: relayUrl! })
+        : createOwnerRelaySender({ ownerEmail, apiKey: apiKey!, relayUrl: relayUrl! });
       id = `rer-${await hash(message.idempotencyKey)}`;
       envelopeHash = await hash(JSON.stringify(wire));
       claimed = await this.repository.claim(id, envelopeHash, new Date().toISOString(), messageKey);

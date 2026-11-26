@@ -7,9 +7,9 @@ import { OPERATOR_ROLES, type OperatorRole } from '../../features/operators/perm
 import { authConfig } from './config';
 import { ownerProfile } from './owner-profile';
 import { baseMailSender } from './mail-sender';
-import { ownerSignInLinks } from './owner-signin-mail';
+import { ownerSignInLinks, type OwnerSignInTransport } from './owner-signin-mail';
 
-export function createLampAuth(env: AppBindings, mail?: MailSender, stored?: AuthConfig['providers'], ownerMail?: MailSender) {
+export function createLampAuth(env: AppBindings, mail?: MailSender, stored?: AuthConfig['providers'], ownerMail?: OwnerSignInTransport) {
   const repository = createOperatorRepository(env.DB);
   const config = authConfig(env, stored);
   const nativeAuth = (invitationRole?: OperatorRole) => createOperatorAuth({ db: env.DB, config,
@@ -30,7 +30,7 @@ export function createLampAuth(env: AppBindings, mail?: MailSender, stored?: Aut
   });
   const auth = nativeAuth();
   // MAIL_RECIPIENTS=owner: product mail is off, and the sign-in page's email link goes to the owner alone.
-  const ownerLink = ownerMail?.configured && env.MAIL_FROM_ADDRESS
+  const ownerLink = ownerMail && env.MAIL_FROM_ADDRESS
     ? ownerSignInLinks(env.DB, config, env.MAIL_FROM_ADDRESS, ownerMail, request => config.local ? 'loopback' : request.headers.get('CF-Connecting-IP') ?? '')
     : null;
   async function setProductRole(request: Request, id: string, role: OperatorRole) {
