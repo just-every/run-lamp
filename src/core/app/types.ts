@@ -48,6 +48,9 @@ export interface AppBindings {
   /** Set by RER's delivery: the digest of the release this Worker runs, and its uploaded version. */
   RER_RELEASE_DIGEST?: string;
   RER_VERSION_METADATA?: { id: string };
+  LAMP_QUEUE_SCHEDULED?: "1";
+  MOVE_IN_WORKER?: DurableObjectNamespace;
+  HEALTH_WORKER?: DurableObjectNamespace;
   LAMP_PAGE_HOST: string;
   LAMP_APP_HOST: string;
   MAIL_FROM_ADDRESS: string;

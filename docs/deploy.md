@@ -20,6 +20,14 @@ You need a Cloudflare account and the Lamp checkout selected by the
 [Run page](https://run-lamp.com/run), which points to the latest published
 release. Run each command from that checkout. If you choose another release,
 use the deploy guide inside its checkout.
+
+Lamp can use the **Cloudflare Workers Free** plan. `rer deploy` reads the
+account's Workers plan and omits the custom CPU limit on Free. On Workers Paid
+it applies Lamp's configured limit. Workers Free includes the D1, R2, Queues
+and SQLite Durable Objects bindings Lamp uses. Move in processes imports in
+chunks through a SQLite Durable Object, which has its own request CPU budget.
+Workers Free usage limits apply across your account.
+
 For enabled email, you also need a mail provider and an authenticated sender domain. Custom-domain hosting
 needs domains whose DNS records you can change; workers.dev hosting does not.
 
