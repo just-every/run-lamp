@@ -10,7 +10,8 @@ import type { PublicMetric } from "../metrics/types";
 import { readImportedNamespaces, readImportedPublicRecords } from "../statuspage-import/alias-repository";
 import type { ImportedPublicRecord } from "../statuspage-import/public-addresses";
 import { loadPublicApiIds } from "./api-identity-repository";
-import type { ReliabilityRow } from "./reliability";
+import { prepareReliabilityHistory, type ReliabilityHistory, type ReliabilityRow } from "./reliability-history";
+import { createPublicPlanReader, readPublicPlans } from "../statuspage-import/public-plan-reader";
 import { createWebsiteRepository } from "../website/repository";
 import { and, asc, desc, eq, getTableColumns, inArray, isNull, ne, or, sql } from "drizzle-orm";
 
@@ -33,8 +34,9 @@ import {
 export interface SnapshotRepository {
   /** Non-secret Worker configuration that affects the rendered source. */
   sourceConfiguration?: string;
-  load(): Promise<PublicSnapshotSource | null>;
-  loadArchive?(context: PublicSnapshotSource, key: string, generatedAt: string): Promise<PublicSnapshotSource | null>;
+  createPlanReader?(): typeof readPublicPlans;
+  load(readPlans?: typeof readPublicPlans): Promise<PublicSnapshotSource | null>;
+  loadArchive?(context: PublicSnapshotSource, key: string, generatedAt: string, readPlans?: typeof readPublicPlans): Promise<PublicSnapshotSource | null>;
   /** The public metric series alone. Timed refreshes read it fresh; minute points never request a full rebuild. */
   loadMetrics?(): Promise<PublicMetric[]>;
   startBuild(input: typeof snapshotBuilds.$inferInsert): Promise<void>;
@@ -46,7 +48,7 @@ export interface SnapshotRepository {
   requestWork(now: string): Promise<number>;
   currentWork(): Promise<{ requestedRevision: number; completedRevision: number }>;
   completeWork(revision: number, now: string): Promise<void>;
-  markInterruptedBuilds(now: string, staleBefore: string): Promise<void>;
+  markInterruptedBuilds(now: string, staleBefore: string): Promise<Array<{ id: string; startedAt: string }>>;
   claimPendingWork(input: { leaseId: string; now: string; leaseUntil: string; staleBefore: string; refreshRevision?: number }): Promise<boolean>;
   releaseWorkLease(leaseId: string, now: string): Promise<void>;
 }
@@ -96,8 +98,8 @@ export interface PublicSnapshotSource {
   reports: Array<{ incidentId: string; summary: string; timeline: string; cause: string; remediation: string; publishedAt: string }>;
   importedMaintenanceUpdates?: Array<{ id: string; maintenanceId: string; body: string; publishedAt: string; sourceStates?: string }>;
   maintenanceNotices: Array<{ id: string; maintenanceId: string; kind: string; body: string; publishedAt: string }>;
-  /** Every public incident attachment over the whole history, for the all-history reliability record. */
-  reliability: ReliabilityRow[];
+  /** The union of incident impacts per component over the whole public history. */
+  reliabilityHistory?: ReliabilityHistory;
 }
 
 export function createSnapshotRepository(
@@ -128,7 +130,8 @@ export function createSnapshotRepository(
   const loadMetrics = async () => scope ? [] : createMetricsRepository(binding).publicSeries();
   return {
     sourceConfiguration: JSON.stringify([publicOrigin, channels, Boolean(mailFromAddress)]),
-    async load() {
+    createPlanReader: createPublicPlanReader,
+    async load(readPlans = readPublicPlans) {
       const settings = await database.select().from(pageSettings).where(eq(pageSettings.id, "default")).get();
       if (!settings) return null;
       const protectedPage = scope ? await scope.pages.get(path) : null;
@@ -175,7 +178,7 @@ export function createSnapshotRepository(
       const recentIncidents = sql`(SELECT value FROM json_each(${incidentIds}))`;
       const recentMaintenance = sql.raw(`(${recentMaintenanceQuery})`);
       const cutoff = new Date(Date.now() - 90 * 86400000).toISOString();
-      const [componentRows, standingClaims, incidentClaims, maintenanceClaims, history, corrections, attachedComponents, updates, maintenanceRows, attachedMaintenanceComponents, reports, maintenanceNotices, importedPublicRecords, importedNamespaces, importedMaintenanceUpdates, publicApiIds] = await Promise.all([
+      const sourceRows = database.batch([
         database
           .select({
             id: components.id,
@@ -196,89 +199,88 @@ export function createSnapshotRepository(
           })
           .from(components)
           .leftJoin(componentGroups, eq(components.groupId, componentGroups.id))
-          .where(scope ? inArray(components.id, selected) : eq(components.internal, false))
-          .orderBy(asc(componentGroups.displayOrder), asc(components.displayOrder))
-          .all(),
-        database.select({ componentId: componentStandingClaims.componentId, state: componentStandingClaims.state }).from(componentStandingClaims).all(),
+          .where(scope ? inArray(components.id, selected) : and(eq(components.internal, false), sql`NOT EXISTS (SELECT 1 FROM vendor_dependencies v WHERE v.component_id = ${components.id})`))
+          .orderBy(asc(componentGroups.displayOrder), asc(components.displayOrder)),
+        database.select({ componentId: componentStandingClaims.componentId, state: componentStandingClaims.state }).from(componentStandingClaims),
         database
           .select({ componentId: incidentComponents.componentId, state: incidentComponents.state })
           .from(incidentComponents)
           .innerJoin(incidents, eq(incidentComponents.incidentId, incidents.id))
-          .where(and(inArray(incidentComponents.incidentId, sql.raw(`(${activeIncidentQuery})`)), sql`incident_components.published_at IS NOT NULL`))
-          .all(),
+          .where(and(inArray(incidentComponents.incidentId, sql.raw(`(${activeIncidentQuery})`)), sql`incident_components.published_at IS NOT NULL`)),
         database
           .select({ componentId: maintenanceComponents.componentId, state: maintenanceComponents.state })
           .from(maintenanceComponents)
           .innerJoin(maintenance, eq(maintenanceComponents.maintenanceId, maintenance.id))
-          .where(and(eq(maintenance.state, "In progress"), inArray(maintenance.id, sql.raw(`(${activeMaintenanceQuery})`))))
-          .all(),
+          .where(and(eq(maintenance.state, "In progress"), inArray(maintenance.id, sql.raw(`(${activeMaintenanceQuery})`)))),
         // Correction audit rows are not observations; computeUptime reads the
         // independently stored correction intervals instead.
         database.select().from(componentStateHistory).where(and(ne(componentStateHistory.causeType, "correction"), sql`(${componentStateHistory.changedAt} >= ${cutoff} OR ${componentStateHistory.id} IN
           (SELECT (SELECT h.id FROM component_state_history h WHERE h.component_id=c.id AND h.cause_type <> 'correction' AND h.changed_at < ${cutoff} ORDER BY h.changed_at DESC,h.created_at DESC,h.id DESC LIMIT 1) FROM components c WHERE c.internal=0)
-          OR ${componentStateHistory.id} IN (SELECT (SELECT h.id FROM component_state_history h WHERE h.component_id=c.id AND h.cause_type <> 'correction' ORDER BY h.changed_at,h.created_at,h.id LIMIT 1) FROM components c WHERE c.internal=0))`)).orderBy(asc(componentStateHistory.changedAt), asc(componentStateHistory.createdAt)).all(),
-        database.select().from(componentStateCorrections).where(sql`${componentStateCorrections.endsAt} >= ${cutoff}`).orderBy(asc(componentStateCorrections.startsAt), asc(componentStateCorrections.createdAt)).all(),
+          OR ${componentStateHistory.id} IN (SELECT (SELECT h.id FROM component_state_history h WHERE h.component_id=c.id AND h.cause_type <> 'correction' ORDER BY h.changed_at,h.created_at,h.id LIMIT 1) FROM components c WHERE c.internal=0))`)).orderBy(asc(componentStateHistory.changedAt), asc(componentStateHistory.createdAt)),
+        database.select().from(componentStateCorrections).where(sql`${componentStateCorrections.endsAt} >= ${cutoff}`).orderBy(asc(componentStateCorrections.startsAt), asc(componentStateCorrections.createdAt)),
         database
           .select(getTableColumns(incidentComponents))
           .from(incidentComponents)
           .leftJoin(components, eq(incidentComponents.componentId, components.id))
-          .where(and(inArray(incidentComponents.incidentId, recentIncidents), sql`incident_components.published_at IS NOT NULL`, scope ? inArray(incidentComponents.componentId, selected) : or(and(isNull(incidentComponents.componentId), sql`incident_components.detached_internal = 0`), eq(components.internal, false))))
-          .all(),
-        database.select().from(incidentUpdates).where(inArray(incidentUpdates.incidentId, recentIncidents)).orderBy(desc(incidentUpdates.publishedAt)).all(),
-        database.select().from(maintenance).where(inArray(maintenance.id, recentMaintenance)).orderBy(asc(maintenance.startsAt)).all(),
+          .where(and(inArray(incidentComponents.incidentId, recentIncidents), sql`incident_components.published_at IS NOT NULL`, scope ? inArray(incidentComponents.componentId, selected) : or(and(isNull(incidentComponents.componentId), sql`incident_components.detached_internal = 0`), eq(components.internal, false)))),
+        database.select().from(incidentUpdates).where(inArray(incidentUpdates.incidentId, recentIncidents)).orderBy(desc(incidentUpdates.publishedAt)),
+        database.select().from(maintenance).where(inArray(maintenance.id, recentMaintenance)).orderBy(asc(maintenance.startsAt)),
         database
           .select(getTableColumns(maintenanceComponents))
           .from(maintenanceComponents)
           .leftJoin(components, eq(maintenanceComponents.componentId, components.id))
-          .where(and(inArray(maintenanceComponents.maintenanceId, recentMaintenance), scope ? inArray(maintenanceComponents.componentId, selected) : or(and(isNull(maintenanceComponents.componentId), sql`maintenance_components.detached_internal = 0`), eq(components.internal, false))))
-          .all(),
-        binding.prepare("SELECT incident_id AS incidentId, summary, timeline, cause, remediation, published_at AS publishedAt FROM incident_reports WHERE incident_id IN (SELECT value FROM json_each(?)) AND published_at IS NOT NULL ORDER BY published_at DESC").bind(incidentIds).all<PublicSnapshotSource["reports"][number]>().then((result) => result.results),
-        binding.prepare(`SELECT id, maintenance_id AS maintenanceId, kind, body, published_at AS publishedAt FROM maintenance_notices WHERE maintenance_id IN (${recentMaintenanceQuery}) ORDER BY published_at DESC`).all<{ id: string; maintenanceId: string; kind: string; body: string; publishedAt: string }>().then((result) => result.results),
-        scope ? [] : readImportedPublicRecords(binding),
-        scope ? [] : readImportedNamespaces(binding),
-        binding.prepare(`SELECT id,maintenance_id AS maintenanceId,body,published_at AS publishedAt,source_states AS sourceStates FROM import_maintenance_updates WHERE maintenance_id IN (${recentMaintenanceQuery}) ORDER BY published_at DESC,id`).all<{id: string; maintenanceId: string; body: string; publishedAt: string; sourceStates: string}>().then(result => result.results),
-        scope ? {} : loadPublicApiIds(binding),
+          .where(and(inArray(maintenanceComponents.maintenanceId, recentMaintenance), scope ? inArray(maintenanceComponents.componentId, selected) : or(and(isNull(maintenanceComponents.componentId), sql`maintenance_components.detached_internal = 0`), eq(components.internal, false)))),
       ]);
-      // The all-history record reads one narrow row per public incident attachment, at build time only:
-      // page views serve the stored snapshot. The record is not bounded by the retained window.
-      const reliability = (await binding.prepare(`SELECT a.component_id AS componentId, i.opened_at AS openedAt, i.resolved_at AS resolvedAt, COALESCE(i.peak_impact, a.state) AS impact
-        FROM incident_components a JOIN incidents i ON i.id = a.incident_id
-        WHERE a.component_id IS NOT NULL AND a.published_at IS NOT NULL AND ${incidentVisibility}`).all<ReliabilityRow>()).results;
-
-      const website = await createWebsiteRepository(binding).get();
-      const vendorIds = new Set((await createDependencyRepository(binding).list()).map(row => row.componentId));
+      const [[componentRows, standingClaims, incidentClaims, maintenanceClaims, history, corrections, attachedComponents, updates, maintenanceRows, attachedMaintenanceComponents],
+        reports, maintenanceNotices, importedMaintenanceUpdates, reliability, website, incidentFollow, dependencies, importedPublicRecords, importedNamespaces, publicApiIds, metrics] = await Promise.all([
+        sourceRows,
+        database.all<PublicSnapshotSource["reports"][number]>(sql`SELECT incident_id AS incidentId, summary, timeline, cause, remediation, published_at AS publishedAt FROM incident_reports WHERE incident_id IN ${recentIncidents} AND published_at IS NOT NULL ORDER BY published_at DESC`),
+        database.all<PublicSnapshotSource["maintenanceNotices"][number]>(sql`SELECT id, maintenance_id AS maintenanceId, kind, body, published_at AS publishedAt FROM maintenance_notices WHERE maintenance_id IN (${recentMaintenance}) ORDER BY published_at DESC`),
+        database.all<NonNullable<PublicSnapshotSource["importedMaintenanceUpdates"]>[number]>(sql`SELECT id,maintenance_id AS maintenanceId,body,published_at AS publishedAt,source_states AS sourceStates FROM import_maintenance_updates WHERE maintenance_id IN (${recentMaintenance}) ORDER BY published_at DESC,id`),
+        database.all<ReliabilityRow>(sql`SELECT a.component_id AS componentId, i.opened_at AS openedAt, i.resolved_at AS resolvedAt, COALESCE(i.peak_impact, a.state) AS impact
+          FROM incident_components a JOIN incidents i ON i.id = a.incident_id
+          WHERE a.component_id IS NOT NULL AND a.published_at IS NOT NULL AND ${sql.raw(incidentVisibility)}
+          AND a.component_id IN ${scope ? selected : sql`(SELECT id FROM components c WHERE c.internal=0 AND NOT EXISTS (SELECT 1 FROM vendor_dependencies v WHERE v.component_id=c.id))`}`),
+        createWebsiteRepository(binding).get(),
+        createIncidentFollowSettingsRepository(binding).get(),
+        scope ? [] : createDependencyRepository(binding).publicRows(),
+        scope ? [] : readImportedPublicRecords(binding, readPlans),
+        scope ? [] : readImportedNamespaces(binding),
+        scope ? {} : loadPublicApiIds(binding, readPlans),
+        loadMetrics(),
+      ]);
       return {
         bounded: true,
         protectedPage: scope?.path,
         websiteUrl: website?.url ?? null,
         subscriptionChannels: subscriptionChannels(settings),
-        incidentIncludeReport:(await createIncidentFollowSettingsRepository(binding).get()).includeReport,
+        incidentIncludeReport: incidentFollow.includeReport,
         publicOrigin,
         publicApiIds, incidentImpacts: Object.fromEntries(incidentRowsWithImpact.flatMap(({ id, peakImpact }) => peakImpact === null ? [] : [[id, peakImpact]])),
         importedPublicRecords, importedNamespaces,
         settings,
-        dependencies: scope ? [] : await createDependencyRepository(binding).publicRows(),
-        components: scope ? componentRows : componentRows.filter(component => !vendorIds.has(component.id)),
+        dependencies,
+        components: componentRows,
         claims: [...standingClaims, ...incidentClaims, ...maintenanceClaims]
           .filter((claim): claim is { componentId: string; state: typeof componentStandingClaims.$inferSelect.state } => claim.componentId !== null),
         history,
         corrections,
         incidents: incidentRowsWithImpact.map(({ peakImpact, ...incident }) => incident),
         incidentComponents: attachedComponents,
-        updates: await projectImportedIncidentUpdates(binding, updates),
+        updates: await projectImportedIncidentUpdates(binding, updates, readPlans),
         maintenance: maintenanceRows,
         maintenanceComponents: attachedMaintenanceComponents,
         reports,
-        maintenanceNotices, importedMaintenanceUpdates, metrics: await loadMetrics(),
-        reliability,
+        maintenanceNotices, importedMaintenanceUpdates, metrics,
+        reliabilityHistory: prepareReliabilityHistory(reliability),
       };
     },
     loadMetrics,
-    loadArchive: (context, key, generatedAt) => loadArchiveSource(binding, {
+    loadArchive: (context, key, generatedAt, readPlans) => loadArchiveSource(binding, {
       ...context,
       // A retained generation from an older release did not store channel availability.
       subscriptionChannels: context.subscriptionChannels ?? subscriptionChannels(context.settings),
-    }, key, generatedAt),
+    }, key, generatedAt, readPlans),
     async startBuild(input) {
       await database.insert(snapshotBuilds).values({ ...input, pagePath: path });
     },
@@ -312,7 +314,7 @@ export function createSnapshotRepository(
       await binding.prepare(`UPDATE ${workTable} SET completed_revision = CASE WHEN completed_revision < ? THEN ? ELSE completed_revision END, updated_at = ? WHERE id = ?`).bind(revision, revision, now, workId).run();
     },
     async markInterruptedBuilds(now, staleBefore) {
-      await binding.prepare(`UPDATE snapshot_builds INDEXED BY snapshot_builds_in_flight SET status = 'failed', error = COALESCE(error, 'Snapshot build lease expired before completion.'), finished_at = ?, updated_at = ? WHERE page_path = ? AND status = 'building' AND started_at <= ?`).bind(now, now, path, staleBefore).run();
+      return (await binding.prepare(`UPDATE snapshot_builds INDEXED BY snapshot_builds_in_flight SET status = 'failed', error = COALESCE(error, 'Snapshot build lease expired before completion.'), finished_at = ?, updated_at = ? WHERE page_path = ? AND status = 'building' AND started_at <= ? RETURNING id, started_at AS startedAt`).bind(now, now, path, staleBefore).all<{ id: string; startedAt: string }>()).results;
     },
     async claimPendingWork(input) {
       const result = await binding.prepare(`UPDATE ${workTable} SET retry_lease_id = ?, retry_lease_until = ?, updated_at = ? WHERE id = ? AND (requested_revision${globalRevision} > completed_revision OR completed_revision = ?) AND (retry_lease_until IS NULL OR retry_lease_until <= ?) AND NOT EXISTS (SELECT 1 FROM snapshot_builds INDEXED BY snapshot_builds_in_flight WHERE page_path = ? AND status = 'building' AND started_at > ?)`)

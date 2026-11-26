@@ -17,13 +17,13 @@ interface BuildSource {
 }
 
 export async function loadBuildSource(repository: SnapshotRepository, generatedAt: string): Promise<BuildSource> {
-  const source = await repository.load();
+  const readPlans = repository.createPlanReader?.();
+  const source = await repository.load(readPlans);
   if (!source) throw new Error("Cannot build a public snapshot before page settings exist.");
-  const archives = [];
-  for (const key of firstPages) {
-    const page = await repository.loadArchive?.(source, key, generatedAt);
-    archives.push(page ? archiveRecords(page) : null);
-  }
+  const archives = await Promise.all(firstPages.map(async (key) => {
+    const page = await repository.loadArchive?.(source, key, generatedAt, readPlans);
+    return page ? archiveRecords(page) : null;
+  }));
   return { configuration: repository.sourceConfiguration, loadedAt: generatedAt, source, archives };
 }
 

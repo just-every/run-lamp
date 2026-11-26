@@ -14,22 +14,28 @@ export interface Uptime {
   marks: Array<{ day: string; downtimeMinutes: number | null; worstDowntimeState: ComponentState | null }>;
 }
 
-function reportingDays(windowStart: number, now: number, timezone: string) {
+export function reportingDays(windowStart: number, now: number, timezone: string) {
   const days: Array<{ day: string; startsAt: number; endsAt: number }> = [];
   const last = dayKey(now, timezone);
-  for (let day = dayKey(windowStart, timezone); day <= last; day = addCalendarDays(day, 1)) {
-    days.push({ day, startsAt: localMidnight(day, timezone), endsAt: localMidnight(addCalendarDays(day, 1), timezone) });
+  let day = dayKey(windowStart, timezone);
+  let startsAt = localMidnight(day, timezone);
+  while (day <= last) {
+    const next = addCalendarDays(day, 1);
+    const endsAt = localMidnight(next, timezone);
+    days.push({ day, startsAt, endsAt });
+    day = next;
+    startsAt = endsAt;
   }
   return days;
 }
 
-export function computeUptime(source: Pick<PublicSnapshotSource, "history" | "corrections">, componentId: string, now: number, timezone: string, policies: PublicSnapshotPolicies, startDate: string | null = null, window?: { startsAt: number; endsAt: number }): Uptime {
+export function computeUptime(source: Pick<PublicSnapshotSource, "history" | "corrections">, componentId: string, now: number, timezone: string, policies: PublicSnapshotPolicies, startDate: string | null = null, window?: { startsAt: number; endsAt: number }, calendar?: ReturnType<typeof reportingDays>): Uptime {
   const windowEnd = window?.endsAt ?? now;
   const events = source.history.filter((entry) => entry.componentId === componentId && entry.causeType !== "correction").sort((left, right) => left.changedAt.localeCompare(right.changedAt) || left.createdAt.localeCompare(right.createdAt) || (left.id ?? "").localeCompare(right.id ?? ""));
   const corrections = source.corrections.filter((entry) => entry.componentId === componentId).sort((left, right) => left.createdAt.localeCompare(right.createdAt));
   const windowStart = window?.startsAt ?? now - REPORTING_DAYS * DAY;
   const configuredStart = startDate ? localMidnight(startDate, timezone) : Number.NEGATIVE_INFINITY;
-  const days = reportingDays(windowStart, window ? windowEnd - 1 : now, timezone);
+  const days = calendar ?? reportingDays(windowStart, window ? windowEnd - 1 : now, timezone);
   const marks: Uptime["marks"] = days.map(({ day }) => ({ day, downtimeMinutes: null, worstDowntimeState: null }));
   const earliest = Math.min(...events.map((event) => new Date(event.changedAt).getTime()), ...corrections.map((correction) => new Date(correction.startsAt).getTime()));
   if (!Number.isFinite(earliest)) return { percentage: null, trackingSince: null, coverageDays: 0, coverageMinutes: 0, marks };
@@ -42,6 +48,7 @@ export function computeUptime(source: Pick<PublicSnapshotSource, "history" | "co
   for (const correction of corrections) { boundaries.add(new Date(correction.startsAt).getTime()); boundaries.add(new Date(correction.endsAt).getTime()); }
   const segments = [...boundaries].filter((instant) => instant >= coverageStart && instant <= windowEnd).sort((left, right) => left - right);
   let weightedDowntime = 0;
+  let firstDay = 0;
   for (let index = 0; index < segments.length - 1; index += 1) {
     const [segmentStart, segmentEnd] = [segments[index]!, segments[index + 1]!];
     if (segmentEnd <= segmentStart) continue;
@@ -52,7 +59,8 @@ export function computeUptime(source: Pick<PublicSnapshotSource, "history" | "co
     const weight = policies.uptimeDowntimeWeight(state);
     weightedDowntime += ((segmentEnd - segmentStart) / MINUTE) * weight;
     if (weight === 0) continue;
-    for (let day = 0; day < days.length; day += 1) {
+    while (firstDay < days.length && days[firstDay]!.endsAt <= segmentStart) firstDay += 1;
+    for (let day = firstDay; day < days.length && days[day]!.startsAt < segmentEnd; day += 1) {
       const overlap = Math.max(0, Math.min(segmentEnd, days[day]!.endsAt) - Math.max(segmentStart, days[day]!.startsAt));
       if (overlap > 0) {
         const mark = marks[day]!;
