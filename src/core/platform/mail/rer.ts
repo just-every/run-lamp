@@ -5,8 +5,9 @@ import type { MailSendRepository } from './repository';
 async function hash(value: string) {
   return [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value)))].map(byte => byte.toString(16).padStart(2, '0')).join('');
 }
-const failure = (message: string, retryable = false, providerMessageId?: string) =>
-  Object.assign(new Error(message), { retryable, ...(providerMessageId ? { providerMessageId } : {}) });
+/** `uncertain`: the relay may still deliver, so a sign-in link sent with it stays live (see baseMailSender). */
+const failure = (message: string, retryable = false, providerMessageId?: string, uncertain = false) =>
+  Object.assign(new Error(message), { retryable, ...(providerMessageId ? { providerMessageId } : {}), ...(uncertain ? { uncertain } : {}) });
 
 /** Base owns the relay wire contract; Lamp keeps its durable delivery policy. */
 export class RerMailSender implements MailSender {
@@ -61,14 +62,14 @@ export class RerMailSender implements MailSender {
       await this.repository.finish(id, result.status === 'uncertain' ? 'uncertain' : 'rejected');
       throw failure(result.status === 'uncertain'
         ? 'Managed mail acceptance is unconfirmed. Automatic resend is disabled to prevent duplicate mail.'
-        : 'Managed mail was rejected. Check the installation mail credential and Managed hosting status.', false, result.status === 'uncertain' ? id : undefined);
+        : 'Managed mail was rejected. Check the installation mail credential and Managed hosting status.', false, result.status === 'uncertain' ? id : undefined, result.status === 'uncertain');
     }
     if (!result.providerMessageId) {
       await this.repository.finish(id, 'uncertain');
-      throw failure('Managed mail accepted the message without a valid Message-ID. Automatic resend is disabled to prevent duplicate mail.', false, id);
+      throw failure('Managed mail accepted the message without a valid Message-ID. Automatic resend is disabled to prevent duplicate mail.', false, id, true);
     }
     try { await this.repository.finish(id, 'accepted', result.providerMessageId); }
-    catch { throw failure('Managed mail settlement failed; acceptance is unconfirmed. Automatic resend is disabled to prevent duplicate mail.', false, id); }
+    catch { throw failure('Managed mail settlement failed; acceptance is unconfirmed. Automatic resend is disabled to prevent duplicate mail.', false, id, true); }
     return { providerMessageId: result.providerMessageId };
   }
 }
