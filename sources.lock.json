@@ -544,7 +544,7 @@
       "executable": false
     },
     "DIVERGENCE.md": {
-      "sha256": "72878a069634a568303771d98c625a2f8dbd50af2f7bf84f118d7fabfe164a0e",
+      "sha256": "45ef1abd56c49534ab298cf4b00121b4b09592c61ad55f9fd60b8688611a78ac",
       "executable": false
     },
     "docs/accessibility/vpat.md": {
@@ -6304,7 +6304,7 @@
       "executable": false
     },
     "src/core/features/public-snapshot/request-publication.ts": {
-      "sha256": "9288e629c86d6972a5e508a8078ac5a442d224547904a359f8383204a49656bf",
+      "sha256": "02c1acd2c9e985e5e3a80070704453d8e48215698e8c17c35cc2e22d7aca5a5e",
       "executable": false
     },
     "src/core/features/public-snapshot/retention.ts": {
