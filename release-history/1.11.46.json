@@ -1,0 +1,31 @@
+{
+  "version": "1.11.46",
+  "previousVersion": "1.11.45",
+  "date": "2026-11-27",
+  "publicReleaseNotes": "- **Status updates fit on Workers Free.** In local measurements, saving page branding, adding a component or publishing an incident used a few milliseconds of Worker CPU per save, down from more than 100 ms. The existing SnapshotCache Durable Object handles these signed-in saves and the existing Queue publishes the page. The Queue now batches for up to one second.\n- **Slow publishing keeps a save intact.** Lamp confirms a stored save even when the Queue refuses it or publication takes more than ten seconds. The Queue or the next scheduled run publishes the saved change without creating a duplicate.\n- **Fresh setup works after removal.** Lamp cleans up resources from an interrupted setup and waits for Cloudflare to release the deleted storage bucket name so the next setup can reuse it.\n\n### Upgrading from 1.11.45\n\nBack up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.46`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release requires no new bindings or migrations. The stored public page rebuilds once after the update.",
+  "contractChanges": {},
+  "proseChanges": [
+    {
+      "document": "OPERATIONS.md",
+      "section": "Dependency failure",
+      "change": "changed",
+      "date": "2026-11-27",
+      "summary": "Hosted status-page saves fit the Workers Free budget and report success once stored, even when publishing is delayed.",
+      "was": "Fast page builds ran in the save request. Slow page builds ran in the Queue consumer.",
+      "now": "Hosted branding saves, component creation and incident publication use the existing SnapshotCache Durable Object and hand page builds to the existing Queue. A stored save succeeds even if publication is pending or the Queue refuses the message. The Queue or the next Cron run publishes the saved change."
+    },
+    {
+      "document": "docs/deploy.md",
+      "section": "Remove an installation",
+      "change": "changed",
+      "date": "2026-11-27",
+      "summary": "Removal leaves the environment ready for a fresh setup.",
+      "was": "An interrupted setup could leave resources behind, and Cloudflare could still reserve the deleted R2 bucket name after removal completed.",
+      "now": "Removal cleans up resources recorded by an interrupted setup and waits until the deleted R2 bucket name can be reused."
+    }
+  ],
+  "extensionPointChanges": [],
+  "migrations": [],
+  "breaking": false,
+  "agentUpdateInstructions": "Back up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.46`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release requires no new bindings or migrations. The stored public page rebuilds once after the update. Verify signed-out access, then save a status-page change and confirm it appears on the public page. Check Worker CPU for the save in Workers Logs."
+}

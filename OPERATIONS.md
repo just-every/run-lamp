@@ -414,13 +414,21 @@ instance of the existing SnapshotCache Durable Object, which records the change 
 D1 and asks the Queue to build the page. For a fast page, the save waits up to ten
 seconds for publication. Once stored, the save succeeds even if the Queue refuses
 the message or publication is still pending. The Queue or the next Cron run
-publishes the change. Three log lines carry the build ID. `Lamp public snapshot
+publishes the change. The Queue consumer sends each build to the `publication-builds`
+instance in the existing SnapshotCache namespace and acknowledges the message after
+the build finishes. Three log lines carry the build ID. `Lamp public snapshot
 build started.` identifies the invocation that claimed the build. `Lamp public
 page publication is waiting: another build holds the page and has not finished.`
 records when the blocking build began and when its claim is released. `Lamp
 public snapshot build never finished: the request or run that started it ended
 first.` marks the release of that claim. Find the first line in Workers Logs to
 identify the invocation that took the claim.
+
+The app host sends sign-in and console reads to the `operator-console-reads` instance
+in the same namespace. Settings loads the Page pane first and fetches other panes
+when opened. Check cold HTTP Worker and Queue consumer CPU separately from Durable
+Object CPU and requests in Cloudflare.
+
 A Cloudflare-wide outage needs separately operated hosting; this release does not
 provision an independent standby or make that deployment claim.
 

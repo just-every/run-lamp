@@ -1,9 +1,8 @@
-# Lamp 1.11.46
+# Lamp 1.11.47
 
-- **Status updates fit on Workers Free.** In local measurements, saving page branding, adding a component or publishing an incident used a few milliseconds of Worker CPU per save, down from more than 100 ms. The existing SnapshotCache Durable Object handles these signed-in saves and the existing Queue publishes the page. The Queue now batches for up to one second.
-- **Slow publishing keeps a save intact.** Lamp confirms a stored save even when the Queue refuses it or publication takes more than ten seconds. The Queue or the next scheduled run publishes the saved change without creating a duplicate.
-- **Fresh setup works after removal.** Lamp cleans up resources from an interrupted setup and waits for Cloudflare to release the deleted storage bucket name so the next setup can reuse it.
+- **Publishing a status page and opening the console fit on Workers Free.** The Worker now uses about 1 ms of CPU or less on these paths, down from roughly 100–400 ms in hosted measurements. The existing jobs Queue hands the page build to a named `publication-builds` instance of the SnapshotCache Durable Object. Sign-in and console reads, including Settings, use a separate `operator-console-reads` instance in the same namespace.
+- **Settings loads the Page pane first.** Other panes fetch their data when opened.
 
-### Upgrading from 1.11.45
+### Upgrading from 1.11.46
 
-Back up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.46`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release requires no new bindings or migrations. The stored public page rebuilds once after the update.
+Back up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.47`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. Lamp reuses the existing SnapshotCache class, `SNAPSHOT_CACHE` binding and jobs Queue. This update requires no new resources or migrations. The stored public page rebuilds once after the update.

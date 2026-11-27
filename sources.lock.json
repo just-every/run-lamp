@@ -496,7 +496,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "b0405a60ba9f33b4c8077881095f5a3574abd52c80be655cd217a17abcd63a71",
+      "sha256": "22c701c2cc76ac9e3e6ff7ac9df6fbb4ec6dd344992bcd91b1cbbf0c8debc0c7",
       "executable": false
     },
     "CLAUDE.md": {
@@ -544,11 +544,11 @@
       "executable": false
     },
     "DIVERGENCE.md": {
-      "sha256": "78341a79b7896974a4b1756840ad010068b7b12087161f3142b07235f4ba557b",
+      "sha256": "55ecfbc7af98450238f150998af70ad859afef8f99c84b6be442d93fd449d762",
       "executable": false
     },
     "docs/accessibility/vpat.md": {
-      "sha256": "2e8c2fff364a43cdba841085d0f3558b6b9caa325f372375bfe314422acd73cb",
+      "sha256": "134e81be99e0fad09308553ac314239d6d1b8294cab72a1e77af49d3f878e531",
       "executable": false
     },
     "docs/ai-assistance.md": {
@@ -2668,11 +2668,11 @@
       "executable": false
     },
     "OPERATIONS.md": {
-      "sha256": "a20ecfdee44e22575df782ebd3640081b537c395a96af5b943e0d4f4a3c87981",
+      "sha256": "422e6586e0fb25d84a9fc4d50579b1fa936d2d7d700d7b323fd85ffdb2c2a0ed",
       "executable": false
     },
     "package.json": {
-      "sha256": "f579b95fc11b332286e718583831d19f83da131713fe3ed676da9ad1d6977b16",
+      "sha256": "3a4fed97db276d4b3f69862605099c85ff0a87bd360ceac5728222ee3e007a30",
       "executable": false
     },
     "patches/@runeditrun__rer@0.2.139.patch": {
@@ -3039,6 +3039,14 @@
       "sha256": "d1289e302d0c23ccfecb1e1d5ffbc8b6f319c36426e3c91386d113a412c6ba62",
       "executable": false
     },
+    "release-history/1.11.46.CONTRACT.md": {
+      "sha256": "d9845b1b5118098a31863172b8ba5063503503261b58746df12a515bbc9d4c36",
+      "executable": false
+    },
+    "release-history/1.11.46.json": {
+      "sha256": "b33efbbdfb95071071d6366a3bfd7d91e16016696eeeeae04c68aac188451f44",
+      "executable": false
+    },
     "release-history/1.11.5.CONTRACT.md": {
       "sha256": "2a72e905c96ba05640e2b01ac04d573651f0cfe4f597d42e4895ef32de961a35",
       "executable": false
@@ -3176,11 +3184,11 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "b33efbbdfb95071071d6366a3bfd7d91e16016696eeeeae04c68aac188451f44",
+      "sha256": "a6e65f0587ac7dbdd376b151ecca7f97155b1d280c5f9f442d4965730fb38cd7",
       "executable": false
     },
     "RELEASE.md": {
-      "sha256": "ee8b8993ff9218f0087651cf1965873ae407fa75ffd6511f348a1a0fa9613c3e",
+      "sha256": "7cce0cec36edc4457a614b360e66e8641266a4a8ff6dea4cd2375bdc7a439f80",
       "executable": false
     },
     "rer-packaging.json": {
@@ -4328,7 +4336,7 @@
       "executable": false
     },
     "seed.json": {
-      "sha256": "d0f8d6c80d41e1d0827f49d5186b2b89c974d50f09de096c50f8519233e42291",
+      "sha256": "db3d4aae8e8e1f278ed29bfa5a1503081d3bc5280b22c361079d0b04f5e722fa",
       "executable": false
     },
     "src/base/actor.ts": {
