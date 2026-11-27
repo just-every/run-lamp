@@ -91,12 +91,13 @@ export function createAppServices(bindings: AppBindings, blobs: BlobStore, execu
   }), blobs, extensions.publicSnapshotPolicies, extensions.publicSnapshotEvents, extensions.slots, createRetainedSnapshotCache(bindings), runningReleaseIdentity(bindings), false, authOrigin(bindings));
   const statusPages = createStatusPageRepository(bindings.DB);
   const scopedSnapshots = createScopedSnapshots(bindings, blobs, statusPages, extensions.publicSnapshotPolicies);
-  const requestPublication = createRequestPublication(primarySnapshot, bindings.JOBS);
+  const requestPublication = createRequestPublication(primarySnapshot, bindings.JOBS, async () =>
+    (await statusPages.paths()).map(({ path }) => scopedSnapshots.forPage(path)));
   const publicSnapshots = {
     ...primarySnapshot,
     async rebuild(force?: boolean) {
-      // Cron and the Queue consumer build the page themselves; a request does only when it safely can.
-      if (execution !== "background" && await requestPublication.rebuildElsewhere(force)) return;
+      // Delivery previews have no Queue consumer or Cron by design.
+      if (execution instanceof Request && !bindings.RER_PREVIEW_OWNER_SIGNIN) return requestPublication.rebuild(force, execution);
       await primarySnapshot.rebuild(force);
       await scopedSnapshots.forEach(snapshot => snapshot.rebuild());
     },

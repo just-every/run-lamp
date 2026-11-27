@@ -33,7 +33,8 @@ export default {
         return new Response(null, { status: 204 });
       }
     }
-    const runtime = createApp(bindings);
+    const cancelEdge = (env as unknown as Record<string, string>).LAMP_TEST_CANCEL_EDGE;
+    const runtime = createApp(bindings, cancelEdge ? request : undefined);
     // Observe preparation and hold/fail the rebuild through the journey's
     // existing outbound-edge seam. Native storage and grant checks stay real.
     const importEdge = (env as unknown as Record<string, string>).LAMP_TEST_IMPORT_WORK;

@@ -20,9 +20,7 @@ import { createSnapshotReader, CURRENT_POINTER_KEY, parsePointer, STALE_MARKER_K
 export { PUBLIC_SNAPSHOT_RENDERER_VERSION, runningReleaseIdentity } from "./reader";
 const STALE_BUILD_MS = 5 * 60_000;
 const RETRY_LEASE_MS = 2 * 60_000;
-// Cloudflare ends a request's work 30 seconds after its answer or its client's hang-up, and a build
-// it ends stays `building` until STALE_BUILD_MS. A page whose last build ran longer than this is
-// built by the Queue consumer or Cron, which have minutes.
+// A save waits for the Queue to publish only when the page usually builds quickly.
 const REQUEST_BUILD_MS = 10_000;
 // A healthy minute scheduler publishes a fresh timestamp and rolling windows.
 const SNAPSHOT_REFRESH_MS = 5 * 60_000;
@@ -51,6 +49,8 @@ export interface PublicSnapshotService {
   /** Publish pending source changes and confirm the public selector covers them. */
   confirmPublication(): Promise<void>;
   requestedRevision(): Promise<number>;
+  /** Whether the retained replica and public selector have advanced to this source revision. */
+  hasCompletedRevision(revision: number): Promise<boolean>;
   includesRevision(revision: number): Promise<boolean>;
   selectedGeneration(): Promise<number>;
   observeIncidentPublication(key: string, observation: PublicationObservation): Promise<{ bytes: ArrayBuffer; version: string } | null>;
@@ -63,7 +63,7 @@ export interface PublicSnapshotService {
   /** When the page customers see now was published; null before the first snapshot. */
   publishedAt(): Promise<string | null>;
   retryPendingBuild(): Promise<boolean>;
-  /** Whether this page's last published build ran longer than a request can be trusted to hold one. Reads one build row. */
+  /** Whether the last published build took longer than a save should wait. Reads one build row. */
   outlastsRequest(): Promise<boolean>;
   /** Records that the page must be rebuilt although no source row changed, for whichever run builds it next. */
   requestRebuild(): Promise<void>;
@@ -380,6 +380,10 @@ export function createPublicSnapshotService(
     ...reader,
     rebuild: enqueueRebuild,
     async requestedRevision() { return (await repository.currentWork()).requestedRevision; },
+    async hasCompletedRevision(revision: number) {
+      const { completedRevision } = await repository.currentWork();
+      return completedRevision >= revision && await includesRevision(revision);
+    },
     includesRevision,
     async selectedGeneration() { return (await readPointer())?.generation ?? 0; },
     observeIncidentPublication,
