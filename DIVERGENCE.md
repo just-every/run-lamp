@@ -1988,3 +1988,8 @@ wall-clock build can still exceed the HTTP request's 10 ms CPU budget. Fast save
 published revisions before returning success, and slow saves continue while the Queue builds.
 The consumer batches for up to one second so publication can begin promptly. The same
 disconnect journey covers both kinds of save.
+
+Cold accent and logo saves, component creation and incident publication also load the
+operator application in their request. The stateless Worker delegates those writes to a
+separate instance in the existing SnapshotCache Durable Object namespace. The instance
+runs the authenticated routes and hands the build to the Queue.

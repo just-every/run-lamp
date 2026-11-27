@@ -544,7 +544,7 @@
       "executable": false
     },
     "DIVERGENCE.md": {
-      "sha256": "e0bb2188ad056f11df380d1e0c241a8c3a566554683a7e3d203a63234cc7b89f",
+      "sha256": "2e088bdf7192a0076911a08a233c4dbb39661934d8e69e0148a0e3f6d58062ca",
       "executable": false
     },
     "docs/accessibility/vpat.md": {
@@ -6267,6 +6267,10 @@
       "sha256": "81bf01d4bbb21490c77684a9e97f065775b933b4fe9f94f145b77d060f68ac76",
       "executable": false
     },
+    "src/core/features/public-snapshot/publication-request-path.ts": {
+      "sha256": "5bd11196f4c4525d984238564797ff00d3c10033c4554e50fc6533f6da0f85f0",
+      "executable": false
+    },
     "src/core/features/public-snapshot/reader.ts": {
       "sha256": "1742a372a896d250c3e9930a26d4e5c85e4535727fda8237ce5053e3f639b0d7",
       "executable": false
@@ -6445,6 +6449,10 @@
     },
     "src/core/features/public-snapshot/widget.ts": {
       "sha256": "36bd8604274ae35ffbe4e1c93afb49968010754144997f3617fb5c68a0722fe2",
+      "executable": false
+    },
+    "src/core/features/public-snapshot/worker.ts": {
+      "sha256": "aa4e9b983f813c099a904b3450ca4327b68efbe5352a38fa2eb92b8045a552e8",
       "executable": false
     },
     "src/core/features/reports/draft.ts": {
@@ -7320,7 +7328,7 @@
       "executable": false
     },
     "src/core/platform/blobs/snapshot-cache.ts": {
-      "sha256": "d1373932695a51e5b1fc747d4ebd8df8bf2f9034329daaa02d8d2a8aa97b3ace",
+      "sha256": "1ace4ebe29e8ed9e4f080841814294e4dabd8fef7c562b3463daec36bd532969",
       "executable": false
     },
     "src/core/platform/blobs/store.ts": {
@@ -7792,7 +7800,7 @@
       "executable": false
     },
     "src/server.ts": {
-      "sha256": "b2d023fee48ed2b3b6f1eaab8218c7ae5cb6618ba2b569c9317bffca43e960df",
+      "sha256": "71368cfeebc8de69e5f14b1b8c7b28940a104806898a3d725ea28b941a63fd63",
       "executable": false
     },
     "src/site/docs/body.ts": {
@@ -9220,7 +9228,7 @@
       "executable": false
     },
     "tests/e2e/independent-release.test.mjs": {
-      "sha256": "253c60de6944c81c4301973778314de887581a50cb374df9c53022a2a6a10ad1",
+      "sha256": "ac415e89e666050cc4c081b470d7ebe99693bcffaf11c55c7ce4cf8cb5e9f430",
       "executable": false
     },
     "tests/e2e/maintenance-timezone.test.mjs": {

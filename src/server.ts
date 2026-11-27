@@ -5,10 +5,11 @@ import type { AppBindings } from "./core/app/types";
 import { isMoveInApi } from "./core/features/statuspage-import/request-path";
 import { answerHealth } from "./core/features/health/endpoint";
 import { answerPublicArtifact, staticPublicArtifact } from "./core/features/public-snapshot/home";
+import { isPublicationWrite } from "./core/features/public-snapshot/publication-request-path";
 import { runScheduled } from "./core/app/scheduled-worker";
 export { HealthWorker } from "./core/features/health/worker";
 export { MoveInWorker } from "./core/features/statuspage-import/worker";
-export { SnapshotCache } from "./core/platform/blobs/snapshot-cache";
+export { SnapshotCache } from "./core/features/public-snapshot/worker";
 
 export default withDemo({
   async fetch(request: Request, bindings: AppBindings, executionContext: ExecutionContext): Promise<Response> {
@@ -47,6 +48,9 @@ export default withDemo({
     }
     if (surface === "app" && bindings.MOVE_IN_WORKER && bindings.RER_DEMO !== "1" && !import.meta.env.DEV && isMoveInApi(url.pathname)) {
       return bindings.MOVE_IN_WORKER.getByName("move-in").fetch(request);
+    }
+    if (surface === "app" && bindings.RER_DEMO !== "1" && isPublicationWrite(request.method, url.pathname)) {
+      return bindings.SNAPSHOT_CACHE.getByName("publication-writes").fetch(request);
     }
     const { fetchApplication } = await import("./server-fetch");
     return fetchApplication(request, bindings, executionContext, url, surface);

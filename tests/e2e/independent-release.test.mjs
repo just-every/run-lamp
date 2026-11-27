@@ -111,7 +111,10 @@ test('ACCESS-001 SETUP-002 — a packaged installation refuses missing deploy au
   const cookie=signIn.headers.get('set-cookie').split(';')[0];
   assert.equal((await request(new URL(link).pathname+new URL(link).search,{redirect:'manual'})).status,400);
   assert.equal((await request('/api/app/session',{headers:{Cookie:cookie}})).status,200);
-  const component=await request('/api/app/components',{method:'POST',headers:{Cookie:cookie,'Content-Type':'application/json'},body:JSON.stringify({name:'Owner API',description:'Persistent independent component',groupId:null,internal:false,displayOrder:0,note:''})});
+  const componentInput={method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:'Owner API',description:'Persistent independent component',groupId:null,internal:false,displayOrder:0,note:''})};
+  assert.equal((await request('/api/app/components',componentInput)).status,401,'publication writes require an operator session');
+  assert.equal((await request('/api/app/components',{...componentInput,headers:{...componentInput.headers,Cookie:cookie,Origin:'https://other.test'}})).status,403,'publication writes enforce the operator origin');
+  const component=await request('/api/app/components',{...componentInput,headers:{...componentInput.headers,Cookie:cookie}});
   assert.equal(component.status,201,await component.text());
   assert.match(await (await publicRequest('/')).text(),/Owner API/);
   await runtime.dispose();
