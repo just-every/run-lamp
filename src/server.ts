@@ -1,6 +1,7 @@
 /// <reference path="../scripts/dev-ingress/virtual.d.ts" />
 import { withDemo } from "@runeditrun/rer/modules/demo";
-import { createHostDispatch } from "./core/app/host-dispatch";
+import { createHostDispatch, isAppAssetPath } from "./core/app/host-dispatch";
+import { isOperatorConsoleRead, operatorConsoleObject } from "./core/app/operator-console-path";
 import type { AppBindings } from "./core/app/types";
 import { isMoveInApi } from "./core/features/statuspage-import/request-path";
 import { answerHealth } from "./core/features/health/endpoint";
@@ -35,6 +36,7 @@ export default withDemo({
     const url = new URL(request.url);
     const surface = createHostDispatch(bindings).surfaceForUrl(request.method, url, { allowDevelopmentAssets: import.meta.env.DEV });
     if (!surface) return new Response("Not found.", { status: 404 });
+    if (surface === "app" && isAppAssetPath(url.pathname, import.meta.env.DEV)) return bindings.ASSETS.fetch(request);
 
     if (!import.meta.env.DEV && (request.method === "GET" || request.method === "HEAD")) {
       if (url.pathname === "/health") {
@@ -53,6 +55,9 @@ export default withDemo({
     const hostedPublication = bindings.LAMP_QUEUE_SCHEDULED === "1" || bindings.RER_RELEASE_DIGEST || bindings.RER_DEPLOY_FINGERPRINT;
     if (!import.meta.env.DEV && hostedPublication && surface === "app" && bindings.RER_DEMO !== "1" && isPublicationWrite(request.method, url.pathname)) {
       return bindings.SNAPSHOT_CACHE.getByName("publication-writes").fetch(request);
+    }
+    if (!import.meta.env.DEV && surface === "app" && bindings.RER_DEMO !== "1" && isOperatorConsoleRead(request.method, url.pathname)) {
+      return bindings.SNAPSHOT_CACHE.getByName(operatorConsoleObject).fetch(request);
     }
     const { fetchApplication } = await import("./server-fetch");
     return fetchApplication(request, bindings, executionContext, url, surface);

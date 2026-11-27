@@ -231,6 +231,8 @@ existing incident actions in place of the update form.
 
 **The product:** the category's signature failure is a status page that goes down with the product it reports on, or with its own operator app. `PAGE-005` and `PAGE-006` get most of the way there inside one Worker by making the public read path a snapshot read with no database query. We have kept one Worker and two hostnames.
 
+**Console CPU budget:** The HTTP Worker admits the app hostname and hands console reads to a dedicated instance in the existing SQLite Durable Object namespace. That instance runs the usual authenticated Hono and Start handlers under its own CPU limit. Settings reads the data used by its initial Page pane, and the browser reads the other panes as they open.
+
 **For the shared docs:** "availability isolation — the public surface must survive the operator surface" is a concrete reason and is not in the listed three. Worth naming, so a later build pass does not read the one-Worker rule as forbidding it if the snapshot approach turns out to be insufficient under load.
 
 ## 6 — Magic-link sign-in depends on the channel that fails during an incident

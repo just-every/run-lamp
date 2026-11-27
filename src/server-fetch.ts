@@ -5,7 +5,7 @@ import { authResponse } from "./core/platform/auth/http";
 import start from "@tanstack/react-start/server-entry";
 
 import { installedHomeResponse } from "./installed-home";
-import { isDevelopmentAppPath, protectedPageAddress, type LampSurface } from "./core/app/host-dispatch";
+import { protectedPageAddress, type LampSurface } from "./core/app/host-dispatch";
 import { createApp, type AppRuntimeOptions } from "./core/app/server";
 import { prepareAppMailBindings } from "./core/app/mail";
 import { withOperatorRequest } from "./core/platform/operator-request.server";
@@ -36,10 +36,6 @@ function isStartRequest(surface: LampSurface, request: Request, pathname: string
   if (pathname.startsWith("/_serverFn/")) return true;
   return (request.method === "GET" || request.method === "HEAD")
     && (pathname === "/signin" || pathname === "/setup" || pathname === "/app" || pathname.startsWith("/app/") || pathname === "/docs" || pathname.startsWith("/docs/"));
-}
-
-function isAppAssetRequest(surface: LampSurface, pathname: string) {
-  return surface === "app" && (pathname.startsWith("/app-assets/") || pathname.startsWith("/brand/") || pathname === "/rer-theme.css" || (import.meta.env.DEV && isDevelopmentAppPath(pathname)));
 }
 
 function isOperatorDocument(request: Request, pathname: string) {
@@ -76,9 +72,6 @@ async function operatorDocumentPreflight(request: Request, runtime: ReturnType<t
 export async function fetchApplication(request: Request, bindings: AppBindings, executionContext: ExecutionContext, url: URL, surface: LampSurface, options?: AppRuntimeOptions): Promise<Response> {
   // The landing page's former address; old links follow it to the app host's home page for one release.
   if (surface === "app" && url.pathname === "/lamp") return Response.redirect(new URL(`/${url.search}`, url), 301);
-  // The generated deployment's ASSETS binding owns emitted client files. In
-  // development, the same binding serves Vite and Start's virtual modules.
-  if (isAppAssetRequest(surface, url.pathname)) return bindings.ASSETS.fetch(request);
   if (surface === "app") {
     const secure = secureOperatorRedirect(request, bindings, url);
     if (secure) return secure;

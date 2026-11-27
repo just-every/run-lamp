@@ -62,13 +62,32 @@ export type { AppBindings } from "./types";
 export type AppRuntimeOptions = { queuePublication?: boolean };
 
 export function createApp(bindings: AppBindings, execution?: MailExecution, options: AppRuntimeOptions = {}) {
-  const app = new Hono<AppEnv>();
   const authorizedReads = new WeakMap<Request, OperatorReadSession>();
-  const services = createAppServices(bindings, createSnapshotBlobStore(bindings), execution, options.queuePublication);
+  const snapshotBlobs = createSnapshotBlobStore(bindings);
+  const services = createAppServices(bindings, snapshotBlobs, execution, options.queuePublication);
   const healthService = healthServiceFor(bindings);
+  let router: Hono<AppEnv> | undefined;
+  const app = () => router ??= createAppRouter(bindings, snapshotBlobs, services, healthService, authorizedReads);
+
+  async function readOperator(path: string, source: Request, authority: OperatorReadSession) {
+    const request = new Request(new URL(path, source.url), { headers: source.headers });
+    authorizedReads.set(request, authority);
+    try { return await app().fetch(request, bindings); }
+    finally { authorizedReads.delete(request); }
+  }
+  return { get app() { return app(); }, services, readOperator, health: healthService };
+}
+
+function createAppRouter(
+  bindings: AppBindings,
+  snapshotBlobs: ReturnType<typeof createSnapshotBlobStore>,
+  services: ReturnType<typeof createAppServices>,
+  healthService: ReturnType<typeof healthServiceFor>,
+  authorizedReads: WeakMap<Request, OperatorReadSession>,
+) {
+  const app = new Hono<AppEnv>();
   const publicWriteLimiter = createPublicWriteRateLimiter(bindings.DB);
   // Before every route that subscribes someone or sends a message.
-  const snapshotBlobs = createSnapshotBlobStore(bindings);
   registerPrelaunchGate(app, snapshotBlobs, bindings.DB);
   // Subscriber link pages must open whatever the setting does; an unreadable one only hides their Subscribe link.
   const linkPagesPrelaunch = () => readPrelaunch(snapshotBlobs).catch(() => true);
@@ -132,11 +151,5 @@ export function createApp(bindings: AppBindings, execution?: MailExecution, opti
   registerSignInRoutes(app, services.signIn);
   registerChatDeskRoutes(app, services.chatDesk, services.components);
 
-  async function readOperator(path: string, source: Request, authority: OperatorReadSession) {
-    const request = new Request(new URL(path, source.url), { headers: source.headers });
-    authorizedReads.set(request, authority);
-    try { return await app.fetch(request, bindings); }
-    finally { authorizedReads.delete(request); }
-  }
-  return { app, services, readOperator, health: healthService };
+  return app;
 }

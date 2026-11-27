@@ -52,8 +52,8 @@ export function SettingsPage() {
   const catalogue = useAppData<{ components: Awaited<ReturnType<ComponentsService["list"]>> }>("/api/app/components");
   const overview = useAppData<OverviewResponse>("/api/app/overview");
   const { publicPageOrigin: publicOrigin, operator } = operatorRoute.useLoaderData();
-  const aiStatus = useAppData<AiStatus>("/api/app/ai/status");
   const tab = useSettingsTab();
+  const aiStatus = useAppData<AiStatus>(tab === "writing" ? "/api/app/ai/status" : null);
   const autosave = useSettingsAutosave(data?.settings ?? undefined, () => {
     window.dispatchEvent(new Event("lamp:page-settings-changed"));
     overview.refresh();

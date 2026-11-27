@@ -364,6 +364,9 @@ test("DOCS-001 PAGE-020 — the built single Worker preserves public docs, Hono 
   assert.equal(nativeSession.status, 200);
   assert.match(nativeSession.headers.get("content-type") ?? "", /application\/json/);
   assert.equal((await nativeSession.json()).operator.email, "operator@example.test", "Hono API dispatch remains session-protected");
+  const settingsRead = "/api/app/page-settings";
+  assert.equal((await request(settingsRead, appHost)).status, 401, "a console API read still requires a session");
+  assert.equal((await (await appRequest(settingsRead)).json()).settings.pageName, "Atlas Cloud Status");
 
   // This is Wrangler's local control endpoint, rather than a Lamp route: it
   // must target the listener itself so workerd invokes the exported event.
@@ -427,6 +430,8 @@ test("DOCS-001 PAGE-020 — the built single Worker preserves public docs, Hono 
   await stopWorker(worker);
   await startPageWorker();
   assert.equal((await pageRequest("/signin")).status, 404, "sign-in is app-host-only");
+  assert.equal((await pageRequest(settingsRead, { headers: { Cookie: `${sessionCookieName(appOrigin)}=${sessionId}` } })).status, 404,
+    "the public host refuses console reads even with an operator cookie");
   assert.equal((await pageRequest("/lamp")).status, 404, "the former landing address is app-host-only");
   assert.equal((await pageRequest("/docs")).status, 404, "the docs are app-host-only: the page host's paths are the status snapshot's");
   for (const item of docsPages) {

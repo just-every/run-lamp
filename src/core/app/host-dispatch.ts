@@ -56,6 +56,11 @@ export function isDevelopmentAppPath(pathname: string) {
   return developmentAppPathPrefixes.some((prefix) => pathname.startsWith(prefix));
 }
 
+export function isAppAssetPath(pathname: string, development = false) {
+  return pathname.startsWith("/app-assets/") || pathname.startsWith("/brand/") || pathname === "/rer-theme.css"
+    || (development && isDevelopmentAppPath(pathname));
+}
+
 /**
  * Keeps the public status surface and the operator surface on their own
  * hostnames. Each host has its own home page at `/`: the page host's is the
