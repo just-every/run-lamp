@@ -1,8 +1,10 @@
-import type { SnapshotArtifact } from "./renderer";
+import type { PublicSnapshotModel, SnapshotArtifact } from "./renderer";
+
+type CollectionPage = { cursor?: string; nextCursor: string | null };
 
 /** Pagination is rendered before the generation advances. A cursor addresses
  * one immutable page, so public reads never query application data. */
-export function nativeCollectionArtifacts(name: string, records: Array<{ id: string }>, generatedAt: string, page?: { cursor?: string; nextCursor: string | null }): SnapshotArtifact[] {
+export function nativeCollectionArtifacts(name: string, records: Array<{ id: string }>, generatedAt: string, page?: CollectionPage): SnapshotArtifact[] {
   if (page) return [{
     key: `api/public/v1/${name}${page.cursor ? `/${encodeURIComponent(page.cursor)}` : ""}.json`,
     contentType: "application/json; charset=utf-8",
@@ -20,6 +22,51 @@ export function nativeCollectionArtifacts(name: string, records: Array<{ id: str
     });
   }
   return artifacts;
+}
+
+export function nativeIncidentArtifacts(model: PublicSnapshotModel, page?: CollectionPage) {
+  const records = model.incidents.map(incident => ({
+    id: incident.id,
+    reference: incident.reference,
+    title: incident.title,
+    lifecycle: incident.lifecycle,
+    impact: incident.effectiveImpact,
+    derivedImpact: incident.derivedImpact,
+    impactOverride: incident.impactOverride,
+    effectiveImpact: incident.effectiveImpact,
+    openedAt: incident.openedAt,
+    resolvedAt: incident.resolvedAt,
+    components: incident.components,
+    updates: incident.updates.map(update => ({
+      id: update.id,
+      lifecycle: update.lifecycle,
+      affectedAudience: update.affectedAudience,
+      customerImpact: update.customerImpact,
+      whatStillWorks: update.whatStillWorks,
+      details: update.details,
+      nextUpdateAt: update.lifecycle === "Resolved" ? null : update.nextUpdateAt,
+      publishedAt: update.publishedAt,
+      componentChanges: (update.componentChanges ?? []).map(({ componentId, name, previousState, newState }) => ({ componentId, name, previousState, newState })),
+    })),
+    report: incident.report,
+  }));
+  return nativeCollectionArtifacts("incidents", records, model.generatedAt, page);
+}
+
+export function nativeMaintenanceArtifacts(model: PublicSnapshotModel, page?: CollectionPage) {
+  const records = model.maintenance.map(item => ({
+    id: item.id,
+    reference: item.reference,
+    title: item.title,
+    state: item.state,
+    startsAt: item.startsAt,
+    endsAt: item.endsAt,
+    completedAt: item.completedAt,
+    components: item.components,
+    notices: item.notices,
+    importedUpdates: item.importedUpdates,
+  }));
+  return nativeCollectionArtifacts("maintenance", records, model.generatedAt, page);
 }
 
 export function nativeApiArtifact(path: string, cursor: string | undefined) {

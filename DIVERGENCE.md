@@ -1995,3 +1995,10 @@ Cold accent and logo saves, component creation and incident publication also loa
 operator application in their request. The stateless Worker delegates those writes to a
 separate instance in the existing SnapshotCache Durable Object namespace. The instance
 runs the authenticated routes and hands the build to the Queue.
+
+On Workers Free the Queue consumer has 10 ms of CPU per invocation. It sends page builds to a
+named builder in the installed SnapshotCache namespace and acknowledges a message after
+the builder finishes. A page build loads the snapshot services it
+needs. The same renderer, retained replica and generation selector publish the result.
+Incident deliveries and scheduled work can share a batch with the build and use their
+own instances and existing retry eligibility.

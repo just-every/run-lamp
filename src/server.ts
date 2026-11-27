@@ -6,6 +6,7 @@ import { isMoveInApi } from "./core/features/statuspage-import/request-path";
 import { answerHealth } from "./core/features/health/endpoint";
 import { answerPublicArtifact, staticPublicArtifact } from "./core/features/public-snapshot/home";
 import { isPublicationWrite } from "./core/features/public-snapshot/publication-request-path";
+import { runQueue } from "./core/app/worker-lifecycle";
 import { runScheduled } from "./core/app/scheduled-worker";
 export { HealthWorker } from "./core/features/health/worker";
 export { MoveInWorker } from "./core/features/statuspage-import/worker";
@@ -60,7 +61,6 @@ export default withDemo({
     await runScheduled(bindings, executionContext, event.scheduledTime);
   },
   async queue(batch: MessageBatch<unknown>, bindings: AppBindings) {
-    const { runQueue } = await import("./core/app/worker-lifecycle");
     await runQueue(batch, bindings);
   },
 } satisfies ExportedHandler<AppBindings>, {

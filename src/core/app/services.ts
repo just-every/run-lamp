@@ -1,5 +1,3 @@
-import { createStatusPageRepository } from "../features/page-settings/status-page.repository";
-import { createScopedSnapshots } from "../features/public-snapshot/scoped-service";
 import { createRequestPublication } from "../features/public-snapshot/request-publication";
 import { createRuleGuardRepository } from "../features/intake/rule-guard.repository";
 import { createDependenciesService } from "../features/dependencies/service";
@@ -10,7 +8,7 @@ import { createSocialService } from "../features/social/service";
 import { createTrafficStorage } from "../features/traffic-alerts/storage";
 import { createTrafficIncidentRepository } from "../features/traffic-alerts/repository";
 import { createTrafficAlerts } from "../features/traffic-alerts/service";
-import { createSmsService, smsSubscriberConfigured } from "../features/sms/service";
+import { createSmsService } from "../features/sms/service";
 import { createMetricsService } from "../features/metrics/service";
 import { createTeamsSubscriptionsService } from "../features/subscribers/teams-subscriptions";
 import { createPromiseDraftRepository } from "../features/incidents/promise-draft.repository";
@@ -24,7 +22,6 @@ import { createIncidentImpactRepository, createIncidentImpactService } from "../
 import { isLoopbackHostname } from "../platform/development/access";
 import { brandEmail } from "../shared/email-branding";
 import { publicPageOrigin } from "./public-origin";
-import { createRetainedSnapshotCache } from "../platform/blobs/retained";
 import type { AppBindings } from "./types";
 import type { BlobStore } from "../platform/blobs/store";
 import { createComponentRepository, createComponentsService } from "../features/components";
@@ -47,63 +44,34 @@ import { createLampAuth } from "../platform/auth";
 import { createOperatorRepository } from "../features/operators/repository";
 import { createSignInService } from "../features/sign-in-providers/service";
 import { createSubscriberRepository, createSubscribersService } from "../features/subscribers";
-import { formatPageTime } from "../features/public-snapshot/format";
-import { createPublicSnapshotService, createSnapshotRepository, formatTime, runningReleaseIdentity } from "../features/public-snapshot";
+import { formatPageTime, formatTime } from "../features/public-snapshot/format";
 import { createReportRepository, createReportsService } from "../features/reports";
 import { createAiService } from "../features/ai";
 import { createBriefRepository, createBriefService } from "../features/brief";
 import { createStatuspageImportService } from "../features/statuspage-import";
 import { createChannelsService } from "../features/channels";
 import { createPageExportRepository, createPageExportService } from "../features/page-export";
-import { configuredMailReceiptProviders, createAppMailTransport, createOwnerSignInTransport, type MailExecution } from "./mail";
+import { configuredMailReceiptProviders, createOwnerSignInTransport, type MailExecution } from "./mail";
 import { createOpenAiCompatibleProvider } from "../platform/ai";
 import { createDemoAiProvider } from "../platform/ai/demo";
 import { createServerExtensionMount } from "./extensions/server";
+import { createSnapshotServices } from "./snapshot-services";
 
 export function createAppServices(bindings: AppBindings, blobs: BlobStore, execution?: MailExecution, queuePublication = false) {
   const extensions = createServerExtensionMount();
-  const { sender: mail, local } = createAppMailTransport(bindings, extensions.adapters["mail.sender.v1"], execution);
+  const {
+    publicSnapshots: inlineSnapshots, statusPages, scopedSnapshots,
+    mail, local, mailConfiguration, smsConfiguration, webhookSecrets,
+  } = createSnapshotServices(bindings, blobs, extensions, execution);
   const ownerSignInMail = createOwnerSignInTransport(bindings, extensions.adapters["mail.sender.v1"]);
-  // Report the composed sender's availability, including local suppression,
-  // rather than treating a provider name in the environment as a working sender.
-  const localMailSuppressed = local && bindings.RER_DEMO !== "1";
-  const mailConfiguration = {
-    local: localMailSuppressed,
-    primaryProvider: mail.configured && !localMailSuppressed
-      ? extensions.adapters["mail.sender.v1"] ? 'custom' : bindings.MAIL_PROVIDER || 'resend'
-      : null,
-  };
-  const snapshotOrigin = bindings.LAMP_LOCAL_ORIGIN ? publicPageOrigin(bindings.LAMP_LOCAL_ORIGIN, bindings.LAMP_PAGE_HOST) : undefined;
-  const smsConfiguration = {
-    accountSid: bindings.TWILIO_ACCOUNT_SID, authToken: bindings.TWILIO_AUTH_TOKEN,
-    fromNumber: bindings.TWILIO_FROM_NUMBER, messagingService: bindings.TWILIO_MESSAGING_SERVICE,
-    tokenSecret: bindings.SUBSCRIBER_TOKEN_SECRET, effectsPaused: bindings.EFFECTS_PAUSED === "1",
-    unavailable: outboundUnavailable(bindings, "SMS messages"),
-  };
-  const webhookSecrets = bindings.WEBHOOK_SIGNING_SECRET?.split(",").map(secret => secret.trim()).filter(Boolean);
-  const primarySnapshot = createPublicSnapshotService(createSnapshotRepository(bindings.DB, snapshotOrigin, {
-    email: mailConfiguration.primaryProvider !== null && Boolean(bindings.SUBSCRIBER_TOKEN_SECRET),
-    mailFromAddress: bindings.MAIL_FROM_ADDRESS,
-    sms: smsSubscriberConfigured(smsConfiguration),
-    webhook: Boolean(webhookSecrets?.length) && bindings.EFFECTS_PAUSED !== "1",
-    slack: Boolean(bindings.SLACK_CLIENT_ID && bindings.SLACK_CLIENT_SECRET && bindings.SLACK_SIGNING_SECRET && bindings.WEBHOOK_SIGNING_SECRET && bindings.SUBSCRIBER_TOKEN_SECRET) && !outboundUnavailable(bindings, "Slack subscriptions"),
-    teams: Boolean(bindings.WEBHOOK_SIGNING_SECRET && bindings.SUBSCRIBER_TOKEN_SECRET) && !outboundUnavailable(bindings, "Teams subscriptions"),
-  }), blobs, extensions.publicSnapshotPolicies, extensions.publicSnapshotEvents, extensions.slots, createRetainedSnapshotCache(bindings), runningReleaseIdentity(bindings), false, authOrigin(bindings));
-  const statusPages = createStatusPageRepository(bindings.DB);
-  const scopedSnapshots = createScopedSnapshots(bindings, blobs, statusPages, extensions.publicSnapshotPolicies);
-  const requestPublication = createRequestPublication(primarySnapshot, bindings.JOBS, async () =>
+  const requestPublication = createRequestPublication(inlineSnapshots, bindings.JOBS, async () =>
     (await statusPages.paths()).map(({ path }) => scopedSnapshots.forPage(path)));
   const publicSnapshots = {
-    ...primarySnapshot,
+    ...inlineSnapshots,
     async rebuild(force?: boolean) {
       if (queuePublication && execution instanceof Request) return requestPublication.rebuild(force, execution);
       if (execution !== "background" && await requestPublication.rebuildElsewhere(force)) return;
-      await primarySnapshot.rebuild(force);
-      await scopedSnapshots.forEach(snapshot => snapshot.rebuild());
-    },
-    async retryPendingBuild() {
-      const primaryChanged = await primarySnapshot.retryPendingBuild();
-      return await scopedSnapshots.forEach(snapshot => snapshot.retryPendingBuild()) || primaryChanged;
+      await inlineSnapshots.rebuild(force);
     },
   };
   // Metric points arrive from machines that do not wait for a page build.
@@ -192,7 +160,7 @@ export function createAppServices(bindings: AppBindings, blobs: BlobStore, execu
   }, extensions.updateReviewPolicy,
   async ({ incidentId, draftId, scheduledPublishAt }) => deliveries.queueOperatorAlert({ eventId: `scheduled-review/${draftId}/${scheduledPublishAt}`, title: "Lamp held a scheduled incident update for review", text: `Scheduled update for incident ${incidentId} requires review by another operator before it can publish.` }),
   extensions.updateDuePolicy,
-  { selectedGeneration: path => (path === "public" ? primarySnapshot : scopedSnapshots.forPage(path)).selectedGeneration(),
+  { selectedGeneration: path => (path === "public" ? publicSnapshots : scopedSnapshots.forPage(path)).selectedGeneration(),
     trafficRecovery: trafficAlerts.recovery, events: extensions.events, formatPreviewTimestamp, formatPreviewEmail: async (email, displayBody) => {
     const settings = await pageSettings.get();
     if (!settings) throw new Error("Page settings are not configured.");
@@ -308,8 +276,8 @@ export function createAppServices(bindings: AppBindings, blobs: BlobStore, execu
     },
     publishedAt: () => publicSnapshots.publishedAt(),
     // A demo's mail transport is local, but its sender reads as a configured one's.
-    sender: { local: localMailSuppressed, ownerOnly: ownerSignInMail?.configured === true, demo: bindings.RER_DEMO === '1', provider: bindings.MAIL_PROVIDER || "resend", apiKey: bindings.MAIL_PROVIDER_API_KEY, mailgunRegion: bindings.MAILGUN_REGION, sesRegion: bindings.SES_REGION, postmarkAccountApiKey: bindings.POSTMARK_ACCOUNT_API_KEY, mail },
-  }), primarySnapshot.confirmPublication);
+    sender: { local: mailConfiguration.local, ownerOnly: ownerSignInMail?.configured === true, demo: bindings.RER_DEMO === '1', provider: bindings.MAIL_PROVIDER || "resend", apiKey: bindings.MAIL_PROVIDER_API_KEY, mailgunRegion: bindings.MAILGUN_REGION, sesRegion: bindings.SES_REGION, postmarkAccountApiKey: bindings.POSTMARK_ACCOUNT_API_KEY, mail },
+  }), publicSnapshots.confirmPublication);
 
   const devSiteOrigin = import.meta.env?.DEV && bindings.LAMP_DEV_SITE_ORIGIN?.startsWith("http://127.0.0.1:") ? bindings.LAMP_DEV_SITE_ORIGIN : undefined;
   const readingUnavailable = outboundUnavailable(bindings, "Reading your website");

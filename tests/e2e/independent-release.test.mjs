@@ -123,6 +123,14 @@ test('ACCESS-001 SETUP-002 — a packaged installation refuses missing deploy au
   assert.equal((await request('/auth/bootstrap',setup)).status,409,'restart must never reopen bootstrap');
   assert.equal((await request('/api/app/session',{headers:{Cookie:cookie}})).status,200,'real persisted session survives restart');
   assert.match(await (await publicRequest('/')).text(),/Owner API/);
+  const logo = await readFile('src/site/lamp/art/lamp-badge-32.png');
+  const form = new FormData();
+  form.set('logo', new Blob([logo], {type:'image/png'}), 'status.png');
+  const branding = await request('/api/app/page-settings/logo', {method:'POST', headers:{Cookie:cookie}, body:form});
+  assert.equal(branding.status, 200, await branding.text());
+  const publishedLogo = await publicRequest('/assets/logo');
+  assert.equal(publishedLogo.status, 200);
+  assert.deepEqual(Buffer.from(await publishedLogo.arrayBuffer()), logo, 'queued publication serves the original logo bytes after a cold restart');
   assert.equal((await request('/api/app/session/signout',{method:'POST',headers:{Cookie:cookie}})).status,204);
   assert.equal((await request('/api/app/session',{headers:{Cookie:cookie}})).status,401);
 

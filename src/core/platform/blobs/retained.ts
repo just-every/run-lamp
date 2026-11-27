@@ -6,7 +6,9 @@ export interface RetainedSnapshotCache {
   generation(): Promise<number | null>;
   write(bundle: string): Promise<void>;
 }
-export function createRetainedSnapshotCache(bindings: { SNAPSHOT_CACHE: DurableObjectNamespace }, identity = "public-snapshot"): RetainedSnapshotCache {
+export function createRetainedSnapshotCache<T extends Rpc.DurableObjectBranded | undefined>(
+  bindings: { SNAPSHOT_CACHE: DurableObjectNamespace<T> }, identity = "public-snapshot",
+): RetainedSnapshotCache {
   if (!bindings.SNAPSHOT_CACHE) throw new Error("SNAPSHOT_CACHE binding is required.");
   const stub = () => bindings.SNAPSHOT_CACHE.get(bindings.SNAPSHOT_CACHE.idFromName(identity));
   return {

@@ -21,6 +21,7 @@ export async function mailFailoverFlow({ t, vite, secondaryProvider='mailgun' })
   await executeSql(ownBindings.DB,`INSERT INTO oa_operators(id,email,display_name,role,status,created_at) VALUES('01J00000000000000000000091','synthetic-lamp-owner@example.test','Synthetic Lamp owner','owner','active',${Date.now()});
     INSERT INTO page_settings(id,page_name,tagline,accent_color,timezone,hostname,feed_id,mail_from_address,created_at,updated_at) VALUES('default','Synthetic Lamp failover','Provider routing fixture','#16794C','UTC','status.example.test','synthetic-lamp-failover-feed-1','lamp@example.test','2026-10-01','2026-10-01');`);
   const { createApp } = await vite.ssrLoadModule('/src/core/app/server.ts');
+  const { runQueueJob } = await vite.ssrLoadModule('/src/core/app/queue-job.ts');
   const { runScheduled,runQueue } = await vite.ssrLoadModule('/src/core/app/worker-lifecycle.ts');
   const appOrigin='https://app.example.test', pageOrigin='https://status.example.test';
   const address=`synthetic-lamp-mail-secondary-${secondaryProvider}@example.test`;
@@ -140,7 +141,7 @@ export async function mailFailoverFlow({ t, vite, secondaryProvider='mailgun' })
     const attemptsBeforeReplay=await ownBindings.DB.prepare('SELECT * FROM notification_attempt_records WHERE delivery_id=? ORDER BY attempt_number').bind(queuedLog.id).all();
     for(let replay=0;replay<6;replay++){
       let retryOptions;
-      await runQueue({messages:[{body:{type:'delivery-dispatch',eventId:published.body.update.id},ack(){assert.fail('a rejected primary must not acknowledge the Queue event');},retry(options){retryOptions=options;}}]},bindings);
+      await runQueue({messages:[{body:{type:'delivery-dispatch',eventId:published.body.update.id},ack(){assert.fail('a rejected primary must not acknowledge the Queue event');},retry(options){retryOptions=options;}}]},bindings,runQueueJob);
       assert.ok(retryOptions.delaySeconds>0,'early Queue replay is deferred to durable eligibility');
     }
     assert.equal(primary.filter(row=>row.body.to.includes(address)&&row.key.startsWith('notification/')).length,primaryBeforeReplay,'early replay never resubmits to the primary provider');

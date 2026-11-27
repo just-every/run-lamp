@@ -29,6 +29,7 @@ import { renderWidget } from "./widget";
 import { renderFeeds } from "./feeds";
 import { renderBadges } from "./badges";
 import { renderPublicApi } from "./public-api";
+import { nativeIncidentArtifacts, nativeMaintenanceArtifacts } from "./native-api";
 import { publicComponentResources } from "./component-address";
 import { incidentMarkup, maintenanceMarkup, resolvedMarkup, statePill, type PublicIncident, type PublicMaintenance } from "./record-markup";
 import { DAY, REPORTING_DAYS, dayKey, durationText, escapeHtml, stateClass, timestamp, timestampDetails, timezoneLabel } from "./format";
@@ -311,13 +312,8 @@ export function renderArchiveArtifact(source: PublicSnapshotSource, key: string,
     case "incident": return model.incidents[0] ? html(renderIncidentPage(model.incidents[0], model, slots)) : null;
     case "maintenance": return model.maintenance[0] ? html(pageShell(`${model.maintenance[0].title} · ${model.settings.pageName}`, maintenanceMarkup(model.maintenance[0], model.settings.timezone, generatedAt, true), model, slots, "other")) : null;
     case "feed": return renderFeeds(model, source).find(artifact => artifact.key === `${source.archive?.componentSlug ? `components/${source.archive.componentSlug}/` : ""}${key.endsWith(".rss") ? "feed.rss" : "feed.atom"}`) ?? null;
-    case "api-incidents": case "api-maintenance": {
-      const name = source.archive.kind === "api-incidents" ? "incidents" : "maintenance";
-      const artifact = renderPublicApi(model, source).find(artifact => artifact.key === key);
-      if (!artifact) return null;
-      const payload = JSON.parse(artifact.body);
-      return { ...artifact, key, body: JSON.stringify({ ...payload, nextCursor: source.archive.nextCursor }) };
-    }
+    case "api-incidents": return nativeIncidentArtifacts(model, source.archive).find(artifact => artifact.key === key) ?? null;
+    case "api-maintenance": return nativeMaintenanceArtifacts(model, source.archive).find(artifact => artifact.key === key) ?? null;
     default: return null;
   }
 }

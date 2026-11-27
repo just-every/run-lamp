@@ -1,11 +1,16 @@
+import type { BackgroundJob, QueueResult } from "../../app/queue-job";
 import type { AppBindings } from "../../app/types";
 import { SnapshotCache as RetainedReplica } from "../../platform/blobs/snapshot-cache";
 import { isPublicationWrite } from "./publication-request-path";
 
-/** The existing namespace handles publication writes on a separate instance
- * from any retained replica. This gives cold writes the Durable Object's CPU
- * budget for loading the operator app. The Queue owns the snapshot build. */
+/** Publication writes, background builds and retained replicas have separate
+ * named instances in the installed namespace. Only replicas use its SQLite storage. */
 export class SnapshotCache extends RetainedReplica<AppBindings> {
+  async runJob(job: BackgroundJob): Promise<QueueResult> {
+    const { runQueueJob } = await import("../../app/queue-job");
+    return runQueueJob(this.env, job);
+  }
+
   async fetch(request: Request) {
     const url = new URL(request.url);
     if (url.hostname === "snapshot.internal") return super.fetch(request);

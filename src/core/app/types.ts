@@ -38,7 +38,7 @@ export interface AppBindings {
   LAMP_HEARTBEAT_INTERVAL_MINUTES?: string;
   DB: D1Database;
   SNAPSHOTS: R2Bucket;
-  SNAPSHOT_CACHE: DurableObjectNamespace;
+  SNAPSHOT_CACHE: DurableObjectNamespace<import("../features/public-snapshot/worker").SnapshotCache>;
   JOBS: Queue<import("../platform/jobs").LampJob>;
   ASSETS: Fetcher;
   /** Set by a deploy that records its identity; /health reports them (Base deploymentHealth). */

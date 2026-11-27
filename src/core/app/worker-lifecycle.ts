@@ -1,8 +1,6 @@
-import { createApp } from "./server";
-import { notificationOrigin, prepareAppMailBindings } from "./mail";
 import type { AppBindings } from "./types";
-import { runScheduledTasks } from "./scheduled-tasks";
 import type { LampJob } from "../platform/jobs";
+import type { BackgroundJob, QueueResult } from "./queue-job";
 
 function isLampJob(value: unknown): value is LampJob {
   if (typeof value !== "object" || value === null) return false;
@@ -14,51 +12,43 @@ function isLampJob(value: unknown): value is LampJob {
 
 export { runScheduled } from "./scheduled-worker";
 
-export async function runQueue(batch: MessageBatch<unknown>, bindings: AppBindings) {
-  const runtime = createApp(await prepareAppMailBindings(bindings, "background"), "background");
+// A batch can contain both the build and an incident's follow-up work. Only
+// Queue acknowledgement belongs in the Free Worker, even on a cold isolate.
+function dispatch(bindings: AppBindings, job: BackgroundJob) {
+  const name = job.type === "delivery-dispatch" ? `delivery:${job.eventId}`
+    : job.type === "scheduled-work" ? "scheduled-work" : "publication-builds";
+  return bindings.SNAPSHOT_CACHE.getByName(name).runJob(job);
+}
+
+export async function runQueue(batch: MessageBatch<unknown>, bindings: AppBindings,
+  execute: (bindings: AppBindings, job: BackgroundJob) => Promise<QueueResult> = dispatch,
+) {
   for (const message of batch.messages) {
-    if (!isLampJob(message.body)) {
+    const job = message.body;
+    if (!isLampJob(job)) {
       message.retry();
       throw new Error("Lamp received an unknown queue command.");
     }
-    if (message.body.type === "health-probe") {
+    if (job.type === "health-probe") {
       message.ack();
       continue;
     }
-    if (message.body.type === "public-snapshot-rebuild" || message.body.type === "public-snapshot-publish") {
-      try {
-        if (message.body.type === "public-snapshot-rebuild") await runtime.services.publicSnapshots.rebuild();
-        else await runtime.services.publicSnapshots.retryPendingBuild();
-        message.ack();
-      } catch (cause) {
-        message.retry();
-        throw cause;
-      }
-      continue;
-    }
-    if (message.body.type === "scheduled-work") {
-      try {
-        await runScheduledTasks(bindings, message.body.at, message.body.work, runtime);
-        message.ack();
-      } catch (cause) {
-        message.retry();
-        throw cause;
-      }
-      continue;
-    }
-    if (bindings.EFFECTS_PAUSED === "1") {
+    if (job.type === "delivery-dispatch" && bindings.EFFECTS_PAUSED === "1") {
       message.retry({ delaySeconds: 60 });
       continue;
     }
+    let result: QueueResult;
     try {
-      const retryAt = await runtime.services.deliveries.dispatchEvent(message.body.eventId, await notificationOrigin(bindings));
-      await runtime.services.social.dispatchPending();
-      if (retryAt) message.retry({ delaySeconds: Math.max(1, Math.ceil((Date.parse(retryAt) - Date.now()) / 1000)) });
-      else message.ack();
+      result = await execute(bindings, job);
     } catch (cause) {
-      const retryAt = cause && typeof cause === "object" && "retryAt" in cause && typeof cause.retryAt === "string" ? cause.retryAt : null;
-      message.retry(retryAt ? { delaySeconds: Math.max(1, Math.ceil((Date.parse(retryAt) - Date.now()) / 1000)) } : undefined);
+      message.retry();
       throw cause;
+    }
+    if (result) {
+      message.retry({ delaySeconds: Math.max(1, Math.ceil((Date.parse(result.retryAt) - Date.now()) / 1000)) });
+      if (result.error !== undefined) throw new Error(result.error);
+    } else {
+      message.ack();
     }
   }
 }
