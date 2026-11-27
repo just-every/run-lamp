@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.11.46
+
+- **Status updates fit on Workers Free.** In local measurements, saving page branding, adding a component or publishing an incident used a few milliseconds of Worker CPU per save, down from more than 100 ms. The existing SnapshotCache Durable Object handles these signed-in saves and the existing Queue publishes the page. The Queue now batches for up to one second.
+- **Slow publishing keeps a save intact.** Lamp confirms a stored save even when the Queue refuses it or publication takes more than ten seconds. The Queue or the next scheduled run publishes the saved change without creating a duplicate.
+- **Fresh setup works after removal.** Lamp cleans up resources from an interrupted setup and waits for Cloudflare to release the deleted storage bucket name so the next setup can reuse it.
+
+### Upgrading from 1.11.45
+
+Back up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.46`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release requires no new bindings or migrations. The stored public page rebuilds once after the update.
+
 ## 1.11.45
 
 - **A request builds the stored page only when it safely can.** Cloudflare cancels a request's work when its client hangs up and ends it 30 seconds after its answer. A page build cancelled there kept its `building` record, and nothing else could publish the page until that record was five minutes old, logged as "Snapshot build lease expired before completion". 1.11.44 moved the `/health` build to the Queue. Now a pushed metric point and an Uptime timing also hand the due publication to the Queue, and an operator's save builds in its own request only while the page's last published build took under 10 seconds. A slower page is built by the Queue consumer, and the save answers at once. Cron publishes the change within a minute if the Queue cannot take the message. When publication is due and cannot start, Lamp logs the ID of the build that holds the page, when it started and when its claim is released.

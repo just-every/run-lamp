@@ -408,22 +408,19 @@ initial migrated state, although its Cron and other queued effects are off. A fa
 build leaves its work pending for Cron and does not change the `/health` answer.
 This step does not dispatch scheduled incidents, maintenance or mail.
 
-A request builds the stored page itself only when it safely can. Cloudflare cancels
-a request's work when its client hangs up and ends it 30 seconds after its answer;
-a build cancelled there keeps its `snapshot_builds` row at `building`, and nothing
-else can publish the page until that row is five minutes old. So a pushed metric
-point and an Uptime timing never build: they hand the due publication to the Queue.
-An operator's save builds in its own request while the page's last published build
-took under 10 seconds; on a slower page the save answers at once and the Queue
-consumer, which has minutes, builds it. The change is already recorded in D1, so
-Cron publishes it within a minute if the Queue cannot take the message. Three log
-lines carry the build ID: `Lamp public snapshot build started.` in the invocation
-that claimed it; `Lamp public page publication is waiting: another build holds the
-page and has not finished.` each time Cron or the Queue cannot start because of it,
-with when it started and when its claim is released; and `Lamp public snapshot
-build never finished: the request or run that started it ended first.` when that
-claim is released. Find the first line's invocation in Workers Logs to see which
-request or run took a claim it did not finish.
+A pushed metric point and an Uptime timing hand due publication to the Queue.
+Hosted branding saves, component creation and incident publication use a separate
+instance of the existing SnapshotCache Durable Object, which records the change in
+D1 and asks the Queue to build the page. For a fast page, the save waits up to ten
+seconds for publication. Once stored, the save succeeds even if the Queue refuses
+the message or publication is still pending. The Queue or the next Cron run
+publishes the change. Three log lines carry the build ID. `Lamp public snapshot
+build started.` identifies the invocation that claimed the build. `Lamp public
+page publication is waiting: another build holds the page and has not finished.`
+records when the blocking build began and when its claim is released. `Lamp
+public snapshot build never finished: the request or run that started it ended
+first.` marks the release of that claim. Find the first line in Workers Logs to
+identify the invocation that took the claim.
 A Cloudflare-wide outage needs separately operated hosting; this release does not
 provision an independent standby or make that deployment claim.
 
