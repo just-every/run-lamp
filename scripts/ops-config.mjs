@@ -1,5 +1,5 @@
 import { randomBytes, createPublicKey } from "node:crypto";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { dirname, isAbsolute, resolve } from "node:path";
 import { validateOwnerClaim } from './owner-claim-config.mjs';
 
@@ -306,8 +306,14 @@ export function renderRemoteArchiveWranglerToml(input) {
 }
 
 export async function writeDeploymentRecord(path, record) {
-  await mkdir(dirname(path), { recursive: true });
-  await writeFile(path, `${JSON.stringify(record, null, 2)}\n`, "utf8");
+  await mkdir(dirname(path), { recursive: true, mode: 0o700 });
+  const temporary = `${path}.${randomBytes(8).toString("hex")}.tmp`;
+  try {
+    await writeFile(temporary, `${JSON.stringify(record, null, 2)}\n`, { mode: 0o600 });
+    await rename(temporary, path);
+  } finally {
+    await rm(temporary, { force: true });
+  }
 }
 
 export async function readDeploymentRecord(path) {

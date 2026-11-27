@@ -17,7 +17,7 @@ export async function removalEdge({accountId, token, names, lag = 2}) {
   const queues = new Map([[queue.queue_name, queue], [foreign.queue.queue_name, foreign.queue]]);
   const namespaces = new Map([[names.worker, {id: randomUUID().replaceAll('-', ''), script: names.worker, class: 'SnapshotCache'}], [foreign.namespace.script, foreign.namespace]]);
   const pending = new Map(), writes = [], jobs = new Map();
-  let denyBucket = false;
+  let denyBucket = false, bucketReuseAfter;
   const ok = (result, extra = {}) => Response.json({success: true, errors: [], result, ...extra});
   const fail = (status, message) => Response.json({success: false, errors: [{code: 10000 + status, message}], result: null}, {status});
   const removeLater = (key, action) => { if (!pending.has(key)) pending.set(key, {left: lag, action}); };
@@ -46,11 +46,15 @@ export async function removalEdge({accountId, token, names, lag = 2}) {
           }
         }
         if (!answer && path === '/d1/database' && method === 'GET') { settle('d1'); answer = ok([...databases.values()]); }
+        else if (!answer && path === '/d1/database' && method === 'POST') { databases.set(database.name, database); answer = ok(database); }
         else if (!answer && path === `/d1/database/${database.uuid}` && method === 'DELETE') { removeLater('d1', () => databases.delete(database.name)); answer = ok(null); }
         else if (!answer && path === '/queues' && method === 'GET') { settle('queues'); answer = ok([...queues.values()]); }
         else if (!answer && path === `/queues/${queue.queue_id}/consumers` && method === 'GET') answer = ok([]);
         else if (!answer && path === `/queues/${queue.queue_id}` && method === 'DELETE') { removeLater('queues', () => queues.delete(queue.queue_name)); answer = ok(null); }
         else if (!answer && path === '/r2/buckets' && method === 'GET') { settle('r2'); answer = ok({buckets: [...buckets.values()]}); }
+        else if (!answer && path === '/r2/buckets' && method === 'POST' && bucketReuseAfter) {
+          answer = Response.json({success: false, errors: [{code: 10073, message: `Bucket was deleted; same-name recreation is blocked until ${bucketReuseAfter}`}]}, {status: 409});
+        }
         else if (!answer && path === `/r2/buckets/${bucket.name}`) {
           if (!buckets.has(bucket.name)) answer = fail(404, 'Bucket does not exist');
           else if (method === 'GET') answer = ok(buckets.get(bucket.name));
@@ -92,6 +96,7 @@ export async function removalEdge({accountId, token, names, lag = 2}) {
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   return {origin: `http://127.0.0.1:${server.address().port}`, base, database, bucket, queue, foreign, databases, buckets, queues, namespaces, objects, writes, jobs,
     set denyBucket(value) { denyBucket = value; },
+    set bucketReuseAfter(value) { bucketReuseAfter = value; },
     async close() { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); await base.close(); },
   };
 }

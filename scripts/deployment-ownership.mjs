@@ -1,5 +1,6 @@
 import { resolve } from 'node:path';
-import { cloudflare } from '@runeditrun/rer/internal/modules/deploy-kit/provider.mjs';
+import { cloudflare, definiteProviderRefusal } from '@runeditrun/rer/internal/modules/deploy-kit/provider.mjs';
+import { withStateLock } from '@runeditrun/rer/internal/modules/deploy-kit/owner.mjs';
 import { readOwnerState, writeOwnerState, resourceId } from '@runeditrun/rer/modules/deploy-kit/owner';
 import { nativeUpload, nativeWorkerCheck } from '@runeditrun/rer/modules/deploy-kit/native-upload';
 import { activeWorker } from '@runeditrun/rer/internal/modules/deploy-kit/worker.mjs';
@@ -10,6 +11,15 @@ export function deploymentCommands(environment) {
     deploy: `rer deploy --environment ${environment} with the original deployment inputs`,
     remove: `node scripts/remove-deployment.mjs --environment ${environment} --yes with the same --env-file (if used)`,
   };
+}
+
+function createConflict(error, kind, name, commands) {
+  const hold = kind === 'r2' && error.providerRefusal?.errors?.find(item => item.code === 10073)?.message;
+  const reuseAt = typeof hold === 'string' && hold.match(/same-name recreation is blocked until (\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z)\.?$/)?.[1];
+  const recovery = reuseAt
+    ? `Cloudflare holds this deleted bucket name until ${reuseAt}. After that time, run ${commands.deploy}.`
+    : `Run ${commands.remove} to clear this partial setup.`;
+  return new Error(`Cloudflare refused to create ${kind} resource ${name} (HTTP 409). ${recovery}`, { cause: error });
 }
 
 // Native Lamp keeps its established two-Worker topology and resource names.
@@ -27,7 +37,7 @@ export function deploymentOwnership(config, env = process.env) {
   const read = (page = false) => readOwnerState(path(page), target(page));
   const commands = deploymentCommands(config.environment);
   const uploadTarget = page => ({ api, target: target(page), statePath: path(page), commands });
-  return { api, target, path,
+  return { api, target, path, read,
     // Check both targets before setup can create or migrate any resources.
     // Reading Base's original records also refuses a renamed recorded Worker.
     async checkWorkers() {
@@ -42,22 +52,35 @@ export function deploymentOwnership(config, env = process.env) {
       const live = await activeWorker(api, target(page).worker);
       return live ? live.settings.bindings.filter(binding => binding.type === 'secret_text').map(binding => binding.name) : [];
     },
-    async resource(kind, name, find, create) {
-      const state = await read(), existing = await find();
-      if (existing) {
-        const entry = state.owned[kind][name];
-        if (entry?.status !== 'created' || entry.id !== resourceId(kind, existing)) throw new Error(`Refusing unrecorded or replaced ${kind} resource ${name}. Keep its original deployment record; it was not created by this checkout.`);
-        return existing;
-      }
-      if (state.owned[kind][name]) throw new Error(`Recorded ${kind} resource ${name} is missing. Finish removing this environment before deploying it again.`);
-      state.owned[kind][name] = { status: 'pending' };
-      await writeOwnerState(path(), state);
-      const made = await create();
-      const id = resourceId(kind, made);
-      if (!id) throw new Error(`The provider did not identify the created ${kind} resource ${name}. Keep the deployment record and inspect it before continuing.`);
-      state.owned[kind][name] = { status: 'created', id };
-      await writeOwnerState(path(), state);
-      return made;
+    resource(kind, name, find, create) {
+      return withStateLock(path(), async () => {
+        const state = await read(), existing = await find();
+        if (existing) {
+          const entry = state.owned[kind][name];
+          if (entry?.status !== 'created' || entry.id !== resourceId(kind, existing)) throw new Error(`Refusing unrecorded or replaced ${kind} resource ${name}. Keep its original deployment record; it was not created by this checkout.`);
+          return existing;
+        }
+        if (state.owned[kind][name]) throw new Error(`Recorded ${kind} resource ${name} is missing. Run ${commands.remove} before deploying again.`);
+        state.owned[kind][name] = { status: 'pending' };
+        await writeOwnerState(path(), state);
+        let made;
+        try { made = await create(); }
+        catch (error) {
+          // A definite refusal created nothing. Keep intent only if the write
+          // could have reached Cloudflare without an identifiable response.
+          if (definiteProviderRefusal(error)) {
+            delete state.owned[kind][name];
+            await writeOwnerState(path(), state);
+          }
+          if (error.status === 409) throw createConflict(error, kind, name, commands);
+          throw error;
+        }
+        const id = resourceId(kind, made);
+        if (!id) throw new Error(`The provider did not identify the created ${kind} resource ${name}. Keep the deployment record and inspect it before continuing.`);
+        state.owned[kind][name] = { status: 'created', id };
+        await writeOwnerState(path(), state);
+        return made;
+      });
     },
     async upload(page, identity, action) {
       const selected = uploadTarget(page);

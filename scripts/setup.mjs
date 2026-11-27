@@ -2,6 +2,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { readDeployEnvFile } from "@runeditrun/rer/internal/modules/deploy-kit/env-file.mjs";
+import { withStateLock } from "@runeditrun/rer/internal/modules/deploy-kit/owner.mjs";
 import { readArchive } from "./archive-validation.mjs";
 import { assertMailDns } from "./mail-dns.mjs";
 import { deploymentOwnership } from "./deployment-ownership.mjs";
@@ -60,6 +61,11 @@ async function main() {
   }
 
   if (!["none", "rer"].includes(config.mailProvider)) await assertMailDns(config);
+  const recordPath = deploymentRecordPath(config.environment);
+  await withStateLock(recordPath, () => provision(config, names, recordPath, restoreFrom));
+}
+
+async function provision(config, names, recordPath, restoreFrom) {
   const ownership = deploymentOwnership(config);
   const api = ownership.api;
   const cpuLimitMs = await nativeWorkerCpuLimit(api);
@@ -73,7 +79,7 @@ async function main() {
   await ensureQueue(ownership, names);
   const resources = { ...names, databaseId };
   await writeGeneratedWrangler(resolve("wrangler.toml"), config, resources, { cpuLimitMs });
-  await writeDeploymentRecord(deploymentRecordPath(config.environment), { environment: config.environment, accountId: process.env.CLOUDFLARE_ACCOUNT_ID?.trim(), pageHost: config.pageHost, appHost: config.appHost, resources, configuredAt: new Date().toISOString() });
+  await writeDeploymentRecord(recordPath, { environment: config.environment, accountId: api.accountId, pageHost: config.pageHost, appHost: config.appHost, resources, configuredAt: new Date().toISOString() });
   if (restoreFrom) {
     const imported = spawnSync(process.execPath, ["scripts/import.mjs", "--remote", "--environment", config.environment, "--from", resolve(restoreFrom)], { stdio: "inherit" });
     if (imported.status !== 0) throw new Error("Restore did not complete. The Worker has not been deployed; preserve the archive and use a fresh environment for recovery.");

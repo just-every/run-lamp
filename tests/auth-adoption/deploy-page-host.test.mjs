@@ -96,10 +96,10 @@ const inputs = () => ({
   MAIL_FROM: 'status@example.test', MAIL_RELAY_URL: 'https://relay.example.test/send', MAIL_API_KEY: `synthetic-${hex()}`,
   SETUP_TOKEN: hex(), SESSION_SECRET: hex(), SUBSCRIBER_TOKEN_SECRET: hex(), WEBHOOK_SIGNING_SECRET: hex(), INSTALLATION_KEY: hex(),
 });
-async function nativeSetup(directory, env, { dryRun = true, edge } = {}) {
+async function nativeSetup(directory, env, { dryRun = true, edge, environment = 'production' } = {}) {
   const file = join(directory, 'inputs.env');
   await writeFile(file, Object.entries(env).map(([key, value]) => `${key}=${value}\n`).join(''), { mode: 0o600 });
-  const child = spawn(process.execPath, [join(root, 'scripts/setup.mjs'), '--env-file', file, ...(dryRun ? ['--dry-run'] : [])], {
+  const child = spawn(process.execPath, [join(root, 'scripts/setup.mjs'), '--environment', environment, '--env-file', file, ...(dryRun ? ['--dry-run'] : [])], {
     cwd: directory, timeout: 30000, stdio: ['ignore', 'pipe', 'pipe'],
     env: { ...Object.fromEntries(Object.entries(process.env).filter(([name]) => !/^(CLOUDFLARE_|MAIL_|LAMP_|RER_|NODE_OPTIONS$)/.test(name))),
       NODE_OPTIONS: `--import=${new URL('../helpers/cloudflare-edge-preload.mjs', import.meta.url).href}`,
@@ -235,7 +235,10 @@ async function removalFixture({ lag, firstUpload = false } = {}) {
       receipt: firstUpload ? null : {provider: {versionId: live.id, deploymentId: deployment.id, etag: live.etag}}}));
   }
   const run = async (confirm = true) => {
-    const child = spawn(process.execPath, [join(root, 'scripts/remove-deployment.mjs'), '--environment', environment, '--env-file', envFile, ...(confirm ? ['--yes'] : [])], {
+    const moduleUrl = new URL('../../scripts/remove-deployment.mjs', import.meta.url).href;
+    const command = `import { runRemoval } from ${JSON.stringify(moduleUrl)};
+      process.exitCode = await runRemoval(process.argv.slice(1), {sleep: async () => {}});`;
+    const child = spawn(process.execPath, ['--input-type=module', '--eval', command, '--', '--environment', environment, '--env-file', envFile, ...(confirm ? ['--yes'] : [])], {
       cwd: directory, timeout: 45000, stdio: ['ignore', 'pipe', 'pipe'],
       env: {...Object.fromEntries(Object.entries(process.env).filter(([name]) => !/^(CLOUDFLARE_|LAMP_|RER_|NODE_OPTIONS$)/.test(name))),
         NODE_OPTIONS: `--import=${new URL('../helpers/cloudflare-edge-preload.mjs', import.meta.url).href}`, LAMP_FAKE_EDGE: edge.origin, LAMP_FAKE_EDGE_HOSTS: 'api.cloudflare.com'},
@@ -250,8 +253,8 @@ async function removalFixture({ lag, firstUpload = false } = {}) {
 }
 
 test('Native removal uses a bulk purge and resumes from recorded resources while deletion settles', async () => {
-  for (const scenario of ['full', 'half', 'retired-records']) {
-    const fixture = await removalFixture();
+  for (const scenario of ['full', 'half', 'retired-records', 'partial-setup']) {
+    const fixture = await removalFixture(scenario === 'partial-setup' ? { lag: 1, firstUpload: true } : undefined);
     const {edge, paths, names} = fixture;
     try {
       if (scenario !== 'full') {
@@ -261,15 +264,36 @@ test('Native removal uses a bulk purge and resumes from recorded resources while
         edge.databases.delete(names.database);
         edge.queues.delete(names.queue);
         // The first target's state can already have been retired.
-        await rm(paths.page);
+        await rm(paths.page, { force: true });
       }
       if (scenario === 'retired-records') {
         edge.buckets.delete(names.bucket);
         edge.objects.clear();
         await rm(paths.app);
       }
+      if (scenario === 'partial-setup') {
+        edge.buckets.delete(names.bucket);
+        edge.objects.clear();
+        await rm(paths.record);
+        await rm(paths.app);
+        const reuseAt = new Date(Date.now() + 30_000).toISOString();
+        edge.bucketReuseAfter = reuseAt;
+        // An earlier remover saw absence. The provider still refuses the name.
+        for (const attempt of [1, 2]) {
+          const { environment, appHost, pageHost } = fixture.config;
+          const setup = await nativeSetup(fixture.directory, { ...inputs(), ...fixture.credentials, LAMP_APP_HOST: appHost, LAMP_PAGE_HOST: pageHost }, { dryRun: false, edge, environment });
+          assert.notEqual(setup.code, 0, setup.output);
+          assert.match(setup.output, /HTTP 409/);
+          assert.ok(setup.output.includes(names.bucket) && setup.output.includes(reuseAt));
+          assert.ok(setup.output.includes(`rer deploy --environment ${environment}`));
+          const record = JSON.parse(await readFile(paths.app, 'utf8'));
+          assert.equal(record.owned.d1[names.database].id, edge.database.uuid);
+          assert.deepEqual(record.owned.r2, {});
+          assert.equal(edge.writes.filter(row => row.path === '/d1/database' && row.method === 'POST').length, 1, `setup attempt ${attempt} reuses its own database`);
+        }
+      }
       const result = await fixture.run();
-      if (scenario !== 'retired-records') {
+      if (scenario === 'full' || scenario === 'half') {
         assert.notEqual(result.code, 0, result.output);
         assert.match(result.output, /remove-incomplete/);
         assert.ok(await readFile(paths.record), 'lagging provider readback preserves the deployment record');
@@ -290,7 +314,7 @@ test('Native removal uses a bulk purge and resumes from recorded resources while
       } else {
         assert.equal(result.code, 0, result.output);
         assert.match(result.output, /read back: none remains/);
-        assert.deepEqual(edge.writes, [], 'retired creation records require complete readback, never fresh deletion authority');
+        if (scenario === 'retired-records') assert.deepEqual(edge.writes, [], 'retired creation records require complete readback, never fresh deletion authority');
       }
       assert.equal(edge.objects.size, 0);
       assert.deepEqual([...edge.base.workers.keys()], ['synthetic-other']);

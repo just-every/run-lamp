@@ -628,7 +628,7 @@
       "executable": false
     },
     "docs/deploy.md": {
-      "sha256": "db155ba076f28fae659d9ad53c2bb26bcf0f2e06a26195b66fb135f5f578344a",
+      "sha256": "06c483042e7305b428eef5737b661ce14f2ce597085ab7fe8093f4eb5d52145c",
       "executable": false
     },
     "docs/deployment-reference.md": {
@@ -3416,7 +3416,7 @@
       "executable": false
     },
     "scripts/deployment-ownership.mjs": {
-      "sha256": "0f21fb40dcee079fc54d5f6a3e63e74f88542c5ab713cc20aa6e31d9506cbc50",
+      "sha256": "a71a13154b73dfc9d41cbc0ae1dad37d0aa5d6d3d36e08baa5df3f4257554c8e",
       "executable": false
     },
     "scripts/deployment-secrets.mjs": {
@@ -4204,7 +4204,7 @@
       "executable": false
     },
     "scripts/ops-config.mjs": {
-      "sha256": "359912f00ad22ec2012c9a50880e55b7ee2a87f1fc34d1499e49672015b3c624",
+      "sha256": "a6433eb9929a8b4d5d851d2c66381c3848f710b553943b94495a6b6229d16d96",
       "executable": false
     },
     "scripts/owner-claim-config.mjs": {
@@ -4236,7 +4236,7 @@
       "executable": false
     },
     "scripts/remove-deployment.mjs": {
-      "sha256": "387a37e8fe1e5e04f35dc6ad9a446fb3f3568f62648f6866d702c38844e24308",
+      "sha256": "dfaa56d8d1466ef0cd9a2e7686b1da83ea6b80665111e054e9b1406c63c936d6",
       "executable": false
     },
     "scripts/setup-migrations.mjs": {
@@ -4244,7 +4244,7 @@
       "executable": false
     },
     "scripts/setup.mjs": {
-      "sha256": "a5f715161df32132f63b911e04f924f9073a45a535f12ecb66d0aa025f960656",
+      "sha256": "755aa901f1c0112d2bfffbf2e6bfbf5a2aecef7752716d8dbaa698964a0c1f23",
       "executable": false
     },
     "scripts/signin-link.mjs": {
@@ -8420,7 +8420,7 @@
       "executable": false
     },
     "tests/auth-adoption/deploy-page-host.test.mjs": {
-      "sha256": "79ffcaefe597266834b63d9aa65e1fe548dff4da81a66973007a0d22379a36c0",
+      "sha256": "14f2f3de21b248e8f2d72e53f921216875516e42b792625b66c8a12c271c6867",
       "executable": false
     },
     "tests/auth-adoption/fixtures/prechange.sql": {
@@ -10596,7 +10596,7 @@
       "executable": false
     },
     "tests/helpers/removal-edge.mjs": {
-      "sha256": "c4edd154a6e85f6b2e6d649dc8e747f6642e65d311462aa9e573321e02995049",
+      "sha256": "3d407670059526f23e3381914fb57d0f953eb18e74687b7d44a45d77ce76f072",
       "executable": false
     },
     "tests/helpers/request-headers.mjs": {

@@ -392,10 +392,14 @@ node scripts/remove-deployment.mjs --environment production --env-file "$LAMP_DE
 
 The command removes the public page Worker, then the app Worker with its
 database, files and queue. It verifies their removal, including the Durable
-Object namespace. The command prints each resource it starts removing. It
-allows up to 10 minutes per R2 bucket and can resume an active Cloudflare bulk
-purge. If removal reports `remove-incomplete`, rerun the same command with
-the same environment and input file until it says `read back: none remains`.
+Object namespace. It also removes resources recorded by a set-up that stopped
+before either Worker was deployed. The command prints each resource it starts
+removing. It allows up to 10 minutes per R2 bucket and can resume an active
+Cloudflare bulk purge. Cloudflare holds a deleted R2 bucket name for one minute.
+Removal waits for that hold to end before reporting completion, so a fresh
+deployment can reuse the same environment. If removal reports
+`remove-incomplete`, rerun the same command with the same environment and input
+file until it says `read back: none remains`.
 Each run resumes from the retained records. In custom-domain mode there is one
 Worker. `rer deploy --remove
 --yes` alone does not remove the separate public page Worker of a `workers.dev`
