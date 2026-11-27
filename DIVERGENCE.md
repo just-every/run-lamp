@@ -1986,7 +1986,9 @@ slow page, and checks that each is answered and no build is left claimed.
 The 27 November Workers Free fix gives hosted accent and logo saves, component creation and
 incident publication builds to the Queue. A short wall-clock build can still exceed the HTTP
 request's 10 ms CPU budget. Fast saves observe the published revisions before returning success,
-and slow saves continue while the Queue builds.
+and slow saves continue while the Queue builds. A stored change is never answered as a failure:
+when the Queue refuses the hand-off or has not published within 10 seconds, the save still
+succeeds and the Queue or the next Cron run publishes it, so a retried creation cannot duplicate it.
 The consumer batches for up to one second so publication can begin promptly. The same
 disconnect journey covers both kinds of save.
 

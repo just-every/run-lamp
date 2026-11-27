@@ -5,7 +5,9 @@ type SnapshotProgress = Pick<PublicSnapshotService, "requestedRevision" | "hasCo
 type SnapshotPublication = SnapshotProgress & Pick<PublicSnapshotService, "outlastsRequest" | "requestRebuild">;
 
 // Observe the selector on fast saves so Settings can still confirm that the
-// change is live. The Queue owns the build even if the client goes away.
+// change is live. The Queue owns the build even if the client goes away. A
+// stored change is never answered as a failure: when the Queue cannot take it
+// or has not published it within the wait, the Queue or the next Cron run does.
 export function createRequestPublication(
   snapshot: SnapshotPublication,
   jobs: Pick<Queue<LampJob>, "send">,
@@ -38,17 +40,14 @@ export function createRequestPublication(
         page, revision: await page.requestedRevision(),
       })));
       const queued = await handOff({ type: "public-snapshot-rebuild" });
-      if (slow) return;
-      if (queued) {
-        const deadline = Date.now() + 10_000;
-        while (!request.signal.aborted) {
-          const completed = await Promise.all(targets.map(({ page, revision }) => page.hasCompletedRevision(revision)));
-          if (completed.every(Boolean)) return;
-          if (Date.now() >= deadline) break;
-          await new Promise(resolve => setTimeout(resolve, 500));
-        }
+      if (slow || !queued) return;
+      const deadline = Date.now() + 10_000;
+      while (!request.signal.aborted && Date.now() < deadline) {
+        const completed = await Promise.all(targets.map(({ page, revision }) => page.hasCompletedRevision(revision)));
+        if (completed.every(Boolean)) return;
+        await new Promise(resolve => setTimeout(resolve, 500));
       }
-      throw new Error("The changes were saved and are still publishing to your status page.");
+      console.warn("Lamp saved a change the Queue has not published yet; the Queue or the next Cron run publishes it.");
     },
   };
 }
