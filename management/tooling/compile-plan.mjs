@@ -73,7 +73,7 @@ export async function lampPlan({ installationId, environment, variables, root = 
     publicVariables, secretNames, optionalSecretNames: ["SLACK_SIGNING_SECRET", "SLACK_CLIENT_ID", "SLACK_CLIENT_SECRET", "POSTMARK_ACCOUNT_API_KEY", "TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_FROM_NUMBER", "TWILIO_MESSAGING_SERVICE"], healthPath: '/health',
     recovery: 'Preserve source and database backup before migration. Restore into fresh installation resources and verify owner workflows before switching traffic.',
     schedules: environment === 'production' ? ['* * * * *'] : [],
-    queueConsumers: environment === 'production' ? [{ binding: 'JOBS', maxBatchSize: 10, maxBatchTimeout: 5, maxRetries: 5 }] : [],
+    queueConsumers: environment === 'production' ? [{ binding: 'JOBS', maxBatchSize: 10, maxBatchTimeout: 1, maxRetries: 5 }] : [],
     ...(environment === 'preview' ? { previewEffects: { schedulesDisabled: true, controlledProviders: variables.controlledProviders } } : {}),
   };
 }

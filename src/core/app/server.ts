@@ -59,10 +59,12 @@ import { registerSignInRoutes } from "../features/sign-in-providers/routes";
 
 export type { AppBindings } from "./types";
 
-export function createApp(bindings: AppBindings, execution?: MailExecution) {
+export type AppRuntimeOptions = { queuePublication?: boolean };
+
+export function createApp(bindings: AppBindings, execution?: MailExecution, options: AppRuntimeOptions = {}) {
   const app = new Hono<AppEnv>();
   const authorizedReads = new WeakMap<Request, OperatorReadSession>();
-  const services = createAppServices(bindings, createSnapshotBlobStore(bindings), execution);
+  const services = createAppServices(bindings, createSnapshotBlobStore(bindings), execution, options.queuePublication);
   const healthService = healthServiceFor(bindings);
   const publicWriteLimiter = createPublicWriteRateLimiter(bindings.DB);
   // Before every route that subscribes someone or sends a message.

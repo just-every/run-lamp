@@ -1,32 +1,54 @@
 import type { LampJob } from "../../platform/jobs";
 import type { PublicSnapshotService } from "./service";
 
-/**
- * Publication asked for by a request. A request's work is cancelled when its client hangs up
- * and ends 30 seconds after its answer; a build cancelled there keeps its `building` row, and
- * nothing else can publish the page until that row is five minutes old. So a request builds the
- * page itself only when the page builds quickly, and never for a caller that will not wait
- * (a monitor, a metric push, a timing webhook). Everything else goes to the Queue consumer,
- * which has minutes. The work is already recorded in D1, so Cron publishes it if the Queue
- * cannot take the message.
- */
-export function createRequestPublication(snapshot: Pick<PublicSnapshotService, "outlastsRequest" | "requestRebuild">, jobs: Pick<Queue<LampJob>, "send">) {
+type SnapshotProgress = Pick<PublicSnapshotService, "requestedRevision" | "hasCompletedRevision">;
+type SnapshotPublication = SnapshotProgress & Pick<PublicSnapshotService, "outlastsRequest" | "requestRebuild">;
+
+// Observe the selector on fast saves so Settings can still confirm that the
+// change is live. The Queue owns the build even if the client goes away.
+export function createRequestPublication(
+  snapshot: SnapshotPublication,
+  jobs: Pick<Queue<LampJob>, "send">,
+  additionalSnapshots: () => Promise<SnapshotProgress[]>,
+) {
   async function handOff(job: LampJob) {
     try {
       await jobs.send(job);
+      return true;
     } catch (cause) {
       console.error("Lamp could not hand its public page to the Queue; Cron publishes it within a minute.", cause);
+      return false;
     }
   }
   return {
     /** For a caller that will not wait: the due publication, under the lease Cron takes. */
-    publishPending: () => handOff({ type: "public-snapshot-publish" }),
-    /** True when the rebuild was handed to the Queue; false when the request should build the page itself. */
+    async publishPending() { await handOff({ type: "public-snapshot-publish" }); },
+    /** Hands off a build that could outlast the usual save response. */
     async rebuildElsewhere(force?: boolean) {
       if (!await snapshot.outlastsRequest()) return false;
       if (force) await snapshot.requestRebuild();
       await handOff({ type: "public-snapshot-rebuild" });
       return true;
+    },
+    async rebuild(force: boolean | undefined, request: Request) {
+      if (force) await snapshot.requestRebuild();
+      const slow = await snapshot.outlastsRequest();
+      const pages = slow ? [] : [snapshot, ...await additionalSnapshots()];
+      const targets = await Promise.all(pages.map(async page => ({
+        page, revision: await page.requestedRevision(),
+      })));
+      const queued = await handOff({ type: "public-snapshot-rebuild" });
+      if (slow) return;
+      if (queued) {
+        const deadline = Date.now() + 10_000;
+        while (!request.signal.aborted) {
+          const completed = await Promise.all(targets.map(({ page, revision }) => page.hasCompletedRevision(revision)));
+          if (completed.every(Boolean)) return;
+          if (Date.now() >= deadline) break;
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+      }
+      throw new Error("The changes were saved and are still publishing to your status page.");
     },
   };
 }

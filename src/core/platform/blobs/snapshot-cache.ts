@@ -4,13 +4,15 @@ import { readRetainedArtifact } from "./retained-bundle";
 /** No public HTTP route exposes this class. One SQLite transaction replaces all
  * chunks, so a restart, overlapping publication or failed write cannot expose
  * a partial generation. No expiration or negative cache is used. */
-export class SnapshotCache extends DurableObject {
-  constructor(ctx: DurableObjectState, env: Record<string, unknown>) {
-    super(ctx, env);
-    ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS retained_chunks (position INTEGER PRIMARY KEY, body BLOB NOT NULL)");
-    ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS retained_generation (id INTEGER PRIMARY KEY CHECK(id = 1), generation INTEGER NOT NULL)");
-  }
+export class SnapshotCache<Bindings = Record<string, unknown>> extends DurableObject<Bindings> {
+  private replicaReady = false;
+
   async fetch(request: Request) {
+    if (!this.replicaReady) {
+      this.ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS retained_chunks (position INTEGER PRIMARY KEY, body BLOB NOT NULL)");
+      this.ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS retained_generation (id INTEGER PRIMARY KEY CHECK(id = 1), generation INTEGER NOT NULL)");
+      this.replicaReady = true;
+    }
     if (request.method === "HEAD") {
       const current = [...this.ctx.storage.sql.exec<{generation: number}>("SELECT generation FROM retained_generation WHERE id = 1")][0];
       return new Response(null, { status: current ? 200 : 404, headers: current ? { "X-Lamp-Generation": String(current.generation) } : {} });

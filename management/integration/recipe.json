@@ -482,7 +482,7 @@
     {
       "binding": "JOBS",
       "maxBatchSize": 10,
-      "maxBatchTimeout": 5,
+      "maxBatchTimeout": 1,
       "maxRetries": 5
     }
   ]

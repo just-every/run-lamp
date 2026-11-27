@@ -33,7 +33,7 @@
   "r2_buckets": [{ "binding": "SNAPSHOTS", "bucket_name": "lamp-local-snapshots" }],
   "queues": {
     "producers": [{ "binding": "JOBS", "queue": "lamp-local-jobs" }],
-    "consumers": [{ "queue": "lamp-local-jobs", "max_batch_size": 10, "max_batch_timeout": 5, "max_retries": 5 }]
+    "consumers": [{ "queue": "lamp-local-jobs", "max_batch_size": 10, "max_batch_timeout": 1, "max_retries": 5 }]
   },
   "durable_objects": {
     "bindings": [

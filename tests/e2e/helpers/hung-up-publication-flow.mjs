@@ -11,11 +11,14 @@ const EDGE = 'https://cancelled-request.example.test/';
  * does: a selector write a hung-up request reaches never resumes. */
 export async function hungUpPublicationFlow() {
   let clientGone = false;
+  let holdBackground;
   const j = await openStatusJourney({
     extraBindings: { LAMP_TEST_CANCEL_EDGE: EDGE },
     providerEdge: async request => {
       if (!request.url.startsWith(EDGE)) return undefined;
-      if (clientGone && new URL(request.url).searchParams.get('entry') === 'request') await new Promise(() => {});
+      const entry = new URL(request.url).searchParams.get('entry');
+      if (clientGone && entry === 'request') await new Promise(() => {});
+      if (entry === 'background') await holdBackground;
       return new Response(null, { status: 204 });
     },
   });
@@ -55,14 +58,25 @@ export async function hungUpPublicationFlow() {
     await j.tick(Date.now());
     const afterPush = await published('the page a hung-up metric push found pending is published');
 
+    // A fast save observes publication without owning it. Hold the Queue's
+    // selector write until the saving client goes away, then release it.
+    let releaseBackground;
+    holdBackground = new Promise(resolve => { releaseBackground = resolve; });
+    const claim = (state, signal) => j.request(`/api/app/components/${component.id}/standing-claim`, { method: 'PUT', body: JSON.stringify({ state }), signal });
+    let cancelledSave;
+    try { cancelledSave = await hangUp(signal => claim('Partially unavailable', signal)); }
+    finally { releaseBackground(); holdBackground = undefined; }
+    const afterCancelledSave = await published('the Queue completes the fast save after the client goes away');
+    await j.visible('/', 'Partly down');
+
     // An operator's save on a page whose last build took longer than a request can hold one.
     await j.db.prepare("UPDATE snapshot_builds SET started_at = strftime('%Y-%m-%dT%H:%M:%fZ', finished_at, '-40 seconds') WHERE status = 'published'").run();
-    const saved = await hangUp(signal => j.request(`/api/app/components/${component.id}/standing-claim`, { method: 'PUT', body: JSON.stringify({ state: 'Major outage' }), signal }));
+    const saved = await hangUp(signal => claim('Major outage', signal));
     await j.tick(Date.now());
     const afterSave = await published('the page an interrupted operator save changed is published');
     await j.visible('/', 'Major outage');
 
-    return { j, facts: { before, health, afterHealth, pushed, afterPush, saved, afterSave } };
+    return { j, facts: { before, health, afterHealth, pushed, afterPush, cancelledSave, afterCancelledSave, saved, afterSave } };
   } catch (cause) {
     await j.close();
     throw cause;
@@ -74,8 +88,10 @@ export async function hungUpPublication() {
   try {
     // Each caller is answered inside the time it waited, and the build runs where nothing cancels it.
     assert.deepEqual([facts.health, facts.pushed, facts.saved], [200, 200, 200]);
-    for (const after of [facts.afterHealth, facts.afterPush, facts.afterSave]) assert.equal(after.failed, facts.before.failed, 'no build was left for the sweep to fail');
-    assert.ok(facts.afterSave.builds > facts.afterPush.builds, 'the save on a slow page is built');
+    assert.equal(facts.cancelledSave, 'TimeoutError', 'the fast save waits for its queued publication');
+    for (const after of [facts.afterHealth, facts.afterPush, facts.afterCancelledSave, facts.afterSave]) assert.equal(after.failed, facts.before.failed, 'no build was left for the sweep to fail');
+    assert.ok(facts.afterCancelledSave.builds > facts.afterPush.builds, 'the fast save is built after its client disconnects');
+    assert.ok(facts.afterSave.builds > facts.afterCancelledSave.builds, 'the save on a slow page is built');
   } finally {
     await j.close();
   }

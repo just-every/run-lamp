@@ -33,6 +33,7 @@
       "binding": "JOBS",
       "consumer": {
         "batch_size": 10,
+        "max_wait_time_ms": 1000,
         "max_retries": 5
       }
     }

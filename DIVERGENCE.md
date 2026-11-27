@@ -1982,3 +1982,15 @@ page, when it started and when its claim is released. The five-minute release of
 nothing finished is unchanged: it is the recovery for a run Cloudflare ends, not the fix.
 `tests/e2e/snapshot-retained.test.mjs` hangs up on `/health`, a metric push and a save on a
 slow page, and checks that each is answered and no build is left claimed.
+
+The 27 November Workers Free fix gives hosted accent and logo saves, component creation and
+incident publication builds to the Queue. A short wall-clock build can still exceed the HTTP
+request's 10 ms CPU budget. Fast saves observe the published revisions before returning success,
+and slow saves continue while the Queue builds.
+The consumer batches for up to one second so publication can begin promptly. The same
+disconnect journey covers both kinds of save.
+
+Cold accent and logo saves, component creation and incident publication also load the
+operator application in their request. The stateless Worker delegates those writes to a
+separate instance in the existing SnapshotCache Durable Object namespace. The instance
+runs the authenticated routes and hands the build to the Queue.

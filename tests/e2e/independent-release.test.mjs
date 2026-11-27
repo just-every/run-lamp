@@ -44,7 +44,7 @@ test('ACCESS-001 SETUP-002 — a packaged installation refuses missing deploy au
   const raw=new Map(await Promise.all([...artifact.modules,...artifact.assets].map(async item=>[item.payload,await readFile(resolve(dirname(artifactPath),item.payload))])));
   const mail=[];
   const secret='test-bootstrap-secret-'.repeat(3);
-  const bindings={...artifact.deploymentSpec.publicVariables,LAMP_APP_HOST:'127.0.0.1',LAMP_PAGE_HOST:'status.lamp.test',SETUP_TOKEN:secret,SESSION_SECRET:sessionSecret,SETUP_OPERATOR_EMAIL:'owner@example.test',AUTH_LOCAL:'true',MAIL_PROVIDER:'resend',MAIL_FROM_ADDRESS:'status@example.test',MAIL_PROVIDER_API_KEY:'test-only-provider',SUBSCRIBER_TOKEN_SECRET:'test-subscriber-secret-'.repeat(3),WEBHOOK_SIGNING_SECRET:'test-webhook-secret-'.repeat(3),RER_INSTALLATION_ID:'independent-local'};
+  const bindings={...artifact.deploymentSpec.publicVariables,LAMP_APP_HOST:'127.0.0.1',LAMP_PAGE_HOST:'status.lamp.test',LAMP_QUEUE_SCHEDULED:'1',SETUP_TOKEN:secret,SESSION_SECRET:sessionSecret,SETUP_OPERATOR_EMAIL:'owner@example.test',AUTH_LOCAL:'true',MAIL_PROVIDER:'resend',MAIL_FROM_ADDRESS:'status@example.test',MAIL_PROVIDER_API_KEY:'test-only-provider',SUBSCRIBER_TOKEN_SECRET:'test-subscriber-secret-'.repeat(3),WEBHOOK_SIGNING_SECRET:'test-webhook-secret-'.repeat(3),RER_INSTALLATION_ID:'independent-local'};
   const modules=artifact.modules.map(module=>({type:module.type==='esm'?'ESModule':module.type==='compiled-wasm'?'CompiledWasm':'Text',path:module.name,contents:module.type==='compiled-wasm'?raw.get(module.payload):raw.get(module.payload).toString()}));
   modules.sort((a,b)=>a.path===artifact.mainModule?-1:b.path===artifact.mainModule?1:0);
   const sqliteClasses = new Set(artifact.deploymentSpec.durableObjectMigrations.flatMap(migration => migration.newSqliteClasses));
@@ -111,7 +111,10 @@ test('ACCESS-001 SETUP-002 — a packaged installation refuses missing deploy au
   const cookie=signIn.headers.get('set-cookie').split(';')[0];
   assert.equal((await request(new URL(link).pathname+new URL(link).search,{redirect:'manual'})).status,400);
   assert.equal((await request('/api/app/session',{headers:{Cookie:cookie}})).status,200);
-  const component=await request('/api/app/components',{method:'POST',headers:{Cookie:cookie,'Content-Type':'application/json'},body:JSON.stringify({name:'Owner API',description:'Persistent independent component',groupId:null,internal:false,displayOrder:0,note:''})});
+  const componentInput={method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:'Owner API',description:'Persistent independent component',groupId:null,internal:false,displayOrder:0,note:''})};
+  assert.equal((await request('/api/app/components',componentInput)).status,401,'publication writes require an operator session');
+  assert.equal((await request('/api/app/components',{...componentInput,headers:{...componentInput.headers,Cookie:cookie,Origin:'https://other.test'}})).status,403,'publication writes enforce the operator origin');
+  const component=await request('/api/app/components',{...componentInput,headers:{...componentInput.headers,Cookie:cookie}});
   assert.equal(component.status,201,await component.text());
   assert.match(await (await publicRequest('/')).text(),/Owner API/);
   await runtime.dispose();

@@ -60,7 +60,7 @@ import { createOpenAiCompatibleProvider } from "../platform/ai";
 import { createDemoAiProvider } from "../platform/ai/demo";
 import { createServerExtensionMount } from "./extensions/server";
 
-export function createAppServices(bindings: AppBindings, blobs: BlobStore, execution?: MailExecution) {
+export function createAppServices(bindings: AppBindings, blobs: BlobStore, execution?: MailExecution, queuePublication = false) {
   const extensions = createServerExtensionMount();
   const { sender: mail, local } = createAppMailTransport(bindings, extensions.adapters["mail.sender.v1"], execution);
   const ownerSignInMail = createOwnerSignInTransport(bindings, extensions.adapters["mail.sender.v1"]);
@@ -91,11 +91,12 @@ export function createAppServices(bindings: AppBindings, blobs: BlobStore, execu
   }), blobs, extensions.publicSnapshotPolicies, extensions.publicSnapshotEvents, extensions.slots, createRetainedSnapshotCache(bindings), runningReleaseIdentity(bindings), false, authOrigin(bindings));
   const statusPages = createStatusPageRepository(bindings.DB);
   const scopedSnapshots = createScopedSnapshots(bindings, blobs, statusPages, extensions.publicSnapshotPolicies);
-  const requestPublication = createRequestPublication(primarySnapshot, bindings.JOBS);
+  const requestPublication = createRequestPublication(primarySnapshot, bindings.JOBS, async () =>
+    (await statusPages.paths()).map(({ path }) => scopedSnapshots.forPage(path)));
   const publicSnapshots = {
     ...primarySnapshot,
     async rebuild(force?: boolean) {
-      // Cron and the Queue consumer build the page themselves; a request does only when it safely can.
+      if (queuePublication && execution instanceof Request) return requestPublication.rebuild(force, execution);
       if (execution !== "background" && await requestPublication.rebuildElsewhere(force)) return;
       await primarySnapshot.rebuild(force);
       await scopedSnapshots.forEach(snapshot => snapshot.rebuild());

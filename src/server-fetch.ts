@@ -6,7 +6,7 @@ import start from "@tanstack/react-start/server-entry";
 
 import { installedHomeResponse } from "./installed-home";
 import { isDevelopmentAppPath, protectedPageAddress, type LampSurface } from "./core/app/host-dispatch";
-import { createApp } from "./core/app/server";
+import { createApp, type AppRuntimeOptions } from "./core/app/server";
 import { prepareAppMailBindings } from "./core/app/mail";
 import { withOperatorRequest } from "./core/platform/operator-request.server";
 import type { AppBindings } from "./core/app/types";
@@ -73,7 +73,7 @@ async function operatorDocumentPreflight(request: Request, runtime: ReturnType<t
   return Response.redirect(signIn, 302);
 }
 
-export async function fetchApplication(request: Request, bindings: AppBindings, executionContext: ExecutionContext, url: URL, surface: LampSurface): Promise<Response> {
+export async function fetchApplication(request: Request, bindings: AppBindings, executionContext: ExecutionContext, url: URL, surface: LampSurface, options?: AppRuntimeOptions): Promise<Response> {
   // The landing page's former address; old links follow it to the app host's home page for one release.
   if (surface === "app" && url.pathname === "/lamp") return Response.redirect(new URL(`/${url.search}`, url), 301);
   // The generated deployment's ASSETS binding owns emitted client files. In
@@ -94,7 +94,7 @@ export async function fetchApplication(request: Request, bindings: AppBindings, 
     return protectedStatusPage(request, bindings, executionContext, createApp(bindings, request), protectedPageAddress(url.pathname)!);
   }
 
-  const runtime = createApp(await prepareAppMailBindings(bindings, request), request);
+  const runtime = createApp(await prepareAppMailBindings(bindings, request), request, options);
   if (surface === "app" && (url.pathname === "/signin" || url.pathname.startsWith("/auth/") || url.pathname.startsWith("/.well-known/rer-"))) {
     return authResponse(request, bindings, runtime.services);
   }
