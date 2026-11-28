@@ -9232,7 +9232,7 @@
       "executable": false
     },
     "tests/e2e/helpers/uptime-pairing-flow.mjs": {
-      "sha256": "5ee47c037ff11ee9679151fddaf95ad2e9e8578d796938d8ea60272fb07b11b0",
+      "sha256": "9958ae1654f2d7e22d75c05c7b6e5d7c01d0bce3d5d24f8864aa2fcb2687dcae",
       "executable": false
     },
     "tests/e2e/helpers/uptime-preset-flow.mjs": {
