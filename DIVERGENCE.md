@@ -231,7 +231,7 @@ existing incident actions in place of the update form.
 
 **The product:** the category's signature failure is a status page that goes down with the product it reports on, or with its own operator app. `PAGE-005` and `PAGE-006` get most of the way there inside one Worker by making the public read path a snapshot read with no database query. We have kept one Worker and two hostnames.
 
-**Console CPU budget:** The HTTP Worker admits the app hostname and forwards sign-in, first-run, incident preparation, and console reads to named instances in the existing SQLite Durable Object namespace. Those instances run the usual Hono and Start handlers, including the original session and origin checks, under their own CPU limit. Settings reads the data used by its initial Page pane, and the browser reads the other panes as they open.
+**Console CPU budget:** The HTTP Worker admits the app hostname and forwards sign-in, first-run, incident preparation, and console reads to named instances in the existing SQLite Durable Object namespace. Those instances run the usual Hono and Start handlers, including the original session and origin checks, under their own CPU limit. Public incident documents and publication status checks use another named instance in that namespace. Settings reads the data used by its initial Page pane, and the browser reads the other panes as they open.
 
 **For the shared docs:** "availability isolation — the public surface must survive the operator surface" is a concrete reason and is not in the listed three. Worth naming, so a later build pass does not read the one-Worker rule as forbidding it if the snapshot approach turns out to be insufficient under load.
 

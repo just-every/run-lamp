@@ -6,6 +6,7 @@ import type { AppBindings } from "./core/app/types";
 import { isMoveInApi } from "./core/features/statuspage-import/request-path";
 import { answerHealth } from "./core/features/health/endpoint";
 import { answerPublicArtifact, staticPublicArtifact } from "./core/features/public-snapshot/home";
+import { isPublicIncidentRead, publicIncidentObject } from "./core/features/public-snapshot/publication-request-path";
 import { runQueue } from "./core/app/worker-lifecycle";
 import { runScheduled } from "./core/app/scheduled-worker";
 export { HealthWorker } from "./core/features/health/worker";
@@ -51,9 +52,13 @@ export default withDemo({
     if (surface === "app" && bindings.MOVE_IN_WORKER && bindings.RER_DEMO !== "1" && !import.meta.env.DEV && isMoveInApi(url.pathname)) {
       return bindings.MOVE_IN_WORKER.getByName("move-in").fetch(request);
     }
-    if (!import.meta.env.DEV && surface === "app" && bindings.RER_DEMO !== "1") {
-      const object = operatorRequestObject(request.method, url.pathname, bindings);
-      if (object) return bindings.SNAPSHOT_CACHE.getByName(object).fetch(request);
+    if (!import.meta.env.DEV && bindings.RER_DEMO !== "1") {
+      if (surface === "app") {
+        const object = operatorRequestObject(request.method, url.pathname, bindings);
+        if (object) return bindings.SNAPSHOT_CACHE.getByName(object).fetch(request);
+      } else if (surface === "page" && isPublicIncidentRead(request.method, url.pathname)) {
+        return bindings.SNAPSHOT_CACHE.getByName(publicIncidentObject).fetch(request);
+      }
     }
     const { fetchApplication } = await import("./server-fetch");
     return fetchApplication(request, bindings, executionContext, url, surface);
