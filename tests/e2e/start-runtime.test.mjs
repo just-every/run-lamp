@@ -446,8 +446,11 @@ test("DOCS-001 PAGE-020 — the built single Worker preserves public docs, Hono 
   const browser = await browserNavigationProof();
   await stopWorker(worker);
   await startPageWorker();
-  assert.equal((await pageRequest(previewPath, previewRequest)).status, 404, "the public host refuses incident preview");
-  assert.equal((await pageRequest("/auth/magic-link", { method: "POST", headers: { "Content-Length": "0" } })).status, 404, "the public host refuses sign-in requests");
+  assert.equal((await pageRequest("/auth/confirm")).status, 404, "the public host refuses sign-in confirmation");
+  assert.equal((await pageRequest(previewPath, {
+    ...previewRequest, headers: { ...previewRequest.headers, Connection: "close" },
+  })).status, 404, "the public host refuses incident preview");
+
   assert.equal((await pageRequest("/signin")).status, 404, "sign-in is app-host-only");
   assert.equal((await pageRequest(settingsRead, { headers: { Cookie: `${sessionCookieName(appOrigin)}=${sessionId}` } })).status, 404,
     "the public host refuses console reads even with an operator cookie");
