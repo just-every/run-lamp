@@ -424,10 +424,19 @@ public snapshot build never finished: the request or run that started it ended
 first.` marks the release of that claim. Find the first line in Workers Logs to
 identify the invocation that took the claim.
 
-The app host sends sign-in and console reads to the `operator-console-reads` instance
-in the same namespace. Settings loads the Page pane first and fetches other panes
-when opened. Check cold HTTP Worker and Queue consumer CPU separately from Durable
-Object CPU and requests in Cloudflare.
+The app host sends sign-in to `operator-auth`. The `operator-console-reads` instance
+handles console reads, first-run setup, incident creation, preview and draft saves.
+The page host sends incident documents and publication checks to
+`public-snapshot-reads`, which also handles homepage reads when a current R2 snapshot
+cannot be streamed. An incident document request typically uses two Durable Object
+requests, including the check for a retained generation. These instances use the
+existing SnapshotCache namespace. The app host preserves the request headers and
+body when forwarding. The existing session and origin checks can reject a
+request without waiting for the body. The page host only serves public routes.
+Settings loads the Page pane first and fetches
+other panes when opened. In Cloudflare, check cold HTTP Worker and Queue consumer
+CPU separately from Durable Object usage. Compare SnapshotCache requests with the
+Workers Free allowance of 100,000 Durable Object requests per day.
 
 A Cloudflare-wide outage needs separately operated hosting; this release does not
 provision an independent standby or make that deployment claim.

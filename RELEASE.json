@@ -1,22 +1,22 @@
 {
-  "version": "1.11.47",
-  "previousVersion": "1.11.46",
-  "date": "2026-11-27",
-  "publicReleaseNotes": "- **Publishing a status page and opening the console fit on Workers Free.** The Worker now uses about 1 ms of CPU or less on these paths, down from roughly 100–400 ms in hosted measurements. The existing jobs Queue hands the page build to a named `publication-builds` instance of the SnapshotCache Durable Object. Sign-in and console reads, including Settings, use a separate `operator-console-reads` instance in the same namespace.\n- **Settings loads the Page pane first.** Other panes fetch their data when opened.\n\n### Upgrading from 1.11.46\n\nBack up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.47`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. Lamp reuses the existing SnapshotCache class, `SNAPSHOT_CACHE` binding and jobs Queue. This update requires no new resources or migrations. The stored public page rebuilds once after the update.",
+  "version": "1.11.48",
+  "previousVersion": "1.11.47",
+  "date": "2026-11-28",
+  "publicReleaseNotes": "- **Signing in, setting up Lamp and running the console fit on Workers Free.** The affected paths used about 1 ms of Worker CPU or less in hosted measurements, down from a cold peak of 224 ms. This includes creating an incident, previewing it and saving its draft.\n- **Public incident pages and publication checks fit on Workers Free.** The homepage streams a current snapshot directly from storage. If Lamp needs a retained copy, it reads it in the same Durable Object instance that serves incident pages. An incident document request uses about two Durable Object requests. The public host continues to keep console and sign-in routes private.\n\n### Upgrading from 1.11.47\n\nBack up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.48`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. Upgrade in place with the existing SnapshotCache class, `SNAPSHOT_CACHE` binding and jobs Queue. The stored public page rebuilds once after the update.",
   "contractChanges": {},
   "proseChanges": [
     {
       "document": "OPERATIONS.md",
       "section": "Dependency failure",
       "change": "changed",
-      "date": "2026-11-27",
-      "summary": "Page builds and console reads use named instances of the existing SnapshotCache Durable Object.",
-      "was": "The Queue consumer built the page and the HTTP Worker loaded the console.",
-      "now": "The Queue consumer delegates page builds to the publication-builds instance. The HTTP Worker delegates sign-in and console reads to the operator-console-reads instance."
+      "date": "2026-11-28",
+      "summary": "Setup, sign-in, incident preparation and public incident reads fit the Workers Free CPU budget.",
+      "was": "The HTTP Worker handled first-run, incident drafts, incident pages and retained homepage reads.",
+      "now": "The HTTP Worker sends sign-in to operator-auth, console reads and incident preparation to operator-console-reads, and public incident and retained homepage reads to public-snapshot-reads. Publication status checks use public-snapshot-reads as well. These are named instances of the existing SnapshotCache Durable Object."
     }
   ],
   "extensionPointChanges": [],
   "migrations": [],
   "breaking": false,
-  "agentUpdateInstructions": "Back up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.47`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. Lamp reuses the existing SnapshotCache class, `SNAPSHOT_CACHE` binding and jobs Queue. This update requires no new resources or migrations. The stored public page rebuilds once after the update. Open the signed-out sign-in page, sign in and open Settings. Save a status-page change and confirm it appears on the public page. Check cold console and Queue consumer CPU in Workers Logs and review Durable Object requests per day."
+  "agentUpdateInstructions": "Back up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.48`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. Upgrade in place with the existing SnapshotCache class, `SNAPSHOT_CACHE` binding and jobs Queue. The stored public page rebuilds once after the update. Verify first setup on a disposable installation, then sign in, create and preview an incident, save its draft, publish it, and open its public page. Check cold HTTP Worker CPU against the 10 ms Free limit and SnapshotCache requests against the daily Free allowance."
 }

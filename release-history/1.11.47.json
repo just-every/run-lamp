@@ -1,0 +1,22 @@
+{
+  "version": "1.11.47",
+  "previousVersion": "1.11.46",
+  "date": "2026-11-27",
+  "publicReleaseNotes": "- **Publishing a status page and opening the console fit on Workers Free.** The Worker now uses about 1 ms of CPU or less on these paths, down from roughly 100–400 ms in hosted measurements. The existing jobs Queue hands the page build to a named `publication-builds` instance of the SnapshotCache Durable Object. Sign-in and console reads, including Settings, use a separate `operator-console-reads` instance in the same namespace.\n- **Settings loads the Page pane first.** Other panes fetch their data when opened.\n\n### Upgrading from 1.11.46\n\nBack up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.47`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. Lamp reuses the existing SnapshotCache class, `SNAPSHOT_CACHE` binding and jobs Queue. This update requires no new resources or migrations. The stored public page rebuilds once after the update.",
+  "contractChanges": {},
+  "proseChanges": [
+    {
+      "document": "OPERATIONS.md",
+      "section": "Dependency failure",
+      "change": "changed",
+      "date": "2026-11-27",
+      "summary": "Page builds and console reads use named instances of the existing SnapshotCache Durable Object.",
+      "was": "The Queue consumer built the page and the HTTP Worker loaded the console.",
+      "now": "The Queue consumer delegates page builds to the publication-builds instance. The HTTP Worker delegates sign-in and console reads to the operator-console-reads instance."
+    }
+  ],
+  "extensionPointChanges": [],
+  "migrations": [],
+  "breaking": false,
+  "agentUpdateInstructions": "Back up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.47`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. Lamp reuses the existing SnapshotCache class, `SNAPSHOT_CACHE` binding and jobs Queue. This update requires no new resources or migrations. The stored public page rebuilds once after the update. Open the signed-out sign-in page, sign in and open Settings. Save a status-page change and confirm it appears on the public page. Check cold console and Queue consumer CPU in Workers Logs and review Durable Object requests per day."
+}
