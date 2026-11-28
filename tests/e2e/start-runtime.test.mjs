@@ -372,9 +372,11 @@ test("DOCS-001 PAGE-020 — the built single Worker preserves public docs, Hono 
   const previewInput = JSON.stringify({
     title: "Dispatch requests are delayed",
     components: [{ componentId: "01J00000000000000000000011", state: "Degraded performance" }],
-    update: { lifecycle: "Investigating", affectedAudience: "API users", customerImpact: "Requests take longer to complete." },
+    update: { lifecycle: "Investigating", affectedAudience: "API users", customerImpact: "Requests take longer to complete.", whatStillWorks: "", details: "" },
   });
-  const previewRequest = { method: "POST", headers: { "Content-Type": "application/json" }, body: previewInput };
+  const previewRequest = {
+    method: "POST", headers: { "Content-Type": "application/json", "Content-Length": String(Buffer.byteLength(previewInput)) }, body: previewInput,
+  };
   assert.equal((await request(previewPath, appHost, previewRequest)).status, 401, "incident preview requires an operator session");
   assert.equal((await appRequest(previewPath, {
     ...previewRequest, headers: { ...previewRequest.headers, "Sec-Fetch-Site": "cross-site" },

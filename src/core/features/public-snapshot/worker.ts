@@ -26,8 +26,12 @@ export class SnapshotCache extends RetainedReplica<AppBindings> {
       return new Response("Not found.", { status: 404 });
     }
     const { fetchApplication } = await import("../../../server-fetch");
-    return fetchApplication(request, this.env, { waitUntil: promise => this.ctx.waitUntil(promise) } as ExecutionContext, url, page ? "page" : "app", {
+    const response = await fetchApplication(request, this.env, { waitUntil: promise => this.ctx.waitUntil(promise) } as ExecutionContext, url, page ? "page" : "app", {
       queuePublication: object === publicationObject && !this.env.RER_PREVIEW_OWNER_SIGNIN,
     });
+    // An early auth refusal may leave a proxied request body unread. Close
+    // that stream before the response so the Worker can return the refusal.
+    if (!request.bodyUsed && !request.body?.locked) await request.body?.cancel();
+    return response;
   }
 }

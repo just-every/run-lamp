@@ -6484,7 +6484,7 @@
       "executable": false
     },
     "src/core/features/public-snapshot/worker.ts": {
-      "sha256": "00ca05e5f0b7340e3b09f011bd276da8e5ff3b321e3649380953a0d55fd07d78",
+      "sha256": "8cf0924052d528143a0cbd1ef4d7da578ae5d6bdcdea634673478516ae75a88e",
       "executable": false
     },
     "src/core/features/reports/draft.ts": {
@@ -9360,7 +9360,7 @@
       "executable": false
     },
     "tests/e2e/start-runtime.test.mjs": {
-      "sha256": "1b1a85a7c74d81e48d12d1ccfb3cd2056d761ce776dddbc18f62a275b227c796",
+      "sha256": "33a7398111bee96f8939494fa65a08c719cfe7ae95c2ab7c5d45ee32c4aecfa1",
       "executable": false
     },
     "tests/e2e/statuspage-import.test.mjs": {
