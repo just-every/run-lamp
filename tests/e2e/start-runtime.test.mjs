@@ -472,7 +472,7 @@ test("DOCS-001 PAGE-020 — the built single Worker preserves public docs, Hono 
   assert.equal(missingPageAsset.status, 404, "missing public assets must remain real 404s");
   const publicIncident = await pageRequest("/incidents/INC-4821");
   assert.equal(publicIncident.status, 200, "a published incident stays readable on the public host");
-  assert.match(await publicIncident.text(), /INC-4821/);
+  assert.ok((await publicIncident.text()).includes("<h1>Elevated API error rates</h1>"), "the public document contains the seeded incident");
   const snapshotBeforeD1Failure = await waitForPublicSnapshot();
   await run("pnpm", ["exec", "wrangler", "d1", "execute", "DB", "--local", "--config", artifactPath, "--persist-to", statePath, "--command", "DROP TABLE page_settings"]);
   const snapshotAfterD1Failure = await pageRequest("/?r2-proof=after-d1-failure");
