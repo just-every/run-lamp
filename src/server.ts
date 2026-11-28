@@ -15,7 +15,7 @@ export { SnapshotCache } from "./core/features/public-snapshot/worker";
 
 async function forwardOperatorRequest(request: Request, object: Pick<Fetcher, "fetch">) {
   if (!request.body) return object.fetch(request);
-  const forwarded = request.clone();
+  const forwarded = request.clone() as Request;
   // Wait for the incoming stream to close even if the object returns an
   // authorization refusal before it reads the body.
   const [response] = await Promise.all([object.fetch(forwarded), request.body.cancel()]);
