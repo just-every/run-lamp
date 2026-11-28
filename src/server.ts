@@ -6,7 +6,7 @@ import type { AppBindings } from "./core/app/types";
 import { isMoveInApi } from "./core/features/statuspage-import/request-path";
 import { answerHealth } from "./core/features/health/endpoint";
 import { answerPublicArtifact, staticPublicArtifact } from "./core/features/public-snapshot/home";
-import { isPublicIncidentRead, publicIncidentObject } from "./core/features/public-snapshot/publication-request-path";
+import { isPublicIncidentRead, publicSnapshotObject } from "./core/features/public-snapshot/publication-request-path";
 import { runQueue } from "./core/app/worker-lifecycle";
 import { runScheduled } from "./core/app/scheduled-worker";
 export { HealthWorker } from "./core/features/health/worker";
@@ -66,7 +66,7 @@ export default withDemo({
         const object = operatorRequestObject(request.method, url.pathname, bindings);
         if (object) return forwardOperatorRequest(request, bindings.SNAPSHOT_CACHE.getByName(object));
       } else if (surface === "page" && isPublicIncidentRead(request.method, url.pathname)) {
-        return bindings.SNAPSHOT_CACHE.getByName(publicIncidentObject).fetch(request);
+        return bindings.SNAPSHOT_CACHE.getByName(publicSnapshotObject).fetch(request);
       }
     }
     const { fetchApplication } = await import("./server-fetch");

@@ -4,7 +4,7 @@ export function isPublicationWrite(method: string, path: string) {
   return method === "POST" && (path === "/api/app/components" || /^\/api\/app\/incidents\/[^/]+\/publish$/.test(path));
 }
 
-export const publicIncidentObject = "public-incident-reads";
+export const publicSnapshotObject = "public-snapshot-reads";
 
 export function isPublicIncidentRead(method: string, path: string) {
   return (method === "GET" || method === "HEAD") && /^\/incidents\/[^/]+(?:\/publication)?$/.test(path);

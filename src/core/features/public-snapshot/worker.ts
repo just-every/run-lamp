@@ -2,7 +2,8 @@ import type { BackgroundJob, QueueResult } from "../../app/queue-job";
 import type { AppBindings } from "../../app/types";
 import { operatorRequestObject, publicationObject } from "../../app/operator-request-path";
 import { SnapshotCache as RetainedReplica } from "../../platform/blobs/snapshot-cache";
-import { isPublicIncidentRead, publicIncidentObject } from "./publication-request-path";
+import { isPublicIncidentRead, publicSnapshotObject } from "./publication-request-path";
+import { answerStoredPublicArtifact } from "./home";
 
 /** Publication writes, sign-in, console requests, background builds and retained replicas
  * have separate named instances in the installed namespace. Only replicas use
@@ -16,17 +17,20 @@ export class SnapshotCache extends RetainedReplica<AppBindings> {
   async fetch(request: Request) {
     const url = new URL(request.url);
     if (url.hostname === "snapshot.internal") return super.fetch(request);
-    const page = url.hostname === this.env.LAMP_PAGE_HOST.trim().toLowerCase()
-      && isPublicIncidentRead(request.method, url.pathname);
-    const object = page ? publicIncidentObject
+    const pageHost = url.hostname === this.env.LAMP_PAGE_HOST.trim().toLowerCase();
+    const storedHome = pageHost && url.pathname === "/" && (request.method === "GET" || request.method === "HEAD");
+    const page = storedHome || (pageHost && isPublicIncidentRead(request.method, url.pathname));
+    const object = page ? publicSnapshotObject
       : url.hostname === this.env.LAMP_APP_HOST.trim().toLowerCase()
         ? operatorRequestObject(request.method, url.pathname, this.env)
         : undefined;
     if (!object || !this.ctx.id.equals(this.env.SNAPSHOT_CACHE.idFromName(object))) {
       return new Response("Not found.", { status: 404 });
     }
+    const execution = { waitUntil: promise => this.ctx.waitUntil(promise) } as ExecutionContext;
+    if (storedHome) return answerStoredPublicArtifact(request, this.env, execution);
     const { fetchApplication } = await import("../../../server-fetch");
-    const response = await fetchApplication(request, this.env, { waitUntil: promise => this.ctx.waitUntil(promise) } as ExecutionContext, url, page ? "page" : "app", {
+    const response = await fetchApplication(request, this.env, execution, url, page ? "page" : "app", {
       queuePublication: object === publicationObject && !this.env.RER_PREVIEW_OWNER_SIGNIN,
     });
     // An early auth refusal may leave a proxied request body unread. Close

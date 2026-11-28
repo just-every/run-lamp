@@ -3,6 +3,7 @@ import type { AppBindings, AppEnv } from "../../app/types";
 import { createSnapshotBlobStore } from "../../platform/blobs/r2";
 import { createRetainedSnapshotCache } from "../../platform/blobs/retained";
 import { createSnapshotReader, runningReleaseIdentity } from "./reader";
+import { publicSnapshotObject } from "./publication-request-path";
 import { applyPublicHeaders, cacheResponse, snapshotArtifactRoute } from "./routes";
 import { createTrafficStorage } from "../traffic-alerts/storage";
 import { PRELAUNCH_ROBOTS_TAG } from "../prelaunch/policy";
@@ -26,6 +27,10 @@ stored.get("*", context => {
   const reader = createSnapshotReader(createSnapshotBlobStore(bindings), createRetainedSnapshotCache(bindings));
   return snapshotArtifactRoute(reader)(() => staticPublicArtifact(context.req.path)!)(context);
 });
+
+export function answerStoredPublicArtifact(request: Request, bindings: AppBindings, execution: ExecutionContext) {
+  return stored.fetch(request, bindings, execution);
+}
 
 const cachedHomes = new WeakMap<R2Bucket, { version: string; until: number }>();
 
@@ -75,6 +80,7 @@ export async function answerPublicArtifact(request: Request, bindings: AppBindin
       return preparePublicSubscribeDocument(response, request, bindings);
     }
     if (published) execution.waitUntil(published.stream.cancel());
+    if (bindings.RER_DEMO !== "1") return bindings.SNAPSHOT_CACHE.getByName(publicSnapshotObject).fetch(request);
   }
-  return stored.fetch(request, bindings, execution);
+  return answerStoredPublicArtifact(request, bindings, execution);
 }
