@@ -368,6 +368,21 @@ test("DOCS-001 PAGE-020 — the built single Worker preserves public docs, Hono 
   assert.equal((await request(settingsRead, appHost)).status, 401, "a console API read still requires a session");
   assert.equal((await (await appRequest(settingsRead)).json()).settings.pageName, "Atlas Cloud Status");
 
+  const previewPath = "/api/app/incidents/preview";
+  const previewInput = JSON.stringify({
+    title: "Dispatch requests are delayed",
+    components: [{ componentId: "01J00000000000000000000011", state: "Degraded performance" }],
+    update: { lifecycle: "Investigating", affectedAudience: "API users", customerImpact: "Requests take longer to complete." },
+  });
+  const previewRequest = { method: "POST", headers: { "Content-Type": "application/json" }, body: previewInput };
+  assert.equal((await request(previewPath, appHost, previewRequest)).status, 401, "incident preview requires an operator session");
+  assert.equal((await appRequest(previewPath, {
+    ...previewRequest, headers: { ...previewRequest.headers, "Sec-Fetch-Site": "cross-site" },
+  })).status, 403, "incident preview refuses authenticated cross-site requests");
+  const preview = await appRequest(previewPath, previewRequest);
+  assert.equal(preview.status, 200);
+  assert.ok((await preview.json()).preview.email.html, "the authenticated preview renders the publication document");
+
   // This is Wrangler's local control endpoint, rather than a Lamp route: it
   // must target the listener itself so workerd invokes the exported event.
   const scheduled = await request("/cdn-cgi/local/scheduled?cron=*+*+*+*+*", "127.0.0.1");
@@ -429,6 +444,8 @@ test("DOCS-001 PAGE-020 — the built single Worker preserves public docs, Hono 
   const browser = await browserNavigationProof();
   await stopWorker(worker);
   await startPageWorker();
+  assert.equal((await pageRequest(previewPath, previewRequest)).status, 404, "the public host refuses incident preview");
+  assert.equal((await pageRequest("/auth/magic-link", { method: "POST" })).status, 404, "the public host refuses sign-in requests");
   assert.equal((await pageRequest("/signin")).status, 404, "sign-in is app-host-only");
   assert.equal((await pageRequest(settingsRead, { headers: { Cookie: `${sessionCookieName(appOrigin)}=${sessionId}` } })).status, 404,
     "the public host refuses console reads even with an operator cookie");
