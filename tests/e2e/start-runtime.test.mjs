@@ -447,7 +447,7 @@ test("DOCS-001 PAGE-020 — the built single Worker preserves public docs, Hono 
   await stopWorker(worker);
   await startPageWorker();
   assert.equal((await pageRequest(previewPath, previewRequest)).status, 404, "the public host refuses incident preview");
-  assert.equal((await pageRequest("/auth/magic-link", { method: "POST" })).status, 404, "the public host refuses sign-in requests");
+  assert.equal((await pageRequest("/auth/magic-link", { method: "POST", headers: { "Content-Length": "0" } })).status, 404, "the public host refuses sign-in requests");
   assert.equal((await pageRequest("/signin")).status, 404, "sign-in is app-host-only");
   assert.equal((await pageRequest(settingsRead, { headers: { Cookie: `${sessionCookieName(appOrigin)}=${sessionId}` } })).status, 404,
     "the public host refuses console reads even with an operator cookie");
@@ -467,6 +467,9 @@ test("DOCS-001 PAGE-020 — the built single Worker preserves public docs, Hono 
   assert.equal(mailEventsOnPageHost.status, 503, "the unconfigured mail receiver must not be shadowed by generic alert intake");
   const missingPageAsset = await pageRequest("/assets/not-a-real-asset.svg", { headers: { "Sec-Fetch-Mode": "navigate" } });
   assert.equal(missingPageAsset.status, 404, "missing public assets must remain real 404s");
+  const publicIncident = await pageRequest("/incidents/INC-4821");
+  assert.equal(publicIncident.status, 200, "a published incident stays readable on the public host");
+  assert.match(await publicIncident.text(), /INC-4821/);
   const snapshotBeforeD1Failure = await waitForPublicSnapshot();
   await run("pnpm", ["exec", "wrangler", "d1", "execute", "DB", "--local", "--config", artifactPath, "--persist-to", statePath, "--command", "DROP TABLE page_settings"]);
   const snapshotAfterD1Failure = await pageRequest("/?r2-proof=after-d1-failure");

@@ -13,6 +13,15 @@ export { HealthWorker } from "./core/features/health/worker";
 export { MoveInWorker } from "./core/features/statuspage-import/worker";
 export { SnapshotCache } from "./core/features/public-snapshot/worker";
 
+async function forwardOperatorRequest(request: Request, object: Pick<Fetcher, "fetch">) {
+  if (!request.body) return object.fetch(request);
+  const forwarded = request.clone();
+  // Wait for the incoming stream to close even if the object returns an
+  // authorization refusal before it reads the body.
+  const [response] = await Promise.all([object.fetch(forwarded), request.body.cancel()]);
+  return response;
+}
+
 export default withDemo({
   async fetch(request: Request, bindings: AppBindings, executionContext: ExecutionContext): Promise<Response> {
     if (import.meta.env.DEV) {
@@ -55,7 +64,7 @@ export default withDemo({
     if (!import.meta.env.DEV && bindings.RER_DEMO !== "1") {
       if (surface === "app") {
         const object = operatorRequestObject(request.method, url.pathname, bindings);
-        if (object) return bindings.SNAPSHOT_CACHE.getByName(object).fetch(request);
+        if (object) return forwardOperatorRequest(request, bindings.SNAPSHOT_CACHE.getByName(object));
       } else if (surface === "page" && isPublicIncidentRead(request.method, url.pathname)) {
         return bindings.SNAPSHOT_CACHE.getByName(publicIncidentObject).fetch(request);
       }
